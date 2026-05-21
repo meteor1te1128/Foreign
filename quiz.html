@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>词汇测试 · Foreign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/quiz.css">
+</head>
+<body>
+
+  <!-- 复用首页相同结构：#bg + #vignette + #grad + #cv -->
+  <div id="bg"></div>
+  <div id="vignette"></div>
+  <div id="grad"></div>
+  <canvas id="cv"></canvas>
+
+  <!-- Nav -->
+  <nav>
+    <a href="index.html" class="logo">Foreign<sup>EN</sup></a>
+    <div class="nav-progress-wrap" id="navProgress" style="display:none">
+      <span class="nav-q-count" id="navQCount">1 / 20</span>
+      <div class="nav-progress-bar">
+        <div class="nav-progress-fill" id="navProgressFill"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════
+       SCREEN 1 · INTRO
+  ═══════════════════════════════════ -->
+  <section class="qscreen active" id="screenIntro">
+    <div class="intro-content">
+      <div class="eyebrow">词汇水平测试</div>
+      <h1>你的英语词汇<em>藏在哪里？</em></h1>
+      <p class="sub">
+        20道填空题 · 约5分钟<br/>
+        测完即刻生成你的专属词汇雷达图
+      </p>
+      <div class="intro-meta">
+        <div class="meta-item"><span class="meta-icon">🎯</span><span>难度自动调节</span></div>
+        <div class="meta-item"><span class="meta-icon">📊</span><span>六维度分析</span></div>
+        <div class="meta-item"><span class="meta-icon">🚀</span><span>个性化推荐</span></div>
+      </div>
+      <div class="cta">
+        <button class="btn-primary" id="btnStart">开始测试</button>
+      </div>
+      <p class="intro-tip">不用紧张，不会的就跳过，结果只属于你</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       SCREEN 2 · QUIZ
+  ═══════════════════════════════════ -->
+  <section class="qscreen" id="screenQuiz">
+    <div class="quiz-wrap">
+
+      <div class="q-card" id="qCard">
+        <div class="q-header">
+          <span class="q-category" id="qCategory">日常词汇</span>
+          <span class="q-difficulty" id="qDifficulty">●●○○○</span>
+        </div>
+        <div class="q-sentence-wrap">
+          <p class="q-sentence" id="qSentence"></p>
+        </div>
+        <div class="q-translation" id="qTranslation"></div>
+        <div class="q-input-row">
+          <div class="q-input-wrap">
+            <input
+              type="text"
+              class="q-input"
+              id="qInput"
+              placeholder="填入你认为正确的单词…"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="none"
+              spellcheck="false"
+            />
+            <div class="q-input-line"></div>
+          </div>
+          <button class="btn-nav-solid btn-confirm" id="btnConfirm">确认</button>
+        </div>
+        <button class="btn-skip" id="btnSkip">不认识，跳过 →</button>
+
+        <!-- Feedback overlay inside card -->
+        <div class="q-feedback" id="qFeedback">
+          <div class="feedback-icon" id="feedbackIcon"></div>
+          <div class="feedback-word" id="feedbackWord"></div>
+          <div class="feedback-explain" id="feedbackExplain"></div>
+          <button class="btn-nav-ghost btn-next" id="btnNext">继续 →</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       SCREEN 3 · RESULTS
+  ═══════════════════════════════════ -->
+  <section class="qscreen" id="screenResult">
+    <div class="result-wrap">
+
+      <div class="result-header">
+        <div class="result-badge" id="resultBadge">🎓</div>
+        <p class="result-title-label">你的英语水平</p>
+        <p class="result-level" id="resultLevel">B2 · 中高级</p>
+        <p class="result-vocab" id="resultVocab">预计掌握词汇量约 <strong>6,200</strong> 个</p>
+      </div>
+
+      <div class="radar-wrap">
+        <canvas id="radarCanvas" width="340" height="300"></canvas>
+      </div>
+
+      <div class="dimension-bars" id="dimensionBars"></div>
+
+      <div class="result-cta">
+        <p class="eyebrow" id="resultPathTitle">推荐学习路径</p>
+        <p class="sub" style="margin-bottom:24px" id="resultPathDesc">每日15分钟，专攻你的薄弱维度</p>
+        <div class="cta" style="flex-direction:column; gap:10px">
+          <button class="btn-primary" id="btnStartLearn">开始我的学习计划</button>
+          <button class="btn-secondary" id="btnRetake">重新测试</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script type="module" src="js/quiz.js"></script>
+</body>
+</html>
