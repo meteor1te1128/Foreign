@@ -1,0 +1,46 @@
+# Foreign · 探索语言，探索世界
+
+沉浸式英语学习网站，11种专属场景背景，Canvas 实时动画。
+
+## 文件结构
+
+```
+foreign/
+├── index.html
+├── css/
+│   └── styles.css
+├── js/
+│   ├── main.js
+│   ├── animations.js
+│   └── buttons.js
+├── assets/
+│   └── images/
+│       ├── ocean.jpg
+│       ├── fog_forest.jpg
+│       ├── galaxy.jpg
+│       ├── rain.jpg
+│       ├── aurora.jpg
+│       ├── sakura.jpg
+│       ├── sunset.jpg
+│       ├── snow.jpg
+│       └── forest_green.jpg
+└── README.md
+```
+
+## 本地运行（必须用服务器，不能直接双击）
+
+```bash
+# Python
+python -m http.server 8080
+
+# Node
+npx serve .
+```
+
+打开 http://localhost:8080
+
+## GitHub Pages 部署
+
+1. 上传所有文件到 GitHub 仓库（保持文件夹结构）
+2. Settings → Pages → Deploy from branch → main / root → Save
+3. 等 1-2 分钟，访问：https://你的用户名.github.io/foreign
