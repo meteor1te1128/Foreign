@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foreign · 探索语言，探索世界</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="bg"></div>
+<div id="vignette"></div>
+<div id="grad"></div>
+<canvas id="cv"></canvas>
+
+<nav>
+  <div class="logo" id="logo">Foreign<sup>EN</sup></div>
+  <div class="nav-r">
+    <button class="btn-nav-ghost" id="btn-login" onclick="openModal('login')">登录</button>
+    <button class="btn-nav-solid" id="btn-reg" onclick="openModal('register')">免费开始</button>
+  </div>
+</nav>
+
+<div id="hero">
+  <div class="eyebrow" id="eyebrow">探索语言，探索世界</div>
+  <h1 id="h1">选择你的<em>专属世界</em></h1>
+  <p class="sub" id="sub">选一个让你心动的场景，它将陪伴你整个学习旅程</p>
+  <div class="cta">
+    <button class="btn-primary" onclick="openModal('register')">开始学习</button>
+    <button class="btn-secondary"><span>了解更多</span></button>
+  </div>
+</div>
+
+<div id="picker">
+  <div id="pick-lbl">选择你的专属世界</div>
+  <div id="themes-wrap">
+    <div class="tb on"  data-t="ocean"        onclick="setTheme('ocean')">        <span class="em">🌊</span><span class="nm">深海</span></div>
+    <div class="tb"     data-t="fog_forest"   onclick="setTheme('fog_forest')">   <span class="em">🌲</span><span class="nm">雾林</span></div>
+    <div class="tb"     data-t="galaxy"       onclick="setTheme('galaxy')">       <span class="em">🌌</span><span class="nm">星空</span></div>
+    <div class="tb"     data-t="rain"         onclick="setTheme('rain')">         <span class="em">🌧️</span><span class="nm">雨夜</span></div>
+    <div class="tb"     data-t="aurora"       onclick="setTheme('aurora')">       <span class="em">🌠</span><span class="nm">极光</span></div>
+    <div class="tb"     data-t="sakura"       onclick="setTheme('sakura')">       <span class="em">🌸</span><span class="nm">樱花</span></div>
+    <div class="tb"     data-t="sunset"       onclick="setTheme('sunset')">       <span class="em">🌅</span><span class="nm">火烧云</span></div>
+    <div class="tb"     data-t="snow"         onclick="setTheme('snow')">         <span class="em">🏔️</span><span class="nm">雪山</span></div>
+    <div class="tb"     data-t="forest_green" onclick="setTheme('forest_green')"> <span class="em">🌿</span><span class="nm">雨林</span></div>
+    <div class="tb"     data-t="white"        onclick="setTheme('white')">        <span class="em">⬜</span><span class="nm">纯白</span></div>
+    <div class="tb"     data-t="black"        onclick="setTheme('black')">        <span class="em">⬛</span><span class="nm">纯黑</span></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="ov" id="modal">
+  <div class="md" id="mbox">
+    <button class="xb" onclick="closeModal()">×</button>
+    <h2 id="mtitle">欢迎回来</h2>
+    <p class="ms">登录后学习进度云端同步</p>
+    <div class="md-tabs">
+      <button class="md-tab on" id="tl" onclick="swTab('login')">登录</button>
+      <button class="md-tab"    id="tr" onclick="swTab('register')">注册</button>
+    </div>
+    <div id="lf">
+      <label class="ml">用户名</label>
+      <input class="mi" id="lu" placeholder="输入用户名" autocomplete="username">
+      <label class="ml">密码</label>
+      <input class="mi" type="password" id="lp" placeholder="输入密码" autocomplete="current-password">
+      <button class="btn-modal" onclick="doLogin()">登录</button>
+    </div>
+    <div id="rf" style="display:none">
+      <label class="ml">用户名</label>
+      <input class="mi" id="ru" placeholder="设置用户名" autocomplete="username">
+      <label class="ml">密码</label>
+      <input class="mi" type="password" id="rp" placeholder="设置密码" autocomplete="new-password">
+      <button class="btn-modal" onclick="doRegister()">创建账号</button>
+    </div>
+    <p class="mmsg" id="mmsg"></p>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
