@@ -26,7 +26,14 @@ window.addEventListener('resize', () => { resize(); setTheme(cur); });
 
 window.setTheme = function(key) {
   cur = key;
+
+  /* ── 新增：把主题名写到 body class，供 theme-buttons.css 读取 ── */
+  const themeKeys = Object.keys(THEMES);
+  document.body.classList.remove(...themeKeys.map(k => `theme-${k}`));
+  document.body.classList.add(`theme-${key}`);
+
   document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.t === key));
+
   const t = THEMES[key];
   if (key === 'white') {
     bg.style.backgroundImage = 'none'; bg.className = 'white-bg';
@@ -39,6 +46,7 @@ window.setTheme = function(key) {
     bg.style.backgroundImage = `url(${t.img})`;
     document.body.classList.remove('dm');
   }
+
   stopAnim();
   if (t.anim !== 'none') startAnim(t.anim, cv);
   localStorage.setItem('fg_theme', key);
