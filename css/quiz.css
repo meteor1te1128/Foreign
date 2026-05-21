@@ -1,132 +1,506 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>词汇测试 · Foreign</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/quiz.css">
-</head>
-<body>
+/* ============================================
+   quiz.css — 词汇测试页专属样式
+   Foreign · 完全继承 styles.css 设计语言
+   字体：Cormorant Garamond + DM Sans + Space Mono
+============================================ */
 
-  <!-- 复用首页相同结构：#bg + #vignette + #grad + #cv -->
-  <div id="bg"></div>
-  <div id="vignette"></div>
-  <div id="grad"></div>
-  <canvas id="cv"></canvas>
+/* ── 屏幕切换系统 ────────────────────────── */
+.qscreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+.qscreen.active {
+  opacity: 1;
+  pointer-events: all;
+}
 
-  <!-- Nav -->
-  <nav>
-    <a href="index.html" class="logo">Foreign<sup>EN</sup></a>
-    <div class="nav-progress-wrap" id="navProgress" style="display:none">
-      <span class="nav-q-count" id="navQCount">1 / 20</span>
-      <div class="nav-progress-bar">
-        <div class="nav-progress-fill" id="navProgressFill"></div>
-      </div>
-    </div>
-  </nav>
+/* ── Nav 进度条（叠加在主 nav 右侧） ─────── */
+.nav-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.nav-q-count {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,.45);
+  white-space: nowrap;
+}
+body.dm .nav-q-count { color: rgba(0,0,0,.35); }
 
-  <!-- ═══════════════════════════════════
-       SCREEN 1 · INTRO
-  ═══════════════════════════════════ -->
-  <section class="qscreen active" id="screenIntro">
-    <div class="intro-content">
-      <div class="eyebrow">词汇水平测试</div>
-      <h1>你的英语词汇<em>藏在哪里？</em></h1>
-      <p class="sub">
-        20道填空题 · 约5分钟<br/>
-        测完即刻生成你的专属词汇雷达图
-      </p>
-      <div class="intro-meta">
-        <div class="meta-item"><span class="meta-icon">🎯</span><span>难度自动调节</span></div>
-        <div class="meta-item"><span class="meta-icon">📊</span><span>六维度分析</span></div>
-        <div class="meta-item"><span class="meta-icon">🚀</span><span>个性化推荐</span></div>
-      </div>
-      <div class="cta">
-        <button class="btn-primary" id="btnStart">开始测试</button>
-      </div>
-      <p class="intro-tip">不用紧张，不会的就跳过，结果只属于你</p>
-    </div>
-  </section>
+.nav-progress-bar {
+  width: 140px;
+  height: 2px;
+  background: rgba(255,255,255,.15);
+  border-radius: 1px;
+  overflow: hidden;
+}
+body.dm .nav-progress-bar { background: rgba(0,0,0,.12); }
 
-  <!-- ═══════════════════════════════════
-       SCREEN 2 · QUIZ
-  ═══════════════════════════════════ -->
-  <section class="qscreen" id="screenQuiz">
-    <div class="quiz-wrap">
+.nav-progress-fill {
+  height: 100%;
+  background: rgba(255,255,255,.7);
+  border-radius: 1px;
+  width: 0%;
+  transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+body.dm .nav-progress-fill { background: rgba(0,0,0,.4); }
 
-      <div class="q-card" id="qCard">
-        <div class="q-header">
-          <span class="q-category" id="qCategory">日常词汇</span>
-          <span class="q-difficulty" id="qDifficulty">●●○○○</span>
-        </div>
-        <div class="q-sentence-wrap">
-          <p class="q-sentence" id="qSentence"></p>
-        </div>
-        <div class="q-translation" id="qTranslation"></div>
-        <div class="q-input-row">
-          <div class="q-input-wrap">
-            <input
-              type="text"
-              class="q-input"
-              id="qInput"
-              placeholder="填入你认为正确的单词…"
-              autocomplete="off"
-              autocorrect="off"
-              autocapitalize="none"
-              spellcheck="false"
-            />
-            <div class="q-input-line"></div>
-          </div>
-          <button class="btn-nav-solid btn-confirm" id="btnConfirm">确认</button>
-        </div>
-        <button class="btn-skip" id="btnSkip">不认识，跳过 →</button>
+/* ── Logo as link ────────────────────────── */
+.logo { text-decoration: none; cursor: pointer; }
 
-        <!-- Feedback overlay inside card -->
-        <div class="q-feedback" id="qFeedback">
-          <div class="feedback-icon" id="feedbackIcon"></div>
-          <div class="feedback-word" id="feedbackWord"></div>
-          <div class="feedback-explain" id="feedbackExplain"></div>
-          <button class="btn-nav-ghost btn-next" id="btnNext">继续 →</button>
-        </div>
-      </div>
+/* ══════════════════════════════════════════
+   SCREEN 1 · INTRO
+══════════════════════════════════════════ */
+.intro-content {
+  text-align: center;
+  max-width: 520px;
+  padding: 0 24px;
+  animation: heroIn 1s ease both;
+}
 
-    </div>
-  </section>
+/* Reuse hero animation from styles.css */
+.intro-content .eyebrow { margin-bottom: 20px; }
 
-  <!-- ═══════════════════════════════════
-       SCREEN 3 · RESULTS
-  ═══════════════════════════════════ -->
-  <section class="qscreen" id="screenResult">
-    <div class="result-wrap">
+.intro-content h1 {
+  margin-bottom: 18px;
+}
 
-      <div class="result-header">
-        <div class="result-badge" id="resultBadge">🎓</div>
-        <p class="result-title-label">你的英语水平</p>
-        <p class="result-level" id="resultLevel">B2 · 中高级</p>
-        <p class="result-vocab" id="resultVocab">预计掌握词汇量约 <strong>6,200</strong> 个</p>
-      </div>
+.intro-content h1 em {
+  /* italic block already defined in styles.css */
+}
 
-      <div class="radar-wrap">
-        <canvas id="radarCanvas" width="340" height="300"></canvas>
-      </div>
+.intro-meta {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin: 28px 0 36px;
+}
 
-      <div class="dimension-bars" id="dimensionBars"></div>
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,.42);
+  letter-spacing: .3px;
+}
+body.dm .meta-item { color: rgba(0,0,0,.4); }
 
-      <div class="result-cta">
-        <p class="eyebrow" id="resultPathTitle">推荐学习路径</p>
-        <p class="sub" style="margin-bottom:24px" id="resultPathDesc">每日15分钟，专攻你的薄弱维度</p>
-        <div class="cta" style="flex-direction:column; gap:10px">
-          <button class="btn-primary" id="btnStartLearn">开始我的学习计划</button>
-          <button class="btn-secondary" id="btnRetake">重新测试</button>
-        </div>
-      </div>
+.meta-icon { font-size: 22px; }
 
-    </div>
-  </section>
+.intro-tip {
+  margin-top: 18px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,.28);
+  letter-spacing: .3px;
+}
+body.dm .intro-tip { color: rgba(0,0,0,.28); }
 
-  <script type="module" src="js/quiz.js"></script>
-</body>
-</html>
+/* ══════════════════════════════════════════
+   SCREEN 2 · QUIZ CARD
+══════════════════════════════════════════ */
+.quiz-wrap {
+  width: 100%;
+  max-width: 620px;
+  padding: 0 24px;
+  position: relative;
+}
+
+.q-card {
+  position: relative;
+  background: rgba(8,12,20,.72);
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 18px;
+  padding: 38px 44px 32px;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 0 80px rgba(0,0,0,.45);
+  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+body.dm .q-card {
+  background: rgba(250,250,248,.88);
+  border-color: rgba(0,0,0,.08);
+}
+
+.q-card.exit {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* Header row */
+.q-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.q-category {
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+body.dm .q-category {
+  color: rgba(0,0,0,.4);
+  background: rgba(0,0,0,.05);
+  border-color: rgba(0,0,0,.1);
+}
+
+.q-difficulty {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,.3);
+}
+body.dm .q-difficulty { color: rgba(0,0,0,.25); }
+
+/* Sentence */
+.q-sentence {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: #fff;
+  margin-bottom: 12px;
+  letter-spacing: .2px;
+}
+body.dm .q-sentence { color: #111; }
+
+.q-blank {
+  display: inline-block;
+  min-width: 90px;
+  border-bottom: 2px solid rgba(255,255,255,.5);
+  margin: 0 3px;
+  position: relative;
+  top: 2px;
+  text-align: center;
+  font-style: italic;
+  color: rgba(255,255,255,.5);
+  transition: border-color .2s;
+}
+body.dm .q-blank {
+  border-bottom-color: rgba(0,0,0,.35);
+  color: rgba(0,0,0,.35);
+}
+
+/* Translation */
+.q-translation {
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,.32);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+body.dm .q-translation { color: rgba(0,0,0,.35); }
+
+/* Input row */
+.q-input-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.q-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.q-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,.18);
+  padding: 10px 0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #fff;
+  outline: none;
+  transition: border-color .25s;
+  caret-color: rgba(255,255,255,.8);
+}
+body.dm .q-input {
+  border-bottom-color: rgba(0,0,0,.15);
+  color: #111;
+  caret-color: #333;
+}
+.q-input::placeholder {
+  color: rgba(255,255,255,.2);
+  font-style: italic;
+  font-size: 15px;
+}
+body.dm .q-input::placeholder { color: rgba(0,0,0,.2); }
+.q-input:focus { border-bottom-color: rgba(255,255,255,.55); }
+body.dm .q-input:focus { border-bottom-color: rgba(0,0,0,.4); }
+
+/* Animated underline */
+.q-input-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: rgba(255,255,255,.8);
+  transition: width 0.3s ease;
+  pointer-events: none;
+}
+body.dm .q-input-line { background: rgba(0,0,0,.55); }
+.q-input:focus ~ .q-input-line { width: 100%; }
+
+/* Confirm button — reuse btn-nav-solid from styles.css */
+.btn-confirm {
+  opacity: 0.45;
+  transition: opacity 0.2s, background .25s, transform .12s, box-shadow .25s !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-confirm.ready { opacity: 1; }
+
+/* Skip */
+.btn-skip {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.28);
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: .5px;
+  cursor: pointer;
+  padding: 0;
+  transition: color .2s;
+}
+.btn-skip:hover { color: rgba(255,255,255,.55); }
+body.dm .btn-skip { color: rgba(0,0,0,.25); }
+body.dm .btn-skip:hover { color: rgba(0,0,0,.5); }
+
+/* ── Feedback overlay (inside card) ──── */
+.q-feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8,12,20,.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 40px;
+  text-align: center;
+  gap: 0;
+}
+body.dm .q-feedback { background: rgba(250,250,248,.92); }
+
+.q-feedback.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.feedback-icon {
+  font-size: 44px;
+  margin-bottom: 14px;
+  animation: pop .3s ease both;
+}
+
+.feedback-word {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -.5px;
+  margin-bottom: 10px;
+}
+.feedback-word.correct { color: #86efac; }
+.feedback-word.wrong   { color: #f87171; }
+.feedback-word.skipped { color: rgba(255,255,255,.4); }
+body.dm .feedback-word.skipped { color: rgba(0,0,0,.35); }
+
+.feedback-explain {
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,.45);
+  line-height: 1.7;
+  margin-bottom: 26px;
+  max-width: 300px;
+  white-space: pre-line;
+}
+body.dm .feedback-explain { color: rgba(0,0,0,.4); }
+
+/* btn-next reuses btn-nav-ghost */
+.btn-next { /* inherits btn-nav-ghost */ }
+
+/* ══════════════════════════════════════════
+   SCREEN 3 · RESULTS
+══════════════════════════════════════════ */
+.result-wrap {
+  width: 100%;
+  max-width: 580px;
+  padding: 100px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  max-height: 100vh;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.12) transparent;
+}
+.result-wrap::-webkit-scrollbar { width: 3px; }
+.result-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+
+.result-header {
+  text-align: center;
+  margin-bottom: 28px;
+  animation: heroIn .6s ease both;
+}
+
+.result-badge {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 16px;
+  animation: pop .5s .1s ease both;
+}
+
+.result-title-label {
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  margin-bottom: 8px;
+}
+body.dm .result-title-label { color: rgba(0,0,0,.3); }
+
+.result-level {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(30px,5vw,44px);
+  font-weight: 600;
+  letter-spacing: -1px;
+  color: #fff;
+  margin-bottom: 10px;
+}
+body.dm .result-level { color: #111; }
+
+.result-vocab {
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(255,255,255,.42);
+}
+body.dm .result-vocab { color: rgba(0,0,0,.42); }
+.result-vocab strong { color: rgba(255,255,255,.8); font-weight: 500; }
+body.dm .result-vocab strong { color: rgba(0,0,0,.7); }
+
+/* Radar */
+.radar-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+  animation: heroIn .6s .15s ease both;
+}
+#radarCanvas { max-width: 100%; }
+
+/* Dimension bars */
+.dimension-bars {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin-bottom: 36px;
+  animation: heroIn .6s .25s ease both;
+}
+
+.dim-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.dim-label {
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,.45);
+  width: 64px;
+  text-align: right;
+  flex-shrink: 0;
+}
+body.dm .dim-label { color: rgba(0,0,0,.42); }
+
+.dim-bar-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+body.dm .dim-bar-track { background: rgba(0,0,0,.08); }
+
+.dim-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 1s cubic-bezier(.34,1.56,.64,1);
+}
+
+.dim-pct {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,.3);
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+body.dm .dim-pct { color: rgba(0,0,0,.3); }
+
+/* CTA */
+.result-cta {
+  text-align: center;
+  width: 100%;
+  animation: heroIn .6s .35s ease both;
+}
+
+/* ══════════════════════════════════════════
+   MISC ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes pop {
+  0%   { transform: scale(.5); opacity: 0; }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .q-card { padding: 26px 22px 22px; }
+  .q-sentence { font-size: 19px; }
+  .intro-meta { gap: 20px; }
+  .result-wrap { padding: 90px 16px 40px; }
+  .nav-progress-bar { width: 90px; }
+}
