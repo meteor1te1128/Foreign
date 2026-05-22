@@ -39,6 +39,7 @@ function noise(x,y,t){return Math.sin(x*.9+t*.8)*.38+Math.sin(x*1.7-y*.5+t*.6)*.
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function rnd(a, b) { return a + Math.random()*(b-a); }
+const PI2 = Math.PI * 2;
 
 /* ═══════════════════════════════════════════════════════
    🌊 深海 — 仰视，光从水面中央向下辐射
