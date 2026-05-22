@@ -1,83 +1,319 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foreign · 探索语言，探索世界</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foreign · 沉浸式英语学习</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme-buttons.css" />
+  <style>
+    /* ── 首页专属布局 ─────────────────────────────────────── */
+    .home-wrap {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 24px;
+      gap: 0;
+    }
+
+    /* Logo 区 */
+    .logo-area {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .logo-word {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(56px, 10vw, 96px);
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 40px rgba(0,0,0,0.3);
+    }
+    .logo-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.18em;
+    }
+
+    /* 三大入口导航 */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      max-width: 560px;
+      width: 100%;
+      margin-bottom: 48px;
+    }
+    .nav-card {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 28px 16px 22px;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      cursor: pointer;
+    }
+    .nav-card:hover {
+      background: rgba(255,255,255,0.13);
+      border-color: rgba(255,255,255,0.28);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+    .nav-card:active { transform: translateY(-1px); }
+    .nav-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .nav-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.3;
+    }
+    .nav-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.06em;
+    }
+    /* 今日学习卡片高亮 */
+    .nav-card.primary {
+      background: rgba(255,255,255,0.11);
+      border-color: rgba(255,255,255,0.22);
+    }
+    .nav-card.primary .nav-label { color: #fff; }
+
+    /* 连击徽章 */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(251,191,36,0.12);
+      border: 1px solid rgba(251,191,36,0.25);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #fbbf24;
+      letter-spacing: 0.06em;
+      margin-bottom: 40px;
+      transition: opacity 0.4s;
+    }
+    .streak-badge.hidden { opacity: 0; }
+    .streak-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    /* 主题选择器区域 */
+    .theme-section {
+      max-width: 560px;
+      width: 100%;
+    }
+    .theme-section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.12em;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    /* theme-buttons.css 里已有 .theme-grid、.theme-btn 样式 */
+
+    /* 账号区 */
+    .account-bar {
+      position: fixed;
+      top: 18px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .account-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 7px 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .account-btn:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.12); }
+
+    /* 快捷测试入口（右下角） */
+    .quiz-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      z-index: 100;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: all 0.2s;
+      backdrop-filter: blur(12px);
+    }
+    .quiz-fab:hover {
+      background: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.9);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 480px) {
+      .nav-grid { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+      .nav-card { padding: 22px 10px 18px; border-radius: 16px; }
+      .nav-icon { font-size: 22px; }
+      .nav-label { font-size: 12px; }
+      .logo-word { font-size: clamp(48px, 14vw, 72px); }
+    }
+  </style>
 </head>
-<body>
+<body class="theme-ocean">
 
-<div id="bg"></div>
-<div id="vignette"></div>
-<div id="grad"></div>
-<canvas id="cv"></canvas>
+  <div id="bg-image" class="bg-image"></div>
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+  <div class="bg-overlay"></div>
 
-<nav>
-  <div class="logo" id="logo">Foreign<sup>EN</sup></div>
-  <div class="nav-r">
-    <button class="btn-nav-ghost" id="btn-login" onclick="openModal('login')">登录</button>
-    <button class="btn-nav-solid" id="btn-reg" onclick="openModal('register')">免费开始</button>
+  <!-- 账号 -->
+  <div class="account-bar">
+    <span id="account-display" class="account-btn" style="display:none"></span>
+    <button class="account-btn" id="btn-login" onclick="openAuthModal()">登录</button>
   </div>
-</nav>
 
-<div id="hero">
-  <div class="eyebrow" id="eyebrow">探索语言，探索世界</div>
-  <h1 id="h1">选择你的<em>专属世界</em></h1>
-  <p class="sub" id="sub">选一个让你心动的场景，它将陪伴你整个学习旅程</p>
-  <div class="cta">
-    <button class="btn-primary" onclick="openModal('register')">开始学习</button>
-    <button class="btn-secondary"><span>了解更多</span></button>
-  </div>
-</div>
+  <!-- 词汇测试快捷入口 -->
+  <a href="quiz.html" class="quiz-fab">词汇测试 →</a>
 
-<div id="picker">
-  <div id="pick-lbl">选择你的专属世界</div>
-  <div id="themes-wrap">
-    <div class="tb on"  data-t="ocean"        onclick="setTheme('ocean')">        <span class="em">🌊</span><span class="nm">深海</span></div>
-    <div class="tb"     data-t="fog_forest"   onclick="setTheme('fog_forest')">   <span class="em">🌲</span><span class="nm">雾林</span></div>
-    <div class="tb"     data-t="galaxy"       onclick="setTheme('galaxy')">       <span class="em">🌌</span><span class="nm">星空</span></div>
-    <div class="tb"     data-t="rain"         onclick="setTheme('rain')">         <span class="em">🌧️</span><span class="nm">雨天</span></div>
-    <div class="tb"     data-t="aurora"       onclick="setTheme('aurora')">       <span class="em">🌠</span><span class="nm">极光</span></div>
-    <div class="tb"     data-t="sakura"       onclick="setTheme('sakura')">       <span class="em">🌸</span><span class="nm">樱花</span></div>
-    <div class="tb"     data-t="sunset"       onclick="setTheme('sunset')">       <span class="em">🌅</span><span class="nm">火烧云</span></div>
-    <div class="tb"     data-t="snow"         onclick="setTheme('snow')">         <span class="em">🏔️</span><span class="nm">雪山</span></div>
-    <div class="tb"     data-t="forest_green" onclick="setTheme('forest_green')"> <span class="em">🌿</span><span class="nm">雨林</span></div>
-    <div class="tb"     data-t="white"        onclick="setTheme('white')">        <span class="em">⬜</span><span class="nm">纯白</span></div>
-    <div class="tb"     data-t="black"        onclick="setTheme('black')">        <span class="em">⬛</span><span class="nm">纯黑</span></div>
-  </div>
-</div>
+  <div class="home-wrap">
 
-<!-- Modal -->
-<div class="ov" id="modal">
-  <div class="md" id="mbox">
-    <button class="xb" onclick="closeModal()">×</button>
-    <h2 id="mtitle">欢迎回来</h2>
-    <p class="ms">登录后学习进度云端同步</p>
-    <div class="md-tabs">
-      <button class="md-tab on" id="tl" onclick="swTab('login')">登录</button>
-      <button class="md-tab"    id="tr" onclick="swTab('register')">注册</button>
+    <!-- Logo -->
+    <div class="logo-area">
+      <div class="logo-word">Foreign</div>
+      <div class="logo-sub">IMMERSIVE ENGLISH · 沉浸式英语</div>
     </div>
-    <div id="lf">
-      <label class="ml">用户名</label>
-      <input class="mi" id="lu" placeholder="输入用户名" autocomplete="username">
-      <label class="ml">密码</label>
-      <input class="mi" type="password" id="lp" placeholder="输入密码" autocomplete="current-password">
-      <button class="btn-modal" onclick="doLogin()">登录</button>
-    </div>
-    <div id="rf" style="display:none">
-      <label class="ml">用户名</label>
-      <input class="mi" id="ru" placeholder="设置用户名" autocomplete="username">
-      <label class="ml">密码</label>
-      <input class="mi" type="password" id="rp" placeholder="设置密码" autocomplete="new-password">
-      <button class="btn-modal" onclick="doRegister()">创建账号</button>
-    </div>
-    <p class="mmsg" id="mmsg"></p>
-  </div>
-</div>
 
-<script type="module" src="js/main.js"></script>
+    <!-- 连击提示 -->
+    <div class="streak-badge hidden" id="streak-badge">
+      <span>🌟 连击</span>
+      <span class="streak-num" id="streak-num">0</span>
+      <span>天</span>
+    </div>
+
+    <!-- 三大入口 -->
+    <nav class="nav-grid">
+      <a href="learn.html" class="nav-card primary">
+        <span class="nav-icon">📖</span>
+        <span class="nav-label">每日学习</span>
+        <span class="nav-sub" id="learn-sub">TODAY</span>
+      </a>
+      <a href="wordbank.html" class="nav-card">
+        <span class="nav-icon">📚</span>
+        <span class="nav-label">单词库</span>
+        <span class="nav-sub">60 WORDS</span>
+      </a>
+      <a href="review.html" class="nav-card">
+        <span class="nav-icon">🔥</span>
+        <span class="nav-label">回炉本</span>
+        <span class="nav-sub" id="wrong-sub">REVIEW</span>
+      </a>
+    </nav>
+
+    <!-- 主题选择 -->
+    <div class="theme-section">
+      <p class="theme-section-label">THEME · 主题</p>
+      <div class="theme-grid" id="theme-grid">
+        <!-- 由 main.js 动态渲染 -->
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/animations.js"></script>
+  <script type="module" src="js/buttons.js"></script>
+  <script type="module">
+    import { getStreak, isDoneToday } from './js/streak.js';
+
+    // 连击显示
+    const streak = getStreak();
+    if (streak.count > 0) {
+      const badge = document.getElementById('streak-badge');
+      badge.classList.remove('hidden');
+      document.getElementById('streak-num').textContent = streak.count;
+    }
+
+    // 今日学习状态
+    const learnSub = document.getElementById('learn-sub');
+    if (isDoneToday()) {
+      learnSub.textContent = '✓ 已完成';
+      learnSub.style.color = '#4ade80';
+    } else {
+      // 计算今日计划词数
+      try {
+        const { WORDS } = await import('./js/wordbank.js');
+        const { getTodayPlan } = await import('./js/fsrs.js');
+        const plan = getTodayPlan(WORDS.map(w => w.id));
+        learnSub.textContent = plan.all.length + ' WORDS';
+      } catch(e) { learnSub.textContent = 'TODAY'; }
+    }
+
+    // 回炉本计数
+    try {
+      const wrong = JSON.parse(localStorage.getItem('fg_wrong') || '{}');
+      const cnt   = Object.keys(wrong).length;
+      if (cnt > 0) {
+        document.getElementById('wrong-sub').textContent = cnt + ' WORDS';
+        document.getElementById('wrong-sub').style.color = '#f87171';
+      }
+    } catch(e) {}
+
+    // 账号（localStorage 模拟）
+    const user = localStorage.getItem('fg_user');
+    if (user) {
+      const display = document.getElementById('account-display');
+      const loginBtn = document.getElementById('btn-login');
+      display.textContent = user;
+      display.style.display = 'inline-block';
+      loginBtn.textContent = '退出';
+      loginBtn.onclick = () => { localStorage.removeItem('fg_user'); location.reload(); };
+    }
+
+    function openAuthModal() {
+      const name = prompt('用户名：');
+      if (name && name.trim()) {
+        localStorage.setItem('fg_user', name.trim());
+        location.reload();
+      }
+    }
+    window.openAuthModal = openAuthModal;
+  </script>
 </body>
 </html>
