@@ -1,13 +1,16 @@
 /* Foreign · animations.js
    铁则：Canvas 只叠加动态元素，绝不画背景色
    纯白/纯黑/none → Canvas 完全透明，立即清空
-   _alive 标志确保切换主题后旧 draw 循环不多跑一帧  */
 
-let _alive = false;   /* 存活标志：stopAnim 置 false，旧 draw 自动退出 */
-let _ivs   = [];      /* 托管的 setInterval id，stopAnim 时全部清除 */
+   Token 机制：每次 startAnim 生成新 token，每个 draw 闭包
+   捕获自己的 tk，每帧 raf(draw, tk) 检查 _token === tk，
+   不一致立即退出。彻底解决布尔值竞态问题。               */
+
+let _token = 0;    /* 全局 token，每次 startAnim 自增 */
+let _ivs   = [];   /* 托管的 setInterval id */
 
 export function stopAnim() {
-  _alive = false;
+  _token++;        /* token 变化 → 所有持旧 token 的 draw 自动退出 */
   _ivs.forEach(clearInterval);
   _ivs = [];
 }
@@ -17,29 +20,30 @@ export function startAnim(type, canvas) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!type || type === 'none') return;   /* 纯白/纯黑：清空即止 */
-  _alive = true;
+  const tk = _token;                      /* 捕获本次启动的 token */
   const W = canvas.width, H = canvas.height;
   const fn = { ocean:_ocean, mist:_mist, stars:_stars, rain:_rain,
                 aurora:_aurora, sakura:_sakura, clouds:_clouds,
                 snow:_snow, forest:_forest }[type];
-  if (fn) fn(ctx, W, H);
+  if (fn) fn(ctx, W, H, tk);
 }
 
 /* ── 托管 interval ── */
 function iv(fn, ms) { const id = setInterval(fn, ms); _ivs.push(id); return id; }
 
-/* ── 带存活检查的 raf：旧动画 _alive=false 后自动停 ── */
-function raf(fn) { if (_alive) requestAnimationFrame(fn); }
+/* ── Token 守卫的 raf：token 不匹配则静默退出，彻底杀死旧循环 ── */
+function raf(fn, tk) { if (_token === tk) requestAnimationFrame(fn); }
 
 /* ── 工具 ──────────────────────────────────────────────── */
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function rnd(a, b) { return a + Math.random()*(b-a); }
 const PI2 = Math.PI * 2;
 
+
 /* ═══════════════════════════════════════════════════════
    🌊 深海 — 白色体积光柱 + 焦散 + 物理气泡
 ═══════════════════════════════════════════════════════ */
-function _ocean(ctx, W, H) {
+function _ocean(ctx, W, H, tk) {
 
   const caust = Array.from({length:28}, () => ({
     x:rnd(0,W), y:rnd(H*.5,H),
@@ -132,14 +136,14 @@ function _ocean(ctx, W, H) {
         ctx.fillStyle=hg; ctx.fill();
       }
     });
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
    🌲 雾林 — 椭圆雾气（零硬边）+ 萤火虫群落
 ═══════════════════════════════════════════════════════ */
-function _mist(ctx, W, H) {
+function _mist(ctx, W, H, tk) {
 
   /* 18个大椭圆雾团，全部径向渐变，无矩形 */
   const fogs = Array.from({length:18}, () => ({
@@ -203,14 +207,14 @@ function _mist(ctx, W, H) {
       ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*.44,0,PI2);
       ctx.fillStyle = `hsla(${f.hue+20},96%,92%,${blink})`; ctx.fill();
     });
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
    🌌 星空 — 银河密度分布 + 大气燃烧流星 + 十字衍射
 ═══════════════════════════════════════════════════════ */
-function _stars(ctx, W, H) {
+function _stars(ctx, W, H, tk) {
   const MX=W*.52, MY=H*.42, MW=W*.55, MH=H*.28;
   function mw(x,y) {
     const dx=(x-MX)/MW, dy=(y-MY)/MH;
@@ -295,7 +299,7 @@ function _stars(ctx, W, H) {
       ctx.beginPath(); ctx.arc(m.x,m.y,5.5,0,PI2);
       ctx.fillStyle=hg; ctx.fill();
     });
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
@@ -309,7 +313,7 @@ function _stars(ctx, W, H) {
    · 新水珠持续在随机位置冒出
    不画任何外部雨丝
 ═══════════════════════════════════════════════════════ */
-function _rain(ctx, W, H) {
+function _rain(ctx, W, H, tk) {
 
   /* ── 附着水珠 ─────────────────────────────────────── */
   function mkDot(init) {
@@ -493,7 +497,7 @@ function _rain(ctx, W, H) {
       }
     }
 
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
@@ -506,7 +510,7 @@ function _rain(ctx, W, H) {
    · 冰面/雪地有极光倒影（绿色反光）
    · 背景布满星点
 ═══════════════════════════════════════════════════════ */
-function _aurora(ctx, W, H) {
+function _aurora(ctx, W, H, tk) {
 
   const HORIZON = H * .64;   /* 地平线位置，光柱从这里升起 */
 
@@ -657,14 +661,14 @@ function _aurora(ctx, W, H) {
       ctx.restore();
     });
 
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
    🌸 樱花 — 贝塞尔花瓣 + 风场 + 正反面翻转
 ═══════════════════════════════════════════════════════ */
-function _sakura(ctx, W, H) {
+function _sakura(ctx, W, H, tk) {
   let wx=.32, wt=.32;
   iv(() => { wt=rnd(-.35,1.1); }, 4000);
 
@@ -720,14 +724,14 @@ function _sakura(ctx, W, H) {
 
       ctx.restore(); ctx.globalAlpha=1;
     });
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
    🌅 火烧云 — 丁达尔光束 + 云层高光（不覆盖背景）
 ═══════════════════════════════════════════════════════ */
-function _clouds(ctx, W, H) {
+function _clouds(ctx, W, H, tk) {
   const rays = Array.from({length:8}, (_, i) => ({
     cx:W*(.05+i*.135)+rnd(-W*.03,W*.03),
     w:rnd(12,44), a:rnd(.016,.034),
@@ -772,14 +776,14 @@ function _clouds(ctx, W, H) {
       ctx.beginPath(); ctx.arc(0,0,c.rx,0,PI2);
       ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
    🏔️ 雪山 — 六角雪花 + 3景深 + 风场 + 地面积雪
 ═══════════════════════════════════════════════════════ */
-function _snow(ctx, W, H) {
+function _snow(ctx, W, H, tk) {
   let wx=.18, wt=.18;
   iv(() => { wt=rnd(-.9,1.9); }, 5000);
 
@@ -829,14 +833,14 @@ function _snow(ctx, W, H) {
       }
       ctx.restore(); ctx.globalAlpha=1;
     }));
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
    🌿 雨林 — 绿色体积光 + 3景深湿气 + 地面反光
 ═══════════════════════════════════════════════════════ */
-function _forest(ctx, W, H) {
+function _forest(ctx, W, H, tk) {
   const rays = Array.from({length:6}, (_, i) => ({
     cx:W*(.1+i*.17), w:rnd(14,44), skew:rnd(-28,28),
     a:rnd(.042,.068), ph:rnd(0,PI2), phs:rnd(.002,.003),
@@ -919,6 +923,6 @@ function _forest(ctx, W, H) {
       ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,PI2);
       ctx.fillStyle=`rgba(200,255,165,${fl})`; ctx.fill();
     }));
-    raf(draw);
+    raf(draw, tk);
   } draw();
 }
