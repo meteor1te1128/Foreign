@@ -498,68 +498,165 @@ function _rain(ctx, W, H) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌠 极光 — 噪声帘子 + 顶缘发光线 + 雪粒
+   🌠 极光 — 完全重写，贴合照片
+   照片特征：
+   · 竖向光柱从地平线（H*0.62）向上辐射，不是横帘
+   · 绿色主导，紫色穿插，顶部有弧形卷曲
+   · 光柱有竖向条纹感，亮度不均匀
+   · 冰面/雪地有极光倒影（绿色反光）
+   · 背景布满星点
 ═══════════════════════════════════════════════════════ */
 function _aurora(ctx, W, H) {
-  const cs = [
-    {y:.15,h:.30,c0:'0,225,115',  c1:'0,162,88',  sp:.50,fr:2.10,am:.056,ph:0,            ns:.032},
-    {y:.20,h:.22,c0:'52,200,252', c1:'12,148,215',sp:.34,fr:3.10,am:.033,ph:Math.PI*.65,   ns:.026},
-    {y:.11,h:.33,c0:'122,52,252', c1:'72,12,195',  sp:.65,fr:1.72,am:.068,ph:Math.PI*1.30, ns:.040},
-    {y:.27,h:.18,c0:'0,252,172',  c1:'0,190,132', sp:.38,fr:2.85,am:.023,ph:Math.PI*.32,   ns:.019},
-  ];
-  const snow = Array.from({length:95}, () => ({
-    x:rnd(0,W), y:rnd(0,H), r:rnd(.28,2),
-    sp:rnd(.18,.68), sw:rnd(0,PI2), sws:rnd(.005,.013), a:rnd(.08,.46)
+
+  const HORIZON = H * .64;   /* 地平线位置，光柱从这里升起 */
+
+  /* ── 星星（背景，上半天空） ─────────────────────────── */
+  const stars = Array.from({length:220}, () => ({
+    x: rnd(0, W), y: rnd(0, HORIZON * 1.1),
+    r: rnd(.15, 1.2), a: rnd(.2, .85),
+    da: rnd(-.008, .008), tw: Math.random() > .45,
   }));
 
-  /* 预计算每条帘子的顶部 Y 均值（避免每帧 reduce） */
+  /* ── 极光光柱组 ─────────────────────────────────────── */
+  /* 每组光柱：从地平线某点向上展开，有扇形张角 */
+  const GROUPS = [
+    /* 绿色主群：画面中偏左，最亮 */
+    { cx:W*.38, spread:W*.28, count:9,
+      hue0:145, hue1:162, bright:1.0,
+      ph:0, phspd:.0042, swayAm:.018 },
+    /* 绿色右群 */
+    { cx:W*.62, spread:W*.22, count:7,
+      hue0:148, hue1:168, bright:.85,
+      ph:Math.PI*.7, phspd:.0038, swayAm:.015 },
+    /* 紫色群：画面中偏右上 */
+    { cx:W*.55, spread:W*.35, count:8,
+      hue0:275, hue1:295, bright:.72,
+      ph:Math.PI*1.2, phspd:.005, swayAm:.022 },
+    /* 绿色左侧细束 */
+    { cx:W*.18, spread:W*.14, count:5,
+      hue0:150, hue1:165, bright:.6,
+      ph:Math.PI*.4, phspd:.0035, swayAm:.012 },
+  ];
+
+  /* 预生成每根光柱的固定属性 */
+  const beams = [];
+  GROUPS.forEach(g => {
+    for (let i = 0; i < g.count; i++) {
+      const frac = (i / (g.count-1)) - .5;   /* -0.5 ~ 0.5 */
+      beams.push({
+        /* 底部起点：沿地平线分布在扇形内 */
+        bx0: g.cx + frac * g.spread * rnd(.7, 1.0),
+        /* 顶部终点：向上辐射，有随机偏移 */
+        tx0: g.cx + frac * g.spread * rnd(.3, .6) + rnd(-W*.04, W*.04),
+        ty0: rnd(H*.02, H*.28),
+        /* 宽度：底宽顶窄 */
+        wBot: rnd(W*.008, W*.025),
+        wTop: rnd(W*.001, W*.006),
+        /* 颜色 */
+        hue: rnd(g.hue0, g.hue1),
+        /* 亮度 & 相位 */
+        a: rnd(.08, .22) * g.bright,
+        ph: g.ph + rnd(0, PI2),
+        phspd: g.phspd * rnd(.7, 1.3),
+        swayAm: g.swayAm,
+        /* 顶部卷曲：随噪声偏移 */
+        curlPh: rnd(0, PI2),
+        curlSpd: rnd(.003, .007),
+        g,
+      });
+    }
+  });
+
+  /* ── 冰面倒影光斑（地平线以下） ────────────────────── */
+  const reflections = Array.from({length:8}, () => ({
+    x: rnd(W*.15, W*.85),
+    y: rnd(HORIZON + H*.04, H*.92),
+    rx: rnd(W*.04, W*.12),
+    ry: rnd(H*.008, H*.022),
+    hue: Math.random() > .3 ? rnd(148,165) : rnd(275,295),
+    a: rnd(.04, .1),
+    ph: rnd(0, PI2), phspd: rnd(.003, .008),
+  }));
+
   let t = 0;
   function draw() {
-    ctx.clearRect(0,0,W,H); t += .0052;
+    ctx.clearRect(0, 0, W, H);
+    t += .005;
 
-    cs.forEach(c => {
-      const top=[], bot=[];
-      for (let x=0; x<=W; x+=3) {
-        const nx = x/W;
-        const n = noise(nx*3, t*.36, t+c.ph*.5)*c.ns;
-        const w = Math.sin(nx*Math.PI*c.fr+t*c.sp+c.ph)*c.am
-                + Math.sin(nx*Math.PI*c.fr*1.82-t*c.sp*1.32+c.ph)*c.am*.36 + n;
-        const yt = H*(c.y+w);
-        top.push({x, y:yt});
-        bot.push({x, y:yt + H*c.h*(.65+.35*Math.abs(Math.sin(nx*4.1+t)))});
-      }
+    /* ── 星星 ── */
+    stars.forEach(s => {
+      if (s.tw) { s.a += s.da; if (s.a < .08 || s.a > .88) s.da *= -1; }
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, PI2);
+      ctx.fillStyle = `rgba(210,222,255,${s.a})`; ctx.fill();
+    });
 
-      ctx.save(); ctx.beginPath();
-      top.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
-      for (let i=bot.length-1; i>=0; i--) ctx.lineTo(bot[i].x,bot[i].y);
+    /* ── 光柱 ── */
+    beams.forEach(b => {
+      b.ph += b.phspd;
+      b.curlPh += b.curlSpd;
+
+      /* 随时间摇摆：顶部偏移更大（旗帜效果） */
+      const sway = Math.sin(b.ph) * b.swayAm;
+      const curlX = Math.sin(b.curlPh) * W * .04;
+      const curlY = Math.cos(b.curlPh * .7) * H * .025;
+
+      const bx = b.bx0 + Math.sin(b.ph * .6) * W * .008;
+      const tx = b.tx0 + curlX + sway * W * .5;
+      const ty = b.ty0 + curlY;
+
+      /* 脉冲亮度 */
+      const pulse = .72 + .28 * Math.sin(b.ph * 1.8);
+      const alpha = b.a * pulse;
+
+      /* 光柱形状：梯形，底宽顶窄 */
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(bx - b.wBot, HORIZON);
+      ctx.lineTo(bx + b.wBot, HORIZON);
+      ctx.lineTo(tx + b.wTop, ty);
+      ctx.lineTo(tx - b.wTop, ty);
       ctx.closePath();
 
-      /* 用帘子顶/底的均值 Y 做渐变（近似准确，省去 reduce） */
-      const midIdx = Math.floor(top.length/2);
-      const at = top[midIdx].y;
-      const ab = bot[midIdx].y;
-      const gv = ctx.createLinearGradient(0,at,0,ab);
-      const p  = .84+.16*Math.sin(t*1.72+c.ph);
-      gv.addColorStop(0,   `rgba(${c.c0},0)`);
-      gv.addColorStop(.09, `rgba(${c.c0},${.18*p})`);
-      gv.addColorStop(.40, `rgba(${c.c0},${.27*p})`);
-      gv.addColorStop(.72, `rgba(${c.c1},${.15*p})`);
-      gv.addColorStop(1,   `rgba(${c.c1},0)`);
-      ctx.fillStyle=gv; ctx.fill();
+      /* 竖向渐变：底部亮→顶部消失 */
+      const gv = ctx.createLinearGradient(0, HORIZON, 0, ty);
+      gv.addColorStop(0,   `hsla(${b.hue},95%,62%,0)`);
+      gv.addColorStop(.08, `hsla(${b.hue},95%,68%,${alpha*.9})`);
+      gv.addColorStop(.35, `hsla(${b.hue},90%,65%,${alpha})`);
+      gv.addColorStop(.72, `hsla(${b.hue},85%,58%,${alpha*.55})`);
+      gv.addColorStop(1,   `hsla(${b.hue},80%,52%,0)`);
+      ctx.fillStyle = gv; ctx.fill();
 
-      /* 顶缘发光线 */
+      /* 光柱中轴亮线：模拟竖向条纹中最亮的一根 */
       ctx.beginPath();
-      top.forEach((p2,i) => i ? ctx.lineTo(p2.x,p2.y) : ctx.moveTo(p2.x,p2.y));
-      ctx.strokeStyle=`rgba(${c.c0},${.25*p})`; ctx.lineWidth=1.8; ctx.stroke();
+      ctx.moveTo(bx, HORIZON);
+      ctx.lineTo(tx, ty);
+      const gl = ctx.createLinearGradient(0, HORIZON, 0, ty);
+      gl.addColorStop(0,   `hsla(${b.hue},100%,82%,0)`);
+      gl.addColorStop(.12, `hsla(${b.hue},100%,88%,${alpha*.7})`);
+      gl.addColorStop(.5,  `hsla(${b.hue},100%,85%,${alpha*.45})`);
+      gl.addColorStop(1,   `hsla(${b.hue},100%,80%,0)`);
+      ctx.strokeStyle = gl;
+      ctx.lineWidth = clamp(b.wBot * .18, .5, 2.5);
+      ctx.stroke();
+
       ctx.restore();
     });
 
-    snow.forEach(s => {
-      s.sw+=s.sws; s.y+=s.sp; s.x+=Math.sin(s.sw)*.38;
-      if (s.y>H+4) { s.y=-4; s.x=rnd(0,W); }
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,PI2);
-      ctx.fillStyle=`rgba(218,240,255,${s.a})`; ctx.fill();
+    /* ── 冰面倒影 ── */
+    reflections.forEach(r => {
+      r.ph += r.phspd;
+      const pulse = .7 + .3 * Math.sin(r.ph);
+      ctx.save(); ctx.translate(r.x, r.y);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r.rx);
+      g.addColorStop(0,   `hsla(${r.hue},90%,60%,${r.a * pulse})`);
+      g.addColorStop(.5,  `hsla(${r.hue},85%,52%,${r.a * pulse * .4})`);
+      g.addColorStop(1,   `hsla(${r.hue},80%,45%,0)`);
+      ctx.scale(1, r.ry / r.rx);
+      ctx.beginPath(); ctx.arc(0, 0, r.rx, 0, PI2);
+      ctx.fillStyle = g; ctx.fill();
+      ctx.restore();
     });
+
     raf(draw);
   } draw();
 }
