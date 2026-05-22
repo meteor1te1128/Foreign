@@ -1,13 +1,11 @@
 /* Foreign · main.js
-   适配新版 index.html：
-   - canvas id: bg-canvas
-   - bg div id: bg-image
-   - 主题卡片: .theme-grid 动态渲染
-   - 无 .tb 元素，setTheme 直接更新 data-t 状态
+   统一入口：主题切换 + Canvas动画 + 按钮特效 + 首页动态内容
 */
-import { startAnim, stopAnim } from './animations.js';
-import { initAllButtons }      from './buttons.js';
+import { startAnim }    from './animations.js';
+import { initAllButtons } from './buttons.js';
+import { getStreak, isDoneToday } from './streak.js';
 
+// ── 主题配置 ────────────────────────────────────────────────
 const THEMES = {
   ocean:        { img:'assets/images/ocean.jpg',        anim:'ocean',  label:'深海',   em:'🌊' },
   fog_forest:   { img:'assets/images/fog_forest.jpg',   anim:'mist',   label:'雾林',   em:'🌲' },
@@ -22,11 +20,11 @@ const THEMES = {
   black:        { img:null, anim:'none', label:'纯黑', em:'⬛', dm:false },
 };
 
-/* ── DOM 元素 ────────────────────────────────────────── */
-const bg  = document.getElementById('bg-image');
-const cv  = document.getElementById('bg-canvas');
+// ── DOM ─────────────────────────────────────────────────────
+const bg = document.getElementById('bg-image');
+const cv = document.getElementById('bg-canvas');
 
-/* canvas 尺寸同步 */
+// canvas 尺寸
 function resize() {
   if (!cv) return;
   cv.width  = window.innerWidth;
@@ -35,22 +33,21 @@ function resize() {
 resize();
 window.addEventListener('resize', () => { resize(); applyTheme(cur); });
 
-/* ── 当前主题 ────────────────────────────────────────── */
+// ── 当前主题 ────────────────────────────────────────────────
 let cur = 'ocean';
 
-/* ── 主题切换 ────────────────────────────────────────── */
+// ── 主题切换 ────────────────────────────────────────────────
 function applyTheme(key) {
   if (!THEMES[key]) key = 'ocean';
   cur = key;
   const t = THEMES[key];
 
-  /* body class */
-  const allKeys = Object.keys(THEMES);
-  document.body.classList.remove(...allKeys.map(k => `theme-${k}`), 'dm');
+  // body class
+  document.body.classList.remove(...Object.keys(THEMES).map(k => `theme-${k}`), 'dm');
   document.body.classList.add(`theme-${key}`);
   if (t.dm) document.body.classList.add('dm');
 
-  /* 背景图 */
+  // 背景图
   if (bg) {
     if (t.img) {
       bg.style.backgroundImage = `url(${t.img})`;
@@ -61,117 +58,122 @@ function applyTheme(key) {
     }
   }
 
-  /* 纯白/纯黑时页面底色 */
-  if (key === 'white') {
-    document.body.style.background = '#f6f5f0';
-  } else if (key === 'black') {
-    document.body.style.background = '#080808';
-  } else {
-    document.body.style.background = '';
-  }
+  // 纯白/纯黑底色
+  document.body.style.background =
+    key === 'white' ? '#f6f5f0' :
+    key === 'black' ? '#080808' : '';
 
-  /* Canvas 动画 */
+  // Canvas 动画
   if (cv) startAnim(t.anim, cv);
 
-  /* 主题卡片激活状态 */
+  // 主题按钮状态
   document.querySelectorAll('.theme-btn').forEach(btn => {
     btn.classList.toggle('on', btn.dataset.t === key);
   });
 
-  /* 持久化 */
   localStorage.setItem('fg_theme', key);
 }
 
-/* 挂到 window 供 HTML onclick 使用 */
+// 挂到 window 供其他页面调用
 window.setTheme = applyTheme;
 
-/* ── 动态渲染主题卡片 ─────────────────────────────────── */
+// ── 渲染主题卡片 ─────────────────────────────────────────────
 function renderThemeGrid() {
   const grid = document.getElementById('theme-grid');
   if (!grid) return;
-
   grid.innerHTML = '';
   Object.entries(THEMES).forEach(([key, t]) => {
     const btn = document.createElement('div');
-    btn.className   = 'theme-btn tb';
-    btn.dataset.t   = key;
-    btn.innerHTML   = `<span class="em">${t.em}</span><span class="nm">${t.label}</span>`;
-    btn.onclick     = () => applyTheme(key);
+    btn.className = 'theme-btn tb';
+    btn.dataset.t = key;
+    btn.innerHTML = `<span class="em">${t.em}</span><span class="nm">${t.label}</span>`;
+    btn.onclick   = () => applyTheme(key);
     grid.appendChild(btn);
   });
 }
 
-/* ── 账号系统（localStorage 模拟）────────────────────── */
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('fg_u') || '{}'); }
-  catch { return {}; }
+// ── 首页动态内容 ─────────────────────────────────────────────
+async function initHomeContent() {
+  // 连击徽章
+  try {
+    const streak = getStreak();
+    if (streak.count > 0) {
+      const badge = document.getElementById('streak-badge');
+      if (badge) {
+        badge.classList.remove('hidden');
+        const numEl = document.getElementById('streak-num');
+        if (numEl) numEl.textContent = streak.count;
+      }
+    }
+  } catch(e) {}
+
+  // 今日学习状态
+  const learnSub = document.getElementById('learn-sub');
+  if (learnSub) {
+    try {
+      if (isDoneToday()) {
+        learnSub.textContent = '✓ 已完成';
+        learnSub.style.color = '#4ade80';
+      } else {
+        const { WORDS }        = await import('./wordbank.js');
+        const { getTodayPlan } = await import('./fsrs.js');
+        const plan = getTodayPlan(WORDS.map(w => w.id));
+        learnSub.textContent = plan.all.length + ' WORDS';
+      }
+    } catch(e) { learnSub.textContent = 'TODAY'; }
+  }
+
+  // 回炉本计数
+  try {
+    const wrong = JSON.parse(localStorage.getItem('fg_wrong') || '{}');
+    const cnt   = Object.keys(wrong).length;
+    const wrongSub = document.getElementById('wrong-sub');
+    if (cnt > 0 && wrongSub) {
+      wrongSub.textContent  = cnt + ' WORDS';
+      wrongSub.style.color  = '#f87171';
+    }
+  } catch(e) {}
+
+  // 账号显示
+  const user = localStorage.getItem('fg_user');
+  const display  = document.getElementById('account-display');
+  const loginBtn = document.getElementById('btn-login');
+  if (user && display && loginBtn) {
+    display.textContent  = user;
+    display.style.display = 'inline-block';
+    loginBtn.textContent = '退出';
+    loginBtn.onclick = () => {
+      localStorage.removeItem('fg_user');
+      location.reload();
+    };
+  } else if (loginBtn) {
+    loginBtn.onclick = openAuthModal;
+  }
 }
-function saveUsers(u) { localStorage.setItem('fg_u', JSON.stringify(u)); }
 
-window.doRegister = function() {
-  const u = document.getElementById('ru')?.value.trim();
-  const p = document.getElementById('rp')?.value;
-  if (!u) { showMsg('请输入用户名'); return; }
-  if (!p) { showMsg('请设置密码');   return; }
-  const users = getUsers();
-  if (users[u]) { showMsg('用户名已被使用'); return; }
-  users[u] = p; saveUsers(users);
-  localStorage.setItem('fg_user', u);
-  showMsg('注册成功！欢迎 ' + u + ' 🎉', true);
-  setTimeout(() => { closeModal?.(); location.reload(); }, 1400);
-};
-
-window.doLogin = function() {
-  const u = document.getElementById('lu')?.value.trim();
-  const p = document.getElementById('lp')?.value;
-  if (!u || !p) { showMsg('请填写完整信息'); return; }
-  const users = getUsers();
-  if (!users[u] || users[u] !== p) { showMsg('用户名或密码错误'); return; }
-  localStorage.setItem('fg_user', u);
-  showMsg('欢迎回来，' + u + ' 👋', true);
-  setTimeout(() => { closeModal?.(); location.reload(); }, 1400);
-};
-
-function showMsg(txt, ok) {
-  const el = document.getElementById('mmsg');
-  if (!el) return;
-  el.textContent = txt;
-  el.className   = 'mmsg ' + (ok ? 'ok' : 'err');
+function openAuthModal() {
+  const name = prompt('用户名：');
+  if (name && name.trim()) {
+    localStorage.setItem('fg_user', name.trim());
+    location.reload();
+  }
 }
+window.openAuthModal = openAuthModal;
 
-window.openModal  = function(tab) {
-  const m = document.getElementById('modal');
-  if (m) m.classList.add('open');
-  window.swTab?.(tab);
-};
-window.closeModal = function() {
-  const m = document.getElementById('modal');
-  if (m) m.classList.remove('open');
-  const el = document.getElementById('mmsg');
-  if (el) { el.textContent = ''; el.className = 'mmsg'; }
-};
-window.swTab = function(tab) {
-  const tl = document.getElementById('tl');
-  const tr = document.getElementById('tr');
-  const lf = document.getElementById('lf');
-  const rf = document.getElementById('rf');
-  const mt = document.getElementById('mtitle');
-  if (tl) tl.classList.toggle('on', tab === 'login');
-  if (tr) tr.classList.toggle('on', tab === 'register');
-  if (lf) lf.style.display = tab === 'login'    ? 'block' : 'none';
-  if (rf) rf.style.display = tab === 'register' ? 'block' : 'none';
-  if (mt) mt.textContent   = tab === 'login'    ? '欢迎回来' : '创建账号';
-};
-
-/* ── 初始化 ──────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  /* 渲染主题卡片 */
+// ── 初始化 ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. 渲染主题卡片
   renderThemeGrid();
 
-  /* 初始化按钮特效（需要在主题卡片渲染后执行） */
+  // 2. 初始化按钮特效（必须在卡片渲染后）
   initAllButtons();
 
-  /* 读取保存的主题 */
+  // 3. 读取并应用保存的主题
   const saved = localStorage.getItem('fg_theme');
   applyTheme(saved && THEMES[saved] ? saved : 'ocean');
+
+  // 4. 首页专属内容（仅在有 theme-grid 的页面执行）
+  if (document.getElementById('theme-grid')) {
+    await initHomeContent();
+  }
 });
