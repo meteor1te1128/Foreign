@@ -1,638 +1,698 @@
 /* Foreign · animations.js
-   原则：Canvas 只画动态叠加元素，绝不覆盖背景图颜色
-   纯白/纯黑：无任何 Canvas 绘制                          */
+   铁则：Canvas 只叠加动态元素，绝不画背景色
+   纯白/纯黑/none → Canvas 完全透明
+   所有 setInterval 统一管理，切换主题时全部清除        */
 
-let _af = null;
+let _af  = null;
+let _ivs = [];          /* 所有 interval 引用，stopAnim 时一起清 */
 
 export function stopAnim() {
   if (_af) { cancelAnimationFrame(_af); _af = null; }
+  _ivs.forEach(clearInterval);
+  _ivs = [];
 }
 
 export function startAnim(type, canvas) {
   stopAnim();
+  if (!type || type === 'none') {
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const W = canvas.width, H = canvas.height;
-  if      (type === 'ocean')  _ocean(ctx, W, H);
-  else if (type === 'mist')   _mist(ctx, W, H);
-  else if (type === 'stars')  _stars(ctx, W, H);
-  else if (type === 'rain')   _rain(ctx, W, H);
-  else if (type === 'aurora') _aurora(ctx, W, H);
-  else if (type === 'sakura') _sakura(ctx, W, H);
-  else if (type === 'clouds') _clouds(ctx, W, H);
-  else if (type === 'snow')   _snow(ctx, W, H);
-  else if (type === 'forest') _forest(ctx, W, H);
-  /* 'none' → 不做任何事，Canvas 保持透明 */
+  const fn = { ocean:_ocean, mist:_mist, stars:_stars, rain:_rain,
+                aurora:_aurora, sakura:_sakura, clouds:_clouds,
+                snow:_snow, forest:_forest }[type];
+  if (fn) fn(ctx, W, H);
 }
+
+/* ── 托管 interval，切主题时自动清除 ─── */
+function iv(fn, ms) { const id = setInterval(fn, ms); _ivs.push(id); return id; }
 
 /* ── 工具 ──────────────────────────────────────────────── */
 function noise(x, y, t) {
-  return Math.sin(x*.8+t*.7)*.4 + Math.sin(x*1.6-y*.4+t*.5)*.25
-       + Math.sin(y*1.1+t*.9)*.2 + Math.sin(x*.3+y*.7+t*.3)*.15;
+  return Math.sin(x*.9+t*.8)*.38 + Math.sin(x*1.7-y*.5+t*.6)*.24
+       + Math.sin(y*1.2+t*.9)*.22 + Math.sin(x*.4+y*.8+t*.35)*.16;
 }
-function lerp(a,b,t){return a+(b-a)*t;}
-function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function lerp(a, b, t) { return a + (b-a)*t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function rnd(a, b) { return a + Math.random()*(b-a); }
+const PI2 = Math.PI * 2;
 
 /* ═══════════════════════════════════════════════════════
-   🌊 深海
-   只画：气泡 + 淡光柱（不画任何蓝色背景层）
+   🌊 深海 — 白色体积光柱 + 焦散 + 物理气泡
 ═══════════════════════════════════════════════════════ */
 function _ocean(ctx, W, H) {
 
-  /* 焦散光斑 — 极淡，只是隐约闪光 */
-  const caustics = Array.from({length:24}, () => ({
-    x:Math.random()*W, y:H*(.52+Math.random()*.48),
-    rx:12+Math.random()*44, ry:2+Math.random()*8,
-    rot:Math.random()*Math.PI, rspd:(Math.random()-.5)*.002,
-    a:.015+Math.random()*.025, spd:(Math.random()-.5)*.14,
+  const caust = Array.from({length:28}, () => ({
+    x:rnd(0,W), y:rnd(H*.5,H),
+    rx:rnd(10,52), ry:rnd(2,9),
+    rot:rnd(0,Math.PI), rspd:rnd(-.002,.002),
+    a:rnd(.018,.042), spd:rnd(-.15,.15),
   }));
 
-  /* 气泡：三档尺寸 */
-  function mkBub(init) {
-    const tier=Math.random();
-    const r=tier<.62?.4+Math.random()*1.0 : tier<.88?1.4+Math.random()*2.0 : 3+Math.random()*4.5;
-    return {
-      x:Math.random()*W, y:init?Math.random()*H:H+r+6,
-      r, sp:(.14+Math.random()*.4)*(1.8/r+.5),
-      wb:(Math.random()-.5)*.28, ph:Math.random()*Math.PI*2,
-      phspd:.009+Math.random()*.016, a:.08+Math.random()*.22,
-    };
+  function mkB(init) {
+    const t = Math.random();
+    const r = t<.62 ? rnd(.3,.95) : t<.88 ? rnd(1.3,2.9) : rnd(3,6.8);
+    return { x:rnd(0,W), y:init?rnd(0,H):H+r+5, r,
+      sp:(.12+.4/r)*rnd(.7,1.3), wb:rnd(-.28,.28),
+      ph:rnd(0,PI2), phs:rnd(.008,.02), a:rnd(.07,.28) };
   }
-  const bubbles=Array.from({length:85},()=>mkBub(true));
+  const bubs = Array.from({length:90}, () => mkB(true));
 
-  /* 光柱：仅用极淡白色，不带蓝色 */
-  const rays=Array.from({length:7},(_,i)=>({
-    cx:W*(.05+i*.14),
-    w:20+Math.random()*50,
-    skew:(Math.random()-.5)*40,
-    a:.022+Math.random()*.03,   /* 很淡 */
-    ph:Math.random()*Math.PI*2, phspd:.003+Math.random()*.004,
-    reach:H*(.45+Math.random()*.35),
+  /* 8根光柱，均匀分布 */
+  const rays = Array.from({length:8}, (_, i) => ({
+    cx: W*(.04+i*.135), w:rnd(18,58),
+    skew:rnd(-44,44), a:rnd(.024,.05),
+    ph:rnd(0,PI2), phs:rnd(.0022,.0048),
+    reach:rnd(H*.4,H*.84),
   }));
 
-  let t=0;
-  function draw(){
-    ctx.clearRect(0,0,W,H); t+=.006;
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    t += .006;
 
-    /* 光柱：白色半透明，不染蓝 */
-    rays.forEach(r=>{
-      r.ph+=r.phspd;
-      const nx=r.cx+noise(r.cx/W,t*.3,t)*18;
-      const pulse=.7+.3*Math.sin(r.ph);
+    rays.forEach(r => {
+      r.ph += r.phs;
+      const nx = r.cx + noise(r.cx/W, t*.3, t)*22;
+      const p  = .66 + .34*Math.sin(r.ph);
 
-      /* 外晕 */
-      const go=ctx.createLinearGradient(nx,0,nx,r.reach*.9);
-      go.addColorStop(0,`rgba(255,255,255,${r.a*.6*pulse})`);
-      go.addColorStop(.4,`rgba(220,240,255,${r.a*.25*pulse})`);
-      go.addColorStop(1,'rgba(200,230,255,0)');
+      /* 外散射晕 */
+      const go = ctx.createLinearGradient(nx,0,nx,r.reach*.9);
+      go.addColorStop(0,   `rgba(255,255,255,${r.a*.52*p})`);
+      go.addColorStop(.45, `rgba(228,244,255,${r.a*.2*p})`);
+      go.addColorStop(1,   'rgba(210,235,255,0)');
       ctx.save(); ctx.beginPath();
-      ctx.moveTo(nx-r.w*1.8,0); ctx.lineTo(nx+r.w*1.8,0);
-      ctx.lineTo(nx+r.w*1.8+r.skew,r.reach*.9);
-      ctx.lineTo(nx-r.w*1.8+r.skew,r.reach*.9);
+      ctx.moveTo(nx-r.w*2,0);       ctx.lineTo(nx+r.w*2,0);
+      ctx.lineTo(nx+r.w*2+r.skew,r.reach*.9);
+      ctx.lineTo(nx-r.w*2+r.skew,r.reach*.9);
       ctx.closePath(); ctx.fillStyle=go; ctx.fill(); ctx.restore();
 
       /* 内核 */
-      const gi=ctx.createLinearGradient(nx,0,nx,r.reach);
-      gi.addColorStop(0,`rgba(255,255,255,${r.a*1.3*pulse})`);
-      gi.addColorStop(.3,`rgba(230,245,255,${r.a*.8*pulse})`);
-      gi.addColorStop(.7,`rgba(210,235,255,${r.a*.22*pulse})`);
-      gi.addColorStop(1,'rgba(200,230,255,0)');
+      const gi = ctx.createLinearGradient(nx,0,nx,r.reach);
+      gi.addColorStop(0,   `rgba(255,255,255,${r.a*1.45*p})`);
+      gi.addColorStop(.26, `rgba(242,252,255,${r.a*.88*p})`);
+      gi.addColorStop(.68, `rgba(220,242,255,${r.a*.18*p})`);
+      gi.addColorStop(1,   'rgba(198,230,255,0)');
       ctx.save(); ctx.beginPath();
-      ctx.moveTo(nx-r.w*.35,0); ctx.lineTo(nx+r.w*.35,0);
-      ctx.lineTo(nx+r.w*.35+r.skew*.5,r.reach);
-      ctx.lineTo(nx-r.w*.35+r.skew*.5,r.reach);
+      ctx.moveTo(nx-r.w*.38,0);      ctx.lineTo(nx+r.w*.38,0);
+      ctx.lineTo(nx+r.w*.38+r.skew*.5,r.reach);
+      ctx.lineTo(nx-r.w*.38+r.skew*.5,r.reach);
       ctx.closePath(); ctx.fillStyle=gi; ctx.fill(); ctx.restore();
     });
 
-    /* 焦散 */
-    caustics.forEach(c=>{
-      c.x+=c.spd; c.rot+=c.rspd;
-      if(c.x<-c.rx*2)c.x=W+c.rx; if(c.x>W+c.rx*2)c.x=-c.rx;
+    /* 焦散光斑 */
+    caust.forEach(c => {
+      c.x += c.spd; c.rot += c.rspd;
+      if (c.x < -c.rx*2) c.x = W+c.rx;
+      if (c.x >  W+c.rx*2) c.x = -c.rx;
       ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.rot);
-      const cg=ctx.createRadialGradient(0,0,0,0,0,c.rx);
-      cg.addColorStop(0,`rgba(200,240,255,${c.a})`);
-      cg.addColorStop(1,'rgba(180,220,255,0)');
-      ctx.scale(1,c.ry/c.rx);
-      ctx.beginPath(); ctx.arc(0,0,c.rx,0,Math.PI*2);
-      ctx.fillStyle=cg; ctx.fill(); ctx.restore();
-    });
-
-    /* 气泡 */
-    bubbles.forEach((b,i)=>{
-      b.ph+=b.phspd; b.y-=b.sp; b.x+=Math.sin(b.ph)*b.wb;
-      if(b.y<-b.r*2) bubbles[i]=mkBub(false);
-      if(b.x<-10)b.x=W+10; if(b.x>W+10)b.x=-10;
-      ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(210,240,255,${b.a*.9})`; ctx.lineWidth=b.r>2?.8:.4; ctx.stroke();
-      if(b.r>1.0){
-        const hg=ctx.createRadialGradient(b.x-b.r*.35,b.y-b.r*.35,0,b.x-b.r*.35,b.y-b.r*.35,b.r*.6);
-        hg.addColorStop(0,`rgba(255,255,255,${b.a*.7})`);
-        hg.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-        ctx.fillStyle=hg; ctx.fill();
-      }
-    });
-    _af=requestAnimationFrame(draw);
-  } draw();
-}
-
-/* ═══════════════════════════════════════════════════════
-   🌲 雾林
-   只画：萤火虫 + 局部雾气（用径向渐变，不用矩形色块）
-═══════════════════════════════════════════════════════ */
-function _mist(ctx, W, H) {
-
-  /* 雾气：用多个大椭圆径向渐变，不画矩形 */
-  const fogBlobs=Array.from({length:12},()=>({
-    x:Math.random()*W, y:H*(.38+Math.random()*.55),
-    rx:120+Math.random()*220, ry:28+Math.random()*55,
-    a:.05+Math.random()*.08,
-    spd:(Math.random()-.5)*.08,
-    ph:Math.random()*Math.PI*2,
-  }));
-
-  /* 萤火虫：3个群落，有引力聚集 */
-  const clusters=[
-    {cx:W*.2,cy:H*.55,r:W*.16},
-    {cx:W*.6,cy:H*.48,r:W*.2},
-    {cx:W*.84,cy:H*.62,r:W*.13},
-  ];
-  const fireflies=Array.from({length:20},(_,i)=>{
-    const cl=clusters[i%3];
-    return {
-      x:cl.cx+(Math.random()-.5)*cl.r,
-      y:cl.cy+(Math.random()-.5)*cl.r*.6,
-      vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.18,
-      ph:Math.random()*Math.PI*2,
-      blinkPh:Math.random()*Math.PI*2, blinkSpd:.02+Math.random()*.038,
-      sz:3+Math.random()*4.5,
-      hue:95+Math.random()*65,
-      cl:i%3, trail:[],
-    };
-  });
-
-  let t=0;
-  function draw(){
-    ctx.clearRect(0,0,W,H); t++;
-
-    /* 雾气椭圆 */
-    fogBlobs.forEach(f=>{
-      f.x+=f.spd; f.ph+=.004;
-      if(f.x<-f.rx)f.x=W+f.rx; if(f.x>W+f.rx)f.x=-f.rx;
-      const jitter=Math.sin(f.ph)*8;
-      ctx.save(); ctx.translate(f.x,f.y+jitter);
-      const g=ctx.createRadialGradient(0,0,0,0,0,f.rx);
-      g.addColorStop(0,`rgba(200,218,210,${f.a})`);
-      g.addColorStop(.5,`rgba(190,212,205,${f.a*.45})`);
-      g.addColorStop(1,'rgba(185,210,200,0)');
-      ctx.scale(1,f.ry/f.rx);
-      ctx.beginPath(); ctx.arc(0,0,f.rx,0,Math.PI*2);
+      const g = ctx.createRadialGradient(0,0,0,0,0,c.rx);
+      g.addColorStop(0, `rgba(205,242,255,${c.a})`);
+      g.addColorStop(1, 'rgba(178,224,255,0)');
+      ctx.scale(1, c.ry/c.rx);
+      ctx.beginPath(); ctx.arc(0,0,c.rx,0,PI2);
       ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
 
-    /* 萤火虫 */
-    fireflies.forEach(f=>{
-      const cl=clusters[f.cl];
-      f.vx+=(cl.cx-f.x)*.00014; f.vy+=(cl.cy-f.y)*.00009;
-      f.vx+=Math.sin(t*.017+f.ph)*.02; f.vy+=Math.cos(t*.013+f.ph)*.014;
-      f.vx*=.986; f.vy*=.986;
-      f.x+=f.vx; f.y+=f.vy;
-      f.blinkPh+=f.blinkSpd;
-      f.trail.push({x:f.x,y:f.y});
-      if(f.trail.length>16)f.trail.shift();
-      const blink=Math.max(0,.18+.82*Math.abs(Math.sin(f.blinkPh)));
+    /* 气泡 */
+    bubs.forEach((b, i) => {
+      b.ph += b.phs; b.y -= b.sp; b.x += Math.sin(b.ph)*b.wb;
+      if (b.y < -b.r*2) bubs[i] = mkB(false);
+      if (b.x < -12) b.x = W+12; else if (b.x > W+12) b.x = -12;
 
-      /* 尾迹 */
-      for(let i=1;i<f.trail.length;i++){
-        const p0=f.trail[i-1],p1=f.trail[i],prog=i/f.trail.length;
-        ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y);
-        ctx.strokeStyle=`hsla(${f.hue},88%,64%,${blink*prog*.3})`;
-        ctx.lineWidth=prog*1.6; ctx.stroke();
+      ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,PI2);
+      ctx.strokeStyle = `rgba(212,244,255,${b.a*.9})`;
+      ctx.lineWidth = b.r>2 ? .85 : .42; ctx.stroke();
+
+      if (b.r > 1.1) {
+        const hx=b.x-b.r*.34, hy=b.y-b.r*.34;
+        const hg = ctx.createRadialGradient(hx,hy,0, hx,hy,b.r*.65);
+        hg.addColorStop(0, `rgba(255,255,255,${b.a*.74})`);
+        hg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,PI2);
+        ctx.fillStyle=hg; ctx.fill();
       }
-      /* 外晕 */
-      const gr=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.sz*2.5);
-      gr.addColorStop(0,`hsla(${f.hue},90%,70%,${blink*.5})`);
-      gr.addColorStop(.45,`hsla(${f.hue},80%,60%,${blink*.15})`);
-      gr.addColorStop(1,'hsla(120,70%,50%,0)');
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*2.5,0,Math.PI*2);
-      ctx.fillStyle=gr; ctx.fill();
-      /* 核心 */
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*.42,0,Math.PI*2);
-      ctx.fillStyle=`hsla(${f.hue+18},95%,90%,${blink})`; ctx.fill();
     });
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌌 星空 — 银河密度分布 + 大气燃烧流星
+   🌲 雾林 — 椭圆雾气（零硬边）+ 萤火虫群落
 ═══════════════════════════════════════════════════════ */
-function _stars(ctx, W, H) {
-  const MW_CX=W*.52,MW_CY=H*.42,MW_W=W*.55;
-  function mwW(x,y){const dx=(x-MW_CX)/MW_W,dy=(y-MW_CY)/(H*.28);return Math.exp(-(dx*dx+dy*dy)*2.6);}
+function _mist(ctx, W, H) {
 
-  const stars=Array.from({length:260},()=>{
-    let x,y;
-    for(let i=0;i<8;i++){x=Math.random()*W;y=Math.random()*H*.94;if(Math.random()<mwW(x,y)*1.7)break;}
-    const inMW=mwW(x,y)>.32;
-    return {
-      x,y,
-      r:inMW?.15+Math.random()*.85:.2+Math.random()*1.4,
-      a:inMW?.4+Math.random()*.6:.18+Math.random()*.78,
-      da:(Math.random()-.5)*.01, tw:Math.random()>.4,
-      hue:Math.random()<.14?220+Math.random()*28:Math.random()<.08?25+Math.random()*14:0,
-      sat:Math.random()<.22?55+Math.random()*30:0,
-    };
+  /* 18个大椭圆雾团，全部径向渐变，无矩形 */
+  const fogs = Array.from({length:18}, () => ({
+    x:rnd(-W*.2,W*1.2), y:rnd(H*.28,H*.88),
+    rx:rnd(95,290), ry:rnd(20,65),
+    a:rnd(.042,.1), spd:rnd(-.09,.09),
+    ph:rnd(0,PI2), phs:rnd(.0018,.005),
+  }));
+
+  /* 3个群落，萤火虫有引力+阻尼+尾迹 */
+  const cl = [{cx:W*.2,cy:H*.55,r:W*.16},{cx:W*.6,cy:H*.47,r:W*.2},{cx:W*.84,cy:H*.62,r:W*.13}];
+  const ffs = Array.from({length:22}, (_, i) => {
+    const c = cl[i%3];
+    return { x:c.cx+rnd(-c.r,c.r), y:c.cy+rnd(-c.r*.6,c.r*.6),
+      vx:rnd(-.22,.22), vy:rnd(-.16,.16),
+      ph:rnd(0,PI2), bph:rnd(0,PI2), bspd:rnd(.018,.044),
+      sz:rnd(3,8), hue:rnd(92,168), ci:i%3, trail:[] };
   });
 
-  /* 银河薄雾 */
-  const mwG=ctx.createRadialGradient(MW_CX,MW_CY,0,MW_CX,MW_CY,MW_W*.62);
-  mwG.addColorStop(0,'rgba(185,178,255,.04)');
-  mwG.addColorStop(.5,'rgba(160,155,240,.018)');
-  mwG.addColorStop(1,'rgba(140,138,220,0)');
-
-  let meteors=[],t=0;
-  function draw(){
+  let t = 0;
+  function draw() {
     ctx.clearRect(0,0,W,H); t++;
-    /* 银河薄雾 */
-    ctx.save(); ctx.scale(1,.52);
-    ctx.fillStyle=mwG; ctx.fillRect(0,0,W,H*2); ctx.restore();
 
-    stars.forEach(s=>{
-      if(s.tw){s.a+=s.da;if(s.a<.05||s.a>1)s.da*=-1;}
-      const col=s.sat>0?`hsla(${s.hue},${s.sat}%,90%,${s.a})`:`rgba(222,220,255,${s.a})`;
-      if(s.r>1.0&&s.a>.62){
-        const dl=s.r*4.5;
-        ctx.strokeStyle=`rgba(215,212,255,${s.a*.15})`;
-        ctx.lineWidth=.5;
-        ctx.beginPath();ctx.moveTo(s.x-dl,s.y);ctx.lineTo(s.x+dl,s.y);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(s.x,s.y-dl);ctx.lineTo(s.x,s.y+dl);ctx.stroke();
-      }
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=col;ctx.fill();
+    fogs.forEach(f => {
+      f.x += f.spd; f.ph += f.phs;
+      if (f.x < -f.rx*1.5) f.x = W+f.rx;
+      if (f.x >  W+f.rx*1.5) f.x = -f.rx;
+      const jy = Math.sin(f.ph)*12;
+      ctx.save(); ctx.translate(f.x, f.y+jy);
+      const g = ctx.createRadialGradient(0,0,0,0,0,f.rx);
+      g.addColorStop(0,  `rgba(200,218,210,${f.a})`);
+      g.addColorStop(.5, `rgba(192,212,205,${f.a*.4})`);
+      g.addColorStop(1,  'rgba(185,208,200,0)');
+      ctx.scale(1, f.ry/f.rx);
+      ctx.beginPath(); ctx.arc(0,0,f.rx,0,PI2);
+      ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
 
-    if(Math.random()<.0022){
-      const ang=Math.PI*(.16+Math.random()*.15);
-      meteors.push({x:Math.random()*W*.72,y:Math.random()*H*.36,
-        vx:Math.cos(ang)*(11+Math.random()*9),vy:Math.sin(ang)*(11+Math.random()*9),
-        life:1,tail:[]});
-    }
-    meteors=meteors.filter(m=>m.life>0);
-    meteors.forEach(m=>{
-      m.tail.push({x:m.x,y:m.y});
-      if(m.tail.length>24)m.tail.shift();
-      m.x+=m.vx;m.y+=m.vy;m.life-=.018;
-      for(let i=1;i<m.tail.length;i++){
-        const p0=m.tail[i-1],p1=m.tail[i],prog=i/m.tail.length;
-        const r2=Math.round(lerp(255,255,prog)),g2=Math.round(lerp(190,255,prog)),b2=Math.round(lerp(70,255,prog));
-        ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);
-        ctx.strokeStyle=`rgba(${r2},${g2},${b2},${m.life*prog*.88})`;
-        ctx.lineWidth=prog*2.6;ctx.stroke();
+    ffs.forEach(f => {
+      const c = cl[f.ci];
+      f.vx += (c.cx-f.x)*.00013 + Math.sin(t*.016+f.ph)*.02;
+      f.vy += (c.cy-f.y)*.00009  + Math.cos(t*.012+f.ph)*.014;
+      f.vx *= .986; f.vy *= .986;
+      f.x += f.vx; f.y += f.vy;
+      f.bph += f.bspd;
+      f.trail.push({x:f.x, y:f.y});
+      if (f.trail.length > 18) f.trail.shift();
+      const blink = Math.max(0, .14+.86*Math.abs(Math.sin(f.bph)));
+
+      for (let i=1; i<f.trail.length; i++) {
+        const p0=f.trail[i-1], p1=f.trail[i], prog=i/f.trail.length;
+        ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y);
+        ctx.strokeStyle = `hsla(${f.hue},88%,64%,${blink*prog*.3})`;
+        ctx.lineWidth = prog*1.8; ctx.stroke();
       }
-      const hg=ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,5);
-      hg.addColorStop(0,`rgba(255,255,255,${m.life})`);
-      hg.addColorStop(.5,`rgba(255,215,110,${m.life*.5})`);
-      hg.addColorStop(1,'rgba(255,170,40,0)');
-      ctx.beginPath();ctx.arc(m.x,m.y,5,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();
+      const gr = ctx.createRadialGradient(f.x,f.y,0, f.x,f.y,f.sz*2.8);
+      gr.addColorStop(0,   `hsla(${f.hue},90%,70%,${blink*.54})`);
+      gr.addColorStop(.42, `hsla(${f.hue},80%,60%,${blink*.14})`);
+      gr.addColorStop(1,   'hsla(120,70%,50%,0)');
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*2.8,0,PI2); ctx.fillStyle=gr; ctx.fill();
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*.44,0,PI2);
+      ctx.fillStyle = `hsla(${f.hue+20},96%,92%,${blink})`; ctx.fill();
     });
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌧️ 雨夜 — 景深雨丝 + 玻璃水珠
+   🌌 星空 — 银河密度分布 + 大气燃烧流星 + 十字衍射
+═══════════════════════════════════════════════════════ */
+function _stars(ctx, W, H) {
+  const MX=W*.52, MY=H*.42, MW=W*.55, MH=H*.28;
+  function mw(x,y) {
+    const dx=(x-MX)/MW, dy=(y-MY)/MH;
+    return Math.exp(-(dx*dx+dy*dy)*2.6);
+  }
+
+  const stars = Array.from({length:280}, () => {
+    let x, y;
+    for (let i=0; i<9; i++) {
+      x=rnd(0,W); y=rnd(0,H*.95);
+      if (Math.random() < mw(x,y)*1.8) break;
+    }
+    const inMW = mw(x,y)>.3;
+    return { x, y,
+      r:  inMW ? rnd(.12,.88) : rnd(.18,1.55),
+      a:  inMW ? rnd(.4,1)    : rnd(.15,.84),
+      da: rnd(-.012,.012), tw: Math.random()>.38,
+      hue: Math.random()<.14 ? rnd(218,248) : Math.random()<.09 ? rnd(22,38) : 0,
+      sat: Math.random()<.23 ? rnd(55,88) : 0 };
+  });
+
+  /* 银河薄雾：用椭圆径向渐变，不用 fillRect */
+  const mwGrad = ctx.createRadialGradient(MX,MY,0, MX,MY,MW*.65);
+  mwGrad.addColorStop(0,   'rgba(188,180,255,.04)');
+  mwGrad.addColorStop(.55, 'rgba(162,156,242,.015)');
+  mwGrad.addColorStop(1,   'rgba(142,140,222,0)');
+
+  let meteors = [], t = 0;
+  function draw() {
+    ctx.clearRect(0,0,W,H); t++;
+
+    /* 银河薄雾：椭圆，不遮背景 */
+    ctx.save(); ctx.translate(MX, MY); ctx.scale(1, MH/MW);
+    ctx.beginPath(); ctx.arc(0,0,MW*.65,0,PI2);
+    ctx.fillStyle=mwGrad; ctx.fill(); ctx.restore();
+
+    stars.forEach(s => {
+      if (s.tw) { s.a += s.da; if (s.a<.05||s.a>1) s.da*=-1; }
+      const col = s.sat>0 ? `hsla(${s.hue},${s.sat}%,90%,${s.a})` : `rgba(224,220,255,${s.a})`;
+
+      /* 亮星十字衍射 */
+      if (s.r>1.0 && s.a>.6) {
+        const dl = s.r*5;
+        [[s.x-dl,s.y,s.x+dl,s.y],[s.x,s.y-dl,s.x,s.y+dl]].forEach(([x1,y1,x2,y2]) => {
+          const g = ctx.createLinearGradient(x1,y1,x2,y2);
+          g.addColorStop(0,  'rgba(215,210,255,0)');
+          g.addColorStop(.5, `rgba(215,210,255,${s.a*.17})`);
+          g.addColorStop(1,  'rgba(215,210,255,0)');
+          ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+          ctx.strokeStyle=g; ctx.lineWidth=.58; ctx.stroke();
+        });
+      }
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,PI2);
+      ctx.fillStyle=col; ctx.fill();
+    });
+
+    /* 流星 — 更平的入射角（.08π ~ .22π ≈ 14°~40°） */
+    if (Math.random() < .0022) {
+      const ang = Math.PI*(rnd(.08,.22));
+      meteors.push({ x:rnd(0,W*.72), y:rnd(0,H*.35),
+        vx:Math.cos(ang)*rnd(12,22), vy:Math.sin(ang)*rnd(12,22),
+        life:1, tail:[] });
+    }
+    meteors = meteors.filter(m => m.life>0);
+    meteors.forEach(m => {
+      m.tail.push({x:m.x, y:m.y});
+      if (m.tail.length>26) m.tail.shift();
+      m.x+=m.vx; m.y+=m.vy; m.life-=.017;
+
+      for (let i=1; i<m.tail.length; i++) {
+        const p0=m.tail[i-1], p1=m.tail[i], prog=i/m.tail.length;
+        /* 白→橙黄燃烧色 */
+        const gg=Math.round(lerp(188,255,prog)), bb=Math.round(lerp(62,255,prog));
+        ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y);
+        ctx.strokeStyle = `rgba(255,${gg},${bb},${m.life*prog*.92})`;
+        ctx.lineWidth = prog*2.9; ctx.stroke();
+      }
+      const hg = ctx.createRadialGradient(m.x,m.y,0, m.x,m.y,5.5);
+      hg.addColorStop(0,   `rgba(255,255,255,${m.life})`);
+      hg.addColorStop(.45, `rgba(255,208,95,${m.life*.55})`);
+      hg.addColorStop(1,   'rgba(255,162,32,0)');
+      ctx.beginPath(); ctx.arc(m.x,m.y,5.5,0,PI2);
+      ctx.fillStyle=hg; ctx.fill();
+    });
+    _af = requestAnimationFrame(draw);
+  } draw();
+}
+
+/* ═══════════════════════════════════════════════════════
+   🌧️ 雨夜 — 3景深雨丝 + 玻璃水珠物理形变
 ═══════════════════════════════════════════════════════ */
 function _rain(ctx, W, H) {
-  const rainLayers=[
-    Array.from({length:110},()=>({x:Math.random()*W,y:Math.random()*H,len:5+Math.random()*7,sp:6+Math.random()*4,a:.04+Math.random()*.06,w:.38})),
-    Array.from({length:90},()=>({x:Math.random()*W,y:Math.random()*H,len:9+Math.random()*12,sp:11+Math.random()*6,a:.07+Math.random()*.1,w:.6})),
-    Array.from({length:55},()=>({x:Math.random()*W,y:Math.random()*H,len:14+Math.random()*20,sp:16+Math.random()*9,a:.1+Math.random()*.16,w:1.0})),
+  const layers = [
+    Array.from({length:115},()=>({x:rnd(0,W),y:rnd(0,H),len:rnd(5,12),sp:rnd(6,10),a:rnd(.034,.08),w:.36})),
+    Array.from({length:90}, ()=>({x:rnd(0,W),y:rnd(0,H),len:rnd(9,18),sp:rnd(10,16),a:rnd(.06,.14),w:.58})),
+    Array.from({length:52}, ()=>({x:rnd(0,W),y:rnd(0,H),len:rnd(14,24),sp:rnd(15,24),a:rnd(.09,.18),w:.98})),
   ];
-  function mkDrop(){return{x:Math.random()*W,y:-10,r:2.2+Math.random()*5.5,vy:0,gr:.024+Math.random()*.038,a:.3+Math.random()*.4,trail:[],stretch:1};}
-  const drops=Array.from({length:42},()=>({...mkDrop(),y:Math.random()*H,vy:Math.random()*2}));
-  setInterval(()=>{const i=Math.floor(Math.random()*drops.length);Object.assign(drops[i],mkDrop());},340);
 
-  function draw(){
+  function mkD() {
+    return { x:rnd(0,W), y:-12, r:rnd(2.2,6.5), vy:0,
+             gr:rnd(.022,.042), a:rnd(.28,.45), trail:[], stretch:1 };
+  }
+  const drops = Array.from({length:44}, () => ({...mkD(), y:rnd(0,H), vy:rnd(0,2.5)}));
+  iv(() => {
+    const i = Math.floor(Math.random()*drops.length);
+    Object.assign(drops[i], mkD());
+  }, 320);
+
+  function draw() {
     ctx.clearRect(0,0,W,H);
-    rainLayers.forEach(layer=>layer.forEach(d=>{
-      d.y+=d.sp;d.x+=d.sp*.23;
-      if(d.y>H){d.y=-d.len;d.x=Math.random()*W;}
-      ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+d.len*.23,d.y+d.len);
-      ctx.strokeStyle=`rgba(170,205,242,${d.a})`;ctx.lineWidth=d.w;ctx.stroke();
+
+    layers.forEach(lr => lr.forEach(d => {
+      d.y += d.sp; d.x += d.sp*.22;
+      if (d.y > H) { d.y=-d.len; d.x=rnd(0,W); }
+      ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x+d.len*.22,d.y+d.len);
+      ctx.strokeStyle=`rgba(168,205,242,${d.a})`; ctx.lineWidth=d.w; ctx.stroke();
     }));
-    drops.forEach((b,i)=>{
-      const rolling=b.vy>.05;
-      if(rolling){b.vy+=b.gr;b.y+=b.vy;b.stretch=clamp(1+b.vy*.075,1,2.1);b.trail.push({x:b.x,y:b.y});if(b.trail.length>13)b.trail.shift();}
-      else b.vy+=b.gr;
-      if(b.y>H+18)Object.assign(drops[i],mkDrop());
-      if(b.trail.length>2){
-        ctx.beginPath();ctx.moveTo(b.trail[0].x,b.trail[0].y);
-        b.trail.forEach(p=>ctx.lineTo(p.x,p.y));
-        ctx.strokeStyle=`rgba(178,215,255,${b.a*.18})`;ctx.lineWidth=b.r*.65;ctx.stroke();
+
+    drops.forEach((b, i) => {
+      const roll = b.vy>.05;
+      if (roll) {
+        b.vy += b.gr; b.y += b.vy;
+        b.stretch = clamp(1+b.vy*.072, 1, 2.2);
+        b.trail.push({x:b.x, y:b.y});
+        if (b.trail.length>14) b.trail.shift();
+      } else {
+        b.vy += b.gr;
       }
-      ctx.save();ctx.translate(b.x,b.y);ctx.scale(1,b.stretch);
-      const g=ctx.createRadialGradient(-b.r*.28,-b.r*.28,b.r*.05,0,0,b.r);
-      g.addColorStop(0,`rgba(255,255,255,${b.a*.95})`);
-      g.addColorStop(.38,`rgba(215,235,255,${b.a*.58})`);
-      g.addColorStop(.75,`rgba(155,198,238,${b.a*.22})`);
-      g.addColorStop(1,`rgba(95,165,218,${b.a*.04})`);
-      ctx.beginPath();ctx.arc(0,0,b.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
-      ctx.beginPath();ctx.arc(0,0,b.r,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(138,182,228,${b.a*.3})`;ctx.lineWidth=.75;ctx.stroke();
-      ctx.beginPath();ctx.arc(-b.r*.3,-b.r*.3,b.r*.3,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,255,255,${b.a*.78})`;ctx.fill();
+      if (b.y > H+20) Object.assign(drops[i], mkD());
+
+      if (b.trail.length>2) {
+        ctx.beginPath(); ctx.moveTo(b.trail[0].x,b.trail[0].y);
+        b.trail.forEach(p => ctx.lineTo(p.x,p.y));
+        ctx.strokeStyle=`rgba(175,215,255,${b.a*.16})`; ctx.lineWidth=b.r*.62; ctx.stroke();
+      }
+
+      ctx.save(); ctx.translate(b.x,b.y); ctx.scale(1,b.stretch);
+      const g = ctx.createRadialGradient(-b.r*.28,-b.r*.28,b.r*.05, 0,0,b.r);
+      g.addColorStop(0,   `rgba(255,255,255,${b.a*.96})`);
+      g.addColorStop(.38, `rgba(215,235,255,${b.a*.58})`);
+      g.addColorStop(.76, `rgba(150,194,238,${b.a*.2})`);
+      g.addColorStop(1,   `rgba(90,160,218,${b.a*.04})`);
+      ctx.beginPath(); ctx.arc(0,0,b.r,0,PI2); ctx.fillStyle=g; ctx.fill();
+      ctx.strokeStyle=`rgba(134,178,228,${b.a*.28})`; ctx.lineWidth=.72; ctx.stroke();
+      /* 高光 */
+      ctx.beginPath(); ctx.arc(-b.r*.3,-b.r*.3,b.r*.3,0,PI2);
+      ctx.fillStyle=`rgba(255,255,255,${b.a*.82})`; ctx.fill();
       ctx.restore();
     });
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌠 极光 — 噪声帘子（不画背景色）
+   🌠 极光 — 噪声帘子 + 顶缘发光线 + 雪粒
 ═══════════════════════════════════════════════════════ */
 function _aurora(ctx, W, H) {
-  const curtains=[
-    {yBase:.15,height:.28,color0:'0,225,115', color1:'0,165,88', speed:.5,freq:2.1,amp:.056,phase:0,ns:.032},
-    {yBase:.20,height:.22,color0:'52,200,252',color1:'12,150,215',speed:.34,freq:3.1,amp:.033,phase:Math.PI*.65,ns:.026},
-    {yBase:.11,height:.32,color0:'122,52,252',color1:'72,12,195', speed:.65,freq:1.72,amp:.068,phase:Math.PI*1.3,ns:.04},
-    {yBase:.27,height:.18,color0:'0,252,172', color1:'0,192,132',speed:.38,freq:2.85,amp:.023,phase:Math.PI*.32,ns:.019},
+  const cs = [
+    {y:.15,h:.30,c0:'0,225,115',  c1:'0,162,88',  sp:.50,fr:2.10,am:.056,ph:0,            ns:.032},
+    {y:.20,h:.22,c0:'52,200,252', c1:'12,148,215',sp:.34,fr:3.10,am:.033,ph:Math.PI*.65,   ns:.026},
+    {y:.11,h:.33,c0:'122,52,252', c1:'72,12,195',  sp:.65,fr:1.72,am:.068,ph:Math.PI*1.30, ns:.040},
+    {y:.27,h:.18,c0:'0,252,172',  c1:'0,190,132', sp:.38,fr:2.85,am:.023,ph:Math.PI*.32,   ns:.019},
   ];
-  const snow=Array.from({length:90},()=>({x:Math.random()*W,y:Math.random()*H,r:.28+Math.random()*1.8,sp:.18+Math.random()*.58,sw:Math.random()*Math.PI*2,sws:.005+Math.random()*.012,a:.08+Math.random()*.45}));
-  let t=0;
-  function draw(){
-    ctx.clearRect(0,0,W,H);t+=.0052;
-    curtains.forEach(c=>{
-      const step=3,top=[],bot=[];
-      for(let x=0;x<=W;x+=step){
-        const nx=x/W;
-        const n=noise(nx*3,t*.36,t+c.phase*.5)*c.ns;
-        const wave=Math.sin(nx*Math.PI*c.freq+t*c.speed+c.phase)*c.amp
-                  +Math.sin(nx*Math.PI*c.freq*1.82-t*c.speed*1.32+c.phase)*c.amp*.36+n;
-        const yTop=H*(c.yBase+wave);
-        const yBot=yTop+H*c.height*(.66+.34*Math.abs(Math.sin(nx*4.1+t)));
-        top.push({x,y:yTop});bot.push({x,y:yBot});
+  const snow = Array.from({length:95}, () => ({
+    x:rnd(0,W), y:rnd(0,H), r:rnd(.28,2),
+    sp:rnd(.18,.68), sw:rnd(0,PI2), sws:rnd(.005,.013), a:rnd(.08,.46)
+  }));
+
+  /* 预计算每条帘子的顶部 Y 均值（避免每帧 reduce） */
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0,0,W,H); t += .0052;
+
+    cs.forEach(c => {
+      const top=[], bot=[];
+      for (let x=0; x<=W; x+=3) {
+        const nx = x/W;
+        const n = noise(nx*3, t*.36, t+c.ph*.5)*c.ns;
+        const w = Math.sin(nx*Math.PI*c.fr+t*c.sp+c.ph)*c.am
+                + Math.sin(nx*Math.PI*c.fr*1.82-t*c.sp*1.32+c.ph)*c.am*.36 + n;
+        const yt = H*(c.y+w);
+        top.push({x, y:yt});
+        bot.push({x, y:yt + H*c.h*(.65+.35*Math.abs(Math.sin(nx*4.1+t)))});
       }
-      ctx.save();ctx.beginPath();
-      top.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
-      for(let i=bot.length-1;i>=0;i--)ctx.lineTo(bot[i].x,bot[i].y);
+
+      ctx.save(); ctx.beginPath();
+      top.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+      for (let i=bot.length-1; i>=0; i--) ctx.lineTo(bot[i].x,bot[i].y);
       ctx.closePath();
-      const avgTop=top.reduce((s,p)=>s+p.y,0)/top.length;
-      const avgBot=bot.reduce((s,p)=>s+p.y,0)/bot.length;
-      const gv=ctx.createLinearGradient(0,avgTop,0,avgBot);
-      const pulse=.84+.16*Math.sin(t*1.72+c.phase);
-      gv.addColorStop(0,`rgba(${c.color0},0)`);
-      gv.addColorStop(.09,`rgba(${c.color0},${.17*pulse})`);
-      gv.addColorStop(.40,`rgba(${c.color0},${.25*pulse})`);
-      gv.addColorStop(.72,`rgba(${c.color1},${.14*pulse})`);
-      gv.addColorStop(1,`rgba(${c.color1},0)`);
-      ctx.fillStyle=gv;ctx.fill();
+
+      /* 用帘子顶/底的均值 Y 做渐变（近似准确，省去 reduce） */
+      const midIdx = Math.floor(top.length/2);
+      const at = top[midIdx].y;
+      const ab = bot[midIdx].y;
+      const gv = ctx.createLinearGradient(0,at,0,ab);
+      const p  = .84+.16*Math.sin(t*1.72+c.ph);
+      gv.addColorStop(0,   `rgba(${c.c0},0)`);
+      gv.addColorStop(.09, `rgba(${c.c0},${.18*p})`);
+      gv.addColorStop(.40, `rgba(${c.c0},${.27*p})`);
+      gv.addColorStop(.72, `rgba(${c.c1},${.15*p})`);
+      gv.addColorStop(1,   `rgba(${c.c1},0)`);
+      ctx.fillStyle=gv; ctx.fill();
+
+      /* 顶缘发光线 */
       ctx.beginPath();
-      top.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
-      ctx.strokeStyle=`rgba(${c.color0},${.22*pulse})`;ctx.lineWidth=1.6;ctx.stroke();
+      top.forEach((p2,i) => i ? ctx.lineTo(p2.x,p2.y) : ctx.moveTo(p2.x,p2.y));
+      ctx.strokeStyle=`rgba(${c.c0},${.25*p})`; ctx.lineWidth=1.8; ctx.stroke();
       ctx.restore();
     });
-    snow.forEach(s=>{
-      s.sw+=s.sws;s.y+=s.sp;s.x+=Math.sin(s.sw)*.38;
-      if(s.y>H+4){s.y=-4;s.x=Math.random()*W;}
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(218,240,255,${s.a})`;ctx.fill();
+
+    snow.forEach(s => {
+      s.sw+=s.sws; s.y+=s.sp; s.x+=Math.sin(s.sw)*.38;
+      if (s.y>H+4) { s.y=-4; s.x=rnd(0,W); }
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,PI2);
+      ctx.fillStyle=`rgba(218,240,255,${s.a})`; ctx.fill();
     });
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌸 樱花 — 贝塞尔花瓣 + 风场 + 正反面
+   🌸 樱花 — 贝塞尔花瓣 + 风场 + 正反面翻转
 ═══════════════════════════════════════════════════════ */
 function _sakura(ctx, W, H) {
-  let windX=.35,windTarget=.35;
-  setInterval(()=>{windTarget=(Math.random()-.3)*1.1;},3800);
+  let wx=.32, wt=.32;
+  iv(() => { wt=rnd(-.35,1.1); }, 4000);
 
-  const petals=Array.from({length:95},()=>({
-    x:Math.random()*W,y:Math.random()*H,
-    sz:4.5+Math.random()*8.5,
-    vx:(Math.random()-.5)*.45,vy:.28+Math.random()*1.1,
-    rot:Math.random()*Math.PI*2,rv:(Math.random()-.5)*.028,
-    sw:Math.random()*Math.PI*2,sws:.007+Math.random()*.015,
-    a:.32+Math.random()*.58,
-    flipAnim:Math.random()*Math.PI*2,flipSpd:.007+Math.random()*.014,
-    veinA:.12+Math.random()*.18,
+  const pets = Array.from({length:100}, () => ({
+    x:rnd(0,W), y:rnd(0,H),
+    sz:rnd(4,12), vx:rnd(-.45,.45), vy:rnd(.25,1.1),
+    rot:rnd(0,PI2), rv:rnd(-.03,.03),
+    sw:rnd(0,PI2), sws:rnd(.007,.016),
+    a:rnd(.3,.65), fa:rnd(0,PI2), fs:rnd(.006,.015),
+    vi:rnd(.1,.22),
   }));
 
-  function draw(){
+  function draw() {
     ctx.clearRect(0,0,W,H);
-    windX+=(windTarget-windX)*.007;
-    petals.forEach(p=>{
-      p.sw+=p.sws;p.rot+=p.rv;p.flipAnim+=p.flipSpd;
-      p.x+=p.vx+windX+Math.sin(p.sw)*.6;
-      p.y+=p.vy+Math.cos(p.sw*.7)*.22;
-      if(p.y>H+22){p.y=-22;p.x=Math.random()*W;}
-      if(p.x<-28)p.x=W+28;if(p.x>W+28)p.x=-28;
-      const flip=Math.cos(p.flipAnim),isBack=flip<0;
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.scale(flip,1);ctx.globalAlpha=p.a;
+    wx += (wt-wx)*.007;
+
+    pets.forEach(p => {
+      p.sw+=p.sws; p.rot+=p.rv; p.fa+=p.fs;
+      p.x += p.vx + wx + Math.sin(p.sw)*.62;
+      p.y += p.vy + Math.cos(p.sw*.7)*.2;
+      if (p.y>H+22) { p.y=-22; p.x=rnd(0,W); }
+      if (p.x<-28) p.x=W+28; else if (p.x>W+28) p.x=-28;
+
+      const flip=Math.cos(p.fa), back=flip<0;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.scale(flip,1); ctx.globalAlpha=p.a;
+
+      const s=p.sz;
       ctx.beginPath();
-      ctx.moveTo(0,p.sz*.52);
-      ctx.bezierCurveTo(p.sz*.88,p.sz*.18,p.sz*.82,-p.sz*.33,0,-p.sz*.43);
-      ctx.bezierCurveTo(-p.sz*.82,-p.sz*.33,-p.sz*.88,p.sz*.18,0,p.sz*.52);
+      ctx.moveTo(0,s*.52);
+      ctx.bezierCurveTo( s*.88, s*.18,  s*.82,-s*.34, 0,-s*.43);
+      ctx.bezierCurveTo(-s*.82,-s*.34, -s*.88, s*.18,  0, s*.52);
       ctx.closePath();
-      const g=ctx.createRadialGradient(0,-p.sz*.18,0,0,p.sz*.08,p.sz*1.02);
-      if(!isBack){g.addColorStop(0,'rgba(255,232,240,.97)');g.addColorStop(.5,'rgba(255,202,220,.88)');g.addColorStop(1,'rgba(255,172,202,.2)');}
-      else{g.addColorStop(0,'rgba(238,188,208,.94)');g.addColorStop(.5,'rgba(222,158,188,.8)');g.addColorStop(1,'rgba(208,138,172,.16)');}
-      ctx.fillStyle=g;ctx.fill();
+
+      const g = ctx.createRadialGradient(0,-s*.18,0, 0,s*.08,s*1.02);
+      if (!back) {
+        g.addColorStop(0,  'rgba(255,234,242,.98)');
+        g.addColorStop(.5, 'rgba(255,204,222,.9)');
+        g.addColorStop(1,  'rgba(255,174,204,.18)');
+      } else {
+        g.addColorStop(0,  'rgba(238,190,210,.96)');
+        g.addColorStop(.5, 'rgba(222,160,190,.82)');
+        g.addColorStop(1,  'rgba(208,140,174,.14)');
+      }
+      ctx.fillStyle=g; ctx.fill();
+
+      /* 脉络 */
       ctx.beginPath();
-      ctx.moveTo(0,p.sz*.5);ctx.quadraticCurveTo(0,0,0,-p.sz*.4);
-      ctx.moveTo(0,p.sz*.08);ctx.quadraticCurveTo(-p.sz*.48,-p.sz*.04,-p.sz*.68,-p.sz*.23);
-      ctx.moveTo(0,p.sz*.08);ctx.quadraticCurveTo(p.sz*.48,-p.sz*.04,p.sz*.68,-p.sz*.23);
-      ctx.strokeStyle=`rgba(208,138,172,${p.veinA})`;ctx.lineWidth=.52;ctx.stroke();
-      ctx.restore();ctx.globalAlpha=1;
+      ctx.moveTo(0,s*.5); ctx.quadraticCurveTo(0,0,0,-s*.41);
+      ctx.moveTo(0,s*.08); ctx.quadraticCurveTo(-s*.46,-s*.04,-s*.66,-s*.22);
+      ctx.moveTo(0,s*.08); ctx.quadraticCurveTo( s*.46,-s*.04, s*.66,-s*.22);
+      ctx.strokeStyle=`rgba(208,140,174,${p.vi})`; ctx.lineWidth=.52; ctx.stroke();
+
+      ctx.restore(); ctx.globalAlpha=1;
     });
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌅 火烧云
-   只画：丁达尔光束 + 极淡云层高光（不画渐变背景色）
+   🌅 火烧云 — 丁达尔光束 + 云层高光（不覆盖背景）
 ═══════════════════════════════════════════════════════ */
 function _clouds(ctx, W, H) {
-
-  /* 丁达尔光束：暖白色，不带橙色（橙色来自背景图） */
-  const tyndall=Array.from({length:7},(_,i)=>({
-    cx:W*(.06+i*.155)+Math.random()*W*.04,
-    w:14+Math.random()*38,
-    a:.018+Math.random()*.028,   /* 很淡 */
-    ph:Math.random()*Math.PI*2,phspd:.0025+Math.random()*.0035,
-    reach:H*(.38+Math.random()*.32),
-    skew:(Math.random()-.5)*48,
+  const rays = Array.from({length:8}, (_, i) => ({
+    cx:W*(.05+i*.135)+rnd(-W*.03,W*.03),
+    w:rnd(12,44), a:rnd(.016,.034),
+    ph:rnd(0,PI2), phs:rnd(.002,.004),
+    reach:rnd(H*.3,H*.7), skew:rnd(-55,55),
+  }));
+  const cg = Array.from({length:12}, () => ({
+    x:rnd(0,W), y:rnd(H*.04,H*.5),
+    rx:rnd(44,148), ry:rnd(12,40),
+    a:rnd(.018,.04), spd:rnd(-.065,.065),
+    ph:rnd(0,PI2), phs:rnd(.001,.003),
   }));
 
-  /* 云层高光：只在云的位置加淡淡反光，不遮背景 */
-  const cloudGlows=Array.from({length:10},()=>({
-    x:Math.random()*W,y:H*(.06+Math.random()*.42),
-    rx:55+Math.random()*130,ry:14+Math.random()*32,
-    a:.022+Math.random()*.035,
-    spd:(Math.random()-.5)*.06,
-  }));
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0,0,W,H); t+=.003;
 
-  let t=0;
-  function draw(){
-    ctx.clearRect(0,0,W,H);t+=.003;
-
-    /* 光束 */
-    tyndall.forEach(r=>{
-      r.ph+=r.phspd;
-      const nx=r.cx+Math.sin(r.ph*.6)*14;
-      const pulse=.72+.28*Math.sin(r.ph);
-      const gt=ctx.createLinearGradient(nx,0,nx,r.reach);
-      gt.addColorStop(0,`rgba(255,240,200,${r.a*1.4*pulse})`);
-      gt.addColorStop(.3,`rgba(255,228,175,${r.a*.8*pulse})`);
-      gt.addColorStop(.72,`rgba(255,210,140,${r.a*.22*pulse})`);
-      gt.addColorStop(1,'rgba(255,195,110,0)');
-      ctx.save();ctx.beginPath();
-      ctx.moveTo(nx-r.w*.45,0);ctx.lineTo(nx+r.w*.45,0);
-      ctx.lineTo(nx+r.w*.45+r.skew,r.reach);ctx.lineTo(nx-r.w*.45+r.skew,r.reach);
-      ctx.closePath();ctx.fillStyle=gt;ctx.fill();ctx.restore();
+    rays.forEach(r => {
+      r.ph += r.phs;
+      const nx=r.cx+Math.sin(r.ph*.6)*16, p=.68+.32*Math.sin(r.ph);
+      const gt = ctx.createLinearGradient(nx,0,nx,r.reach);
+      gt.addColorStop(0,   `rgba(255,242,205,${r.a*1.55*p})`);
+      gt.addColorStop(.32, `rgba(255,232,178,${r.a*.82*p})`);
+      gt.addColorStop(.72, `rgba(255,218,148,${r.a*.2*p})`);
+      gt.addColorStop(1,   'rgba(255,198,112,0)');
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(nx-r.w*.46,0);    ctx.lineTo(nx+r.w*.46,0);
+      ctx.lineTo(nx+r.w*.46+r.skew,r.reach); ctx.lineTo(nx-r.w*.46+r.skew,r.reach);
+      ctx.closePath(); ctx.fillStyle=gt; ctx.fill(); ctx.restore();
     });
 
-    /* 云层边缘高光 */
-    cloudGlows.forEach(c=>{
-      c.x+=c.spd;
-      if(c.x<-c.rx)c.x=W+c.rx;if(c.x>W+c.rx)c.x=-c.rx;
-      ctx.save();ctx.translate(c.x,c.y);
-      const g=ctx.createRadialGradient(0,-c.ry*.3,0,0,0,c.rx);
-      g.addColorStop(0,`rgba(255,245,210,${c.a})`);
-      g.addColorStop(.5,`rgba(255,225,168,${c.a*.4})`);
-      g.addColorStop(1,'rgba(255,200,120,0)');
+    cg.forEach(c => {
+      c.x+=c.spd; c.ph+=c.phs;
+      if (c.x<-c.rx) c.x=W+c.rx; else if (c.x>W+c.rx) c.x=-c.rx;
+      const jy = Math.sin(c.ph)*7;
+      ctx.save(); ctx.translate(c.x,c.y+jy);
+      const g = ctx.createRadialGradient(0,-c.ry*.28,0, 0,0,c.rx);
+      g.addColorStop(0,  `rgba(255,245,215,${c.a})`);
+      g.addColorStop(.5, `rgba(255,228,170,${c.a*.36})`);
+      g.addColorStop(1,  'rgba(255,204,118,0)');
       ctx.scale(1,c.ry/c.rx);
-      ctx.beginPath();ctx.arc(0,0,c.rx,0,Math.PI*2);
-      ctx.fillStyle=g;ctx.fill();ctx.restore();
+      ctx.beginPath(); ctx.arc(0,0,c.rx,0,PI2);
+      ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
-
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🏔️ 雪山 — 六角雪花 + 风场景深 + 地面积雪
+   🏔️ 雪山 — 六角雪花 + 3景深 + 风场 + 地面积雪
 ═══════════════════════════════════════════════════════ */
 function _snow(ctx, W, H) {
-  let windX=.18,windTarget=.18;
-  setInterval(()=>{windTarget=(Math.random()-.5)*1.5;},4800);
+  let wx=.18, wt=.18;
+  iv(() => { wt=rnd(-.9,1.9); }, 5000);
 
-  function drawFlake(ctx,r){
-    for(let i=0;i<6;i++){
-      const a=i*Math.PI/3,mx=Math.cos(a)*r*.55,my=Math.sin(a)*r*.55,sa=a+Math.PI/2;
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx+Math.cos(sa)*r*.27,my+Math.sin(sa)*r*.27);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx-Math.cos(sa)*r*.27,my-Math.sin(sa)*r*.27);ctx.stroke();
+  function flake(ctx, r) {
+    for (let i=0; i<6; i++) {
+      const a=i*Math.PI/3, mx=Math.cos(a)*r*.55, my=Math.sin(a)*r*.55, sa=a+Math.PI/2;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx+Math.cos(sa)*r*.27,my+Math.sin(sa)*r*.27); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx-Math.cos(sa)*r*.27,my-Math.sin(sa)*r*.27); ctx.stroke();
     }
   }
 
-  const layers=[
-    Array.from({length:58},()=>({d:.22,x:Math.random()*W,y:Math.random()*H,r:.35+Math.random()*.75,sp:.16+Math.random()*.25,sw:Math.random()*Math.PI*2,sws:.004+Math.random()*.007,a:.08+Math.random()*.25})),
-    Array.from({length:46},()=>({d:.58,x:Math.random()*W,y:Math.random()*H,r:.75+Math.random()*1.5,sp:.32+Math.random()*.5,sw:Math.random()*Math.PI*2,sws:.005+Math.random()*.009,a:.18+Math.random()*.4})),
-    Array.from({length:28},()=>({d:1.0,x:Math.random()*W,y:Math.random()*H,r:1.6+Math.random()*3.0,sp:.65+Math.random()*.85,sw:Math.random()*Math.PI*2,sws:.007+Math.random()*.013,a:.32+Math.random()*.52})),
+  const layers = [
+    Array.from({length:62},()=>({d:.2, x:rnd(0,W),y:rnd(0,H),r:rnd(.3,.75), sp:rnd(.14,.28),sw:rnd(0,PI2),sws:rnd(.003,.007),a:rnd(.07,.24)})),
+    Array.from({length:48},()=>({d:.58,x:rnd(0,W),y:rnd(0,H),r:rnd(.72,1.6),sp:rnd(.3,.56), sw:rnd(0,PI2),sws:rnd(.005,.009),a:rnd(.16,.42)})),
+    Array.from({length:28},()=>({d:1.0,x:rnd(0,W),y:rnd(0,H),r:rnd(1.8,3.4),sp:rnd(.62,.95),sw:rnd(0,PI2),sws:rnd(.007,.014),a:rnd(.3,.56)})),
   ];
+  const piles = Array.from({length:8}, (_,i) => ({
+    x:W*(i/7), h:rnd(H*.03,H*.072), w:rnd(W*.16,W*.26)
+  }));
 
-  const piles=Array.from({length:7},(_,i)=>({x:W*(i/6),h:H*.035+Math.random()*H*.055,w:W*.2+Math.random()*W*.14}));
-
-  function draw(){
+  function draw() {
     ctx.clearRect(0,0,W,H);
-    windX+=(windTarget-windX)*.005;
+    wx += (wt-wx)*.005;
 
-    /* 地面积雪：极淡 */
-    piles.forEach(p=>{
-      const g=ctx.createRadialGradient(p.x,H,0,p.x,H-p.h*.5,p.w*.55);
-      g.addColorStop(0,'rgba(235,244,255,.22)');g.addColorStop(1,'rgba(215,230,255,0)');
-      ctx.beginPath();ctx.ellipse(p.x,H,p.w*.5,p.h,0,Math.PI,0);
-      ctx.fillStyle=g;ctx.fill();
+    /* 地面积雪 */
+    piles.forEach(p => {
+      const g = ctx.createRadialGradient(p.x,H,0, p.x,H-p.h*.5,p.w*.55);
+      g.addColorStop(0, 'rgba(238,246,255,.2)'); g.addColorStop(1,'rgba(218,232,255,0)');
+      ctx.beginPath(); ctx.ellipse(p.x,H,p.w*.5,p.h,0,Math.PI,0);
+      ctx.fillStyle=g; ctx.fill();
     });
 
-    layers.forEach(layer=>layer.forEach(f=>{
-      f.sw+=f.sws;f.y+=f.sp;f.x+=windX*f.d+Math.sin(f.sw)*f.d*.45;
-      if(f.y>H+8){f.y=-8;f.x=Math.random()*W;}
-      if(f.x<-18)f.x=W+18;if(f.x>W+18)f.x=-18;
-      ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.sw*.45);ctx.globalAlpha=f.a;
-      if(f.r>1.8){
-        ctx.strokeStyle=`rgba(242,250,255,${f.a})`;ctx.lineWidth=.55;drawFlake(ctx,f.r);
-        ctx.beginPath();ctx.arc(0,0,f.r*.16,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();
+    layers.forEach(lr => lr.forEach(f => {
+      f.sw+=f.sws; f.y+=f.sp; f.x+=wx*f.d+Math.sin(f.sw)*f.d*.42;
+      if (f.y>H+8) { f.y=-8; f.x=rnd(0,W); }
+      if (f.x<-18) f.x=W+18; else if (f.x>W+18) f.x=-18;
+
+      ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.sw*.44); ctx.globalAlpha=f.a;
+      if (f.r>1.85) {
+        ctx.strokeStyle=`rgba(244,252,255,${f.a})`; ctx.lineWidth=.55; flake(ctx,f.r);
+        ctx.beginPath(); ctx.arc(0,0,f.r*.16,0,PI2);
+        ctx.fillStyle='rgba(255,255,255,.92)'; ctx.fill();
       } else {
-        ctx.beginPath();ctx.arc(0,0,f.r,0,Math.PI*2);ctx.fillStyle='rgba(245,252,255,.9)';ctx.fill();
+        ctx.beginPath(); ctx.arc(0,0,f.r,0,PI2);
+        ctx.fillStyle='rgba(246,253,255,.92)'; ctx.fill();
       }
-      ctx.restore();ctx.globalAlpha=1;
+      ctx.restore(); ctx.globalAlpha=1;
     }));
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌿 雨林 — 体积光 + 湿气景深 + 地面反光
+   🌿 雨林 — 绿色体积光 + 3景深湿气 + 地面反光
 ═══════════════════════════════════════════════════════ */
 function _forest(ctx, W, H) {
-  const rays=Array.from({length:6},(_,i)=>({
-    cx:W*(.1+i*.17),w:14+Math.random()*38,
-    skew:(Math.random()-.5)*28,a:.045+Math.random()*.055,
-    ph:Math.random()*Math.PI*2,phspd:.0022+Math.random()*.003,
-    reach:H*(.6+Math.random()*.26),
+  const rays = Array.from({length:6}, (_, i) => ({
+    cx:W*(.1+i*.17), w:rnd(14,44), skew:rnd(-28,28),
+    a:rnd(.042,.068), ph:rnd(0,PI2), phs:rnd(.002,.003),
+    reach:rnd(H*.58,H*.86),
   }));
 
-  function mkDust(d){return{x:Math.random()*W,y:Math.random()*H,r:(.28+Math.random()*1.1)*d,vx:(Math.random()-.5)*.09*d,vy:(-.018-Math.random()*.1)*d,a:(.05+Math.random()*.22)*d,ph:Math.random()*Math.PI*2,d};}
-  const dust=[
-    Array.from({length:50},()=>mkDust(.32)),
-    Array.from({length:40},()=>mkDust(.62)),
-    Array.from({length:25},()=>mkDust(1.0)),
+  function mkP(d) {
+    return { x:rnd(0,W), y:rnd(0,H),
+      r:rnd(.25,1.1)*d,
+      vx:rnd(-.09,.09)*d,
+      /* 修正：粒子向上漂，vy 始终为负 */
+      vy:-(rnd(.02,.14)*d),
+      a:rnd(.04,.22)*d, ph:rnd(0,PI2), d };
+  }
+  const dust = [
+    Array.from({length:52}, () => mkP(.32)),
+    Array.from({length:42}, () => mkP(.62)),
+    Array.from({length:26}, () => mkP(1.0)),
   ];
 
-  const groundSpots=Array.from({length:16},()=>({x:Math.random()*W,y:H*(.8+Math.random()*.2),rx:10+Math.random()*34,ry:2+Math.random()*6,a:.03+Math.random()*.065,spd:(Math.random()-.5)*.07}));
+  const gs = Array.from({length:18}, () => ({
+    x:rnd(0,W), y:rnd(H*.78,H),
+    rx:rnd(9,38), ry:rnd(2,7),
+    a:rnd(.028,.072), spd:rnd(-.07,.07)
+  }));
 
-  let t=0;
-  function draw(){
-    ctx.clearRect(0,0,W,H);t++;
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0,0,W,H); t++;
 
-    /* 光柱：绿白色 */
-    rays.forEach(r=>{
-      r.ph+=r.phspd;
-      const nx=r.cx+noise(r.cx/W,t*.003,t*.003)*16;
-      const pulse=.72+.28*Math.sin(r.ph);
-      const go=ctx.createLinearGradient(nx,0,nx,r.reach*.88);
-      go.addColorStop(0,`rgba(210,255,175,${r.a*.55*pulse})`);
-      go.addColorStop(.38,`rgba(195,248,158,${r.a*.28*pulse})`);
-      go.addColorStop(1,'rgba(175,235,138,0)');
-      ctx.save();ctx.beginPath();
-      ctx.moveTo(nx-r.w*1.85,0);ctx.lineTo(nx+r.w*1.85,0);
-      ctx.lineTo(nx+r.w*1.85+r.skew,r.reach*.88);ctx.lineTo(nx-r.w*1.85+r.skew,r.reach*.88);
-      ctx.closePath();ctx.fillStyle=go;ctx.fill();ctx.restore();
-      const gi=ctx.createLinearGradient(nx,0,nx,r.reach);
-      gi.addColorStop(0,`rgba(222,255,188,${r.a*1.35*pulse})`);
-      gi.addColorStop(.28,`rgba(205,252,168,${r.a*.82*pulse})`);
-      gi.addColorStop(.7,`rgba(178,238,142,${r.a*.26*pulse})`);
-      gi.addColorStop(1,'rgba(155,225,118,0)');
-      ctx.save();ctx.beginPath();
-      ctx.moveTo(nx-r.w*.36,0);ctx.lineTo(nx+r.w*.36,0);
-      ctx.lineTo(nx+r.w*.36+r.skew*.58,r.reach);ctx.lineTo(nx-r.w*.36+r.skew*.58,r.reach);
-      ctx.closePath();ctx.fillStyle=gi;ctx.fill();ctx.restore();
+    rays.forEach(r => {
+      r.ph += r.phs;
+      const nx=r.cx+noise(r.cx/W,t*.003,t*.003)*16, p=.72+.28*Math.sin(r.ph);
+
+      /* 外散射 */
+      const go = ctx.createLinearGradient(nx,0,nx,r.reach*.88);
+      go.addColorStop(0,   `rgba(212,255,172,${r.a*.52*p})`);
+      go.addColorStop(.4,  `rgba(196,250,155,${r.a*.25*p})`);
+      go.addColorStop(1,   'rgba(175,235,135,0)');
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(nx-r.w*1.92,0); ctx.lineTo(nx+r.w*1.92,0);
+      ctx.lineTo(nx+r.w*1.92+r.skew,r.reach*.88);
+      ctx.lineTo(nx-r.w*1.92+r.skew,r.reach*.88);
+      ctx.closePath(); ctx.fillStyle=go; ctx.fill(); ctx.restore();
+
+      /* 内核 */
+      const gi = ctx.createLinearGradient(nx,0,nx,r.reach);
+      gi.addColorStop(0,   `rgba(225,255,185,${r.a*1.4*p})`);
+      gi.addColorStop(.28, `rgba(208,254,166,${r.a*.86*p})`);
+      gi.addColorStop(.7,  `rgba(180,240,142,${r.a*.24*p})`);
+      gi.addColorStop(1,   'rgba(158,225,118,0)');
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(nx-r.w*.38,0); ctx.lineTo(nx+r.w*.38,0);
+      ctx.lineTo(nx+r.w*.38+r.skew*.58,r.reach);
+      ctx.lineTo(nx-r.w*.38+r.skew*.58,r.reach);
+      ctx.closePath(); ctx.fillStyle=gi; ctx.fill(); ctx.restore();
     });
 
     /* 地面反光 */
-    groundSpots.forEach(s=>{
-      s.x+=s.spd;if(s.x<-s.rx)s.x=W+s.rx;if(s.x>W+s.rx)s.x=-s.rx;
-      ctx.save();ctx.translate(s.x,s.y);
-      const g=ctx.createRadialGradient(0,0,0,0,0,s.rx);
-      g.addColorStop(0,`rgba(195,255,155,${s.a})`);g.addColorStop(1,'rgba(158,222,118,0)');
-      ctx.scale(1,s.ry/s.rx);ctx.beginPath();ctx.arc(0,0,s.rx,0,Math.PI*2);
-      ctx.fillStyle=g;ctx.fill();ctx.restore();
+    gs.forEach(s => {
+      s.x+=s.spd;
+      if (s.x<-s.rx) s.x=W+s.rx; else if (s.x>W+s.rx) s.x=-s.rx;
+      ctx.save(); ctx.translate(s.x,s.y);
+      const g = ctx.createRadialGradient(0,0,0,0,0,s.rx);
+      g.addColorStop(0, `rgba(195,255,152,${s.a})`); g.addColorStop(1,'rgba(155,220,115,0)');
+      ctx.scale(1,s.ry/s.rx);
+      ctx.beginPath(); ctx.arc(0,0,s.rx,0,PI2);
+      ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
 
-    /* 湿气景深 */
-    dust.forEach(layer=>layer.forEach(p=>{
-      p.x+=p.vx+Math.sin(t*.01+p.ph)*.16*p.d;p.y+=p.vy;
-      if(p.y<-6){p.y=H+6;p.x=Math.random()*W;}
-      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
-      const fl=p.a*(.42+.58*Math.abs(Math.sin(t*.015+p.ph)));
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(202,255,168,${fl})`;ctx.fill();
+    /* 湿气 — 检查上下两端边界 */
+    dust.forEach(lr => lr.forEach(p => {
+      p.x += p.vx + Math.sin(t*.01+p.ph)*.15*p.d;
+      p.y += p.vy;
+      /* 飘出顶部则重置到底部 */
+      if (p.y < -5) { p.y=H+5; p.x=rnd(0,W); }
+      /* 边缘环绕 */
+      if (p.x<0) p.x=W; else if (p.x>W) p.x=0;
+      const fl = p.a*(.4+.6*Math.abs(Math.sin(t*.014+p.ph)));
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,PI2);
+      ctx.fillStyle=`rgba(200,255,165,${fl})`; ctx.fill();
     }));
-    _af=requestAnimationFrame(draw);
+    _af = requestAnimationFrame(draw);
   } draw();
 }
