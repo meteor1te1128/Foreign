@@ -1,25 +1,23 @@
 /* Foreign · animations.js
    铁则：Canvas 只叠加动态元素，绝不画背景色
-   纯白/纯黑/none → Canvas 完全透明
-   所有 setInterval 统一管理，切换主题时全部清除        */
+   纯白/纯黑/none → Canvas 完全透明，立即清空
+   _alive 标志确保切换主题后旧 draw 循环不多跑一帧  */
 
-let _af  = null;
-let _ivs = [];          /* 所有 interval 引用，stopAnim 时一起清 */
+let _alive = false;   /* 存活标志：stopAnim 置 false，旧 draw 自动退出 */
+let _ivs   = [];      /* 托管的 setInterval id，stopAnim 时全部清除 */
 
 export function stopAnim() {
-  if (_af) { cancelAnimationFrame(_af); _af = null; }
+  _alive = false;
   _ivs.forEach(clearInterval);
   _ivs = [];
 }
 
 export function startAnim(type, canvas) {
   stopAnim();
-  if (!type || type === 'none') {
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    return;
-  }
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!type || type === 'none') return;   /* 纯白/纯黑：清空即止 */
+  _alive = true;
   const W = canvas.width, H = canvas.height;
   const fn = { ocean:_ocean, mist:_mist, stars:_stars, rain:_rain,
                 aurora:_aurora, sakura:_sakura, clouds:_clouds,
@@ -27,15 +25,13 @@ export function startAnim(type, canvas) {
   if (fn) fn(ctx, W, H);
 }
 
-/* ── 托管 interval，切主题时自动清除 ─── */
+/* ── 托管 interval ── */
 function iv(fn, ms) { const id = setInterval(fn, ms); _ivs.push(id); return id; }
 
+/* ── 带存活检查的 raf：旧动画 _alive=false 后自动停 ── */
+function raf(fn) { if (_alive) requestAnimationFrame(fn); }
+
 /* ── 工具 ──────────────────────────────────────────────── */
-function noise(x, y, t) {
-  return Math.sin(x*.9+t*.8)*.38 + Math.sin(x*1.7-y*.5+t*.6)*.24
-       + Math.sin(y*1.2+t*.9)*.22 + Math.sin(x*.4+y*.8+t*.35)*.16;
-}
-function lerp(a, b, t) { return a + (b-a)*t; }
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function rnd(a, b) { return a + Math.random()*(b-a); }
 const PI2 = Math.PI * 2;
@@ -136,7 +132,7 @@ function _ocean(ctx, W, H) {
         ctx.fillStyle=hg; ctx.fill();
       }
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -207,7 +203,7 @@ function _mist(ctx, W, H) {
       ctx.beginPath(); ctx.arc(f.x,f.y,f.sz*.44,0,PI2);
       ctx.fillStyle = `hsla(${f.hue+20},96%,92%,${blink})`; ctx.fill();
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -299,7 +295,7 @@ function _stars(ctx, W, H) {
       ctx.beginPath(); ctx.arc(m.x,m.y,5.5,0,PI2);
       ctx.fillStyle=hg; ctx.fill();
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -364,7 +360,7 @@ function _rain(ctx, W, H) {
       ctx.fillStyle=`rgba(255,255,255,${b.a*.82})`; ctx.fill();
       ctx.restore();
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -431,7 +427,7 @@ function _aurora(ctx, W, H) {
       ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,PI2);
       ctx.fillStyle=`rgba(218,240,255,${s.a})`; ctx.fill();
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -494,7 +490,7 @@ function _sakura(ctx, W, H) {
 
       ctx.restore(); ctx.globalAlpha=1;
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -546,7 +542,7 @@ function _clouds(ctx, W, H) {
       ctx.beginPath(); ctx.arc(0,0,c.rx,0,PI2);
       ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -603,7 +599,7 @@ function _snow(ctx, W, H) {
       }
       ctx.restore(); ctx.globalAlpha=1;
     }));
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
 
@@ -693,6 +689,6 @@ function _forest(ctx, W, H) {
       ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,PI2);
       ctx.fillStyle=`rgba(200,255,165,${fl})`; ctx.fill();
     }));
-    _af = requestAnimationFrame(draw);
+    raf(draw);
   } draw();
 }
