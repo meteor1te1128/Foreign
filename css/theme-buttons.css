@@ -1,349 +1,456 @@
-/* =====================================================
-   theme-buttons.css
-   Foreign · 主题感知按钮系统
-   在 styles.css 之后引入：
-   <link rel="stylesheet" href="css/theme-buttons.css">
-   ===================================================== */
+/* ═══════════════════════════════════════════════════════════════
+   theme-buttons.css — Foreign · 主题感知按钮系统
+   每个主题有自己的物理语言：形状 + 质感 + 颜色
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── CSS变量层：每个主题覆盖这组变量 ──────────────── */
+/* ── 全局过渡：切换主题时所有按钮平滑变化 ── */
+.btn-primary, .btn-secondary, .btn-nav-ghost,
+.btn-nav-solid, .btn-modal, .tb {
+  transition:
+    border-color .45s ease,
+    background   .45s ease,
+    color        .45s ease,
+    box-shadow   .45s ease,
+    border-radius .45s ease,
+    transform    .15s ease !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   CSS 变量层 — 默认值（fallback）
+════════════════════════════════════════════════════════ */
 :root {
-  --btn-border:      rgba(255,255,255,.22);
-  --btn-border-h:    rgba(255,255,255,.55);
-  --btn-bg:          rgba(0,0,0,.28);
-  --btn-bg-h:        rgba(0,0,0,.42);
-  --btn-glow:        rgba(255,255,255,.08);
-  --btn-glow-h:      rgba(255,255,255,.18);
-  --btn-text:        rgba(255,255,255,.88);
-  --btn-text-h:      #fff;
-  --btn-shadow-h:    0 8px 28px rgba(0,0,0,.35);
-
-  --nav-border:      rgba(255,255,255,.16);
-  --nav-border-h:    rgba(255,255,255,.42);
-  --nav-bg:          rgba(255,255,255,.07);
-  --nav-bg-h:        rgba(255,255,255,.15);
-  --nav-solid-bg:    rgba(20,20,30,.5);
-  --nav-solid-bg-h:  rgba(40,40,55,.65);
+  --b-border:    rgba(255,255,255,.22);
+  --b-border-h:  rgba(255,255,255,.6);
+  --b-bg:        rgba(0,0,0,.28);
+  --b-bg-h:      rgba(0,0,0,.42);
+  --b-text:      rgba(255,255,255,.88);
+  --b-text-h:    #fff;
+  --b-glow:      rgba(255,255,255,.06);
+  --b-glow-h:    rgba(255,255,255,.16);
+  --b-shadow-h:  0 8px 32px rgba(0,0,0,.35);
+  --b-radius:    8px;        /* 主按钮圆角 */
+  --b-radius-nav:6px;        /* 导航按钮圆角 */
+  --b-radius-tb: 10px;       /* 主题卡片圆角 */
+  --b-blur:      12px;       /* backdrop blur */
 }
 
-/* ══════════════════════════════════════════════
-   🌊 深海 — 冷蓝体积光，低透，水下玻璃
-══════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════
+   🌊 深海 — 深蓝玻璃，大圆角，折射边框
+════════════════════════════════════════════════════════ */
 body.theme-ocean {
-  --btn-border:     rgba(80,160,255,.28);
-  --btn-border-h:   rgba(100,190,255,.7);
-  --btn-bg:         rgba(0,20,50,.35);
-  --btn-bg-h:       rgba(0,30,70,.5);
-  --btn-glow:       rgba(60,140,255,.06);
-  --btn-glow-h:     rgba(80,170,255,.2);
-  --btn-text:       rgba(180,220,255,.9);
-  --btn-text-h:     rgba(210,235,255,1);
-  --btn-shadow-h:   0 8px 32px rgba(30,100,255,.25);
-
-  --nav-border:     rgba(60,140,255,.2);
-  --nav-border-h:   rgba(100,180,255,.5);
-  --nav-bg:         rgba(0,20,60,.3);
-  --nav-bg-h:       rgba(0,30,80,.45);
-  --nav-solid-bg:   rgba(0,15,45,.55);
-  --nav-solid-bg-h: rgba(0,25,65,.7);
+  --b-border:    rgba(80,170,255,.3);
+  --b-border-h:  rgba(120,200,255,.75);
+  --b-bg:        rgba(0,15,45,.38);
+  --b-bg-h:      rgba(0,25,70,.55);
+  --b-text:      rgba(180,225,255,.92);
+  --b-text-h:    rgba(220,245,255,1);
+  --b-glow:      rgba(60,150,255,.08);
+  --b-glow-h:    rgba(80,180,255,.25);
+  --b-shadow-h:  0 8px 40px rgba(20,100,255,.28), 0 0 0 1px rgba(100,180,255,.15);
+  --b-radius:    14px;   /* 水滴感，更圆 */
+  --b-radius-nav:10px;
+  --b-radius-tb: 12px;
 }
 
-/* ══════════════════════════════════════════════
-   🌲 雾林 — 墨绿，边框极淡，雾气弥漫
-══════════════════════════════════════════════ */
+/* 深海：主按钮内部加水下散射光 */
+body.theme-ocean .btn-primary {
+  background: linear-gradient(145deg, rgba(0,25,70,.42), rgba(0,40,100,.52)) !important;
+}
+body.theme-ocean .btn-primary:hover {
+  background: linear-gradient(145deg, rgba(0,35,90,.58), rgba(0,55,130,.68)) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   🌲 雾林 — 有机绿，柔软边框，稍不规则
+════════════════════════════════════════════════════════ */
 body.theme-fog_forest {
-  --btn-border:     rgba(100,180,120,.22);
-  --btn-border-h:   rgba(130,210,150,.52);
-  --btn-bg:         rgba(8,28,16,.38);
-  --btn-bg-h:       rgba(12,38,22,.54);
-  --btn-glow:       rgba(80,180,100,.05);
-  --btn-glow-h:     rgba(100,200,120,.16);
-  --btn-text:       rgba(180,230,195,.88);
-  --btn-text-h:     rgba(210,245,220,1);
-  --btn-shadow-h:   0 8px 28px rgba(40,120,60,.22);
-
-  --nav-border:     rgba(90,170,110,.18);
-  --nav-border-h:   rgba(120,200,140,.44);
-  --nav-bg:         rgba(8,28,16,.28);
-  --nav-bg-h:       rgba(12,42,22,.42);
-  --nav-solid-bg:   rgba(5,22,12,.5);
-  --nav-solid-bg-h: rgba(10,35,18,.65);
+  --b-border:    rgba(100,185,120,.28);
+  --b-border-h:  rgba(140,215,155,.62);
+  --b-bg:        rgba(5,22,10,.38);
+  --b-bg-h:      rgba(8,35,15,.55);
+  --b-text:      rgba(175,235,190,.9);
+  --b-text-h:    rgba(210,248,220,1);
+  --b-glow:      rgba(80,185,100,.07);
+  --b-glow-h:    rgba(100,210,120,.22);
+  --b-shadow-h:  0 8px 32px rgba(40,130,60,.25), 0 0 0 1px rgba(100,200,120,.12);
+  --b-radius:    12px;
+  --b-radius-nav:9px;
+  --b-radius-tb: 11px;
 }
 
-/* ══════════════════════════════════════════════
-   🌌 星空 — 极细白边，近透明，星光质感
-══════════════════════════════════════════════ */
+body.theme-fog_forest .btn-primary {
+  background: linear-gradient(145deg, rgba(5,25,10,.42), rgba(10,45,20,.52)) !important;
+}
+body.theme-fog_forest .btn-primary:hover {
+  background: linear-gradient(145deg, rgba(8,35,15,.58), rgba(15,58,25,.68)) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   🌌 星空 — 极简，近透明，锐利细边，无重力感
+════════════════════════════════════════════════════════ */
 body.theme-galaxy {
-  --btn-border:     rgba(200,200,255,.18);
-  --btn-border-h:   rgba(220,220,255,.48);
-  --btn-bg:         rgba(5,5,25,.3);
-  --btn-bg-h:       rgba(10,10,40,.45);
-  --btn-glow:       rgba(160,160,255,.05);
-  --btn-glow-h:     rgba(180,180,255,.15);
-  --btn-text:       rgba(210,210,255,.88);
-  --btn-text-h:     rgba(235,235,255,1);
-  --btn-shadow-h:   0 8px 32px rgba(80,80,200,.2);
-
-  --nav-border:     rgba(180,180,255,.15);
-  --nav-border-h:   rgba(210,210,255,.4);
-  --nav-bg:         rgba(5,5,25,.22);
-  --nav-bg-h:       rgba(15,15,45,.38);
-  --nav-solid-bg:   rgba(3,3,18,.5);
-  --nav-solid-bg-h: rgba(8,8,30,.65);
+  --b-border:    rgba(210,208,255,.16);
+  --b-border-h:  rgba(225,222,255,.45);
+  --b-bg:        rgba(5,4,28,.25);
+  --b-bg-h:      rgba(10,8,50,.38);
+  --b-text:      rgba(215,212,255,.88);
+  --b-text-h:    rgba(238,235,255,1);
+  --b-glow:      rgba(160,155,255,.05);
+  --b-glow-h:    rgba(180,175,255,.14);
+  --b-shadow-h:  0 8px 40px rgba(80,75,200,.2), 0 0 0 1px rgba(180,175,255,.1);
+  --b-radius:    6px;    /* 锐利，像星图边界 */
+  --b-radius-nav:4px;
+  --b-radius-tb: 8px;
 }
 
-/* ══════════════════════════════════════════════
-   🌧️ 雨夜 — 深灰蓝，雨水折射蓝白边框
-══════════════════════════════════════════════ */
+/* 星空：极细边框，hover 时边框星光加强 */
+body.theme-galaxy .btn-primary,
+body.theme-galaxy .btn-nav-ghost,
+body.theme-galaxy .btn-nav-solid {
+  backdrop-filter: blur(20px) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   🌧️ 雨夜 — 玻璃水珠，折射高光，蓝灰
+════════════════════════════════════════════════════════ */
 body.theme-rain {
-  --btn-border:     rgba(130,170,220,.22);
-  --btn-border-h:   rgba(160,200,245,.55);
-  --btn-bg:         rgba(8,14,28,.42);
-  --btn-bg-h:       rgba(12,22,42,.58);
-  --btn-glow:       rgba(100,150,220,.06);
-  --btn-glow-h:     rgba(130,180,240,.18);
-  --btn-text:       rgba(170,200,240,.88);
-  --btn-text-h:     rgba(200,225,255,1);
-  --btn-shadow-h:   0 8px 28px rgba(50,90,180,.25);
-
-  --nav-border:     rgba(120,160,210,.18);
-  --nav-border-h:   rgba(150,190,235,.45);
-  --nav-bg:         rgba(8,14,28,.32);
-  --nav-bg-h:       rgba(14,24,46,.48);
-  --nav-solid-bg:   rgba(5,10,22,.55);
-  --nav-solid-bg-h: rgba(10,18,38,.7);
+  --b-border:    rgba(140,180,230,.26);
+  --b-border-h:  rgba(175,210,250,.62);
+  --b-bg:        rgba(6,12,28,.42);
+  --b-bg-h:      rgba(10,20,46,.58);
+  --b-text:      rgba(175,208,248,.9);
+  --b-text-h:    rgba(208,232,255,1);
+  --b-glow:      rgba(100,155,230,.07);
+  --b-glow-h:    rgba(130,185,248,.22);
+  --b-shadow-h:  0 8px 36px rgba(50,100,200,.25), 0 0 0 1px rgba(140,185,240,.12);
+  --b-radius:    10px;
+  --b-radius-nav:8px;
+  --b-radius-tb: 10px;
 }
 
-/* ══════════════════════════════════════════════
-   🌠 极光 — 绿紫双色边框光晕，冰湖质感
-══════════════════════════════════════════════ */
+/* 雨夜：按钮上边缘加折射高光线 */
+body.theme-rain .btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,230,255,.5), transparent);
+  border-radius: 1px;
+}
+body.theme-rain .btn-nav-solid::before,
+body.theme-rain .btn-nav-ghost::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,230,255,.4), transparent);
+}
+
+/* ════════════════════════════════════════════════════════
+   🌠 极光 — 绿紫流光，边框有能量感
+════════════════════════════════════════════════════════ */
 body.theme-aurora {
-  --btn-border:     rgba(80,220,160,.25);
-  --btn-border-h:   rgba(100,255,180,.6);
-  --btn-bg:         rgba(0,18,22,.38);
-  --btn-bg-h:       rgba(0,28,34,.54);
-  --btn-glow:       rgba(60,200,140,.07);
-  --btn-glow-h:     rgba(80,230,160,.22);
-  --btn-text:       rgba(160,240,210,.9);
-  --btn-text-h:     rgba(200,255,230,1);
-  --btn-shadow-h:   0 8px 32px rgba(40,180,120,.28);
-
-  --nav-border:     rgba(70,200,150,.2);
-  --nav-border-h:   rgba(90,240,170,.5);
-  --nav-bg:         rgba(0,18,22,.28);
-  --nav-bg-h:       rgba(0,30,36,.44);
-  --nav-solid-bg:   rgba(0,14,18,.52);
-  --nav-solid-bg-h: rgba(0,24,30,.68);
+  --b-border:    rgba(60,225,140,.28);
+  --b-border-h:  rgba(80,255,165,.65);
+  --b-bg:        rgba(0,16,22,.38);
+  --b-bg-h:      rgba(0,26,34,.55);
+  --b-text:      rgba(155,245,210,.9);
+  --b-text-h:    rgba(195,255,230,1);
+  --b-glow:      rgba(50,210,130,.08);
+  --b-glow-h:    rgba(65,240,150,.25);
+  --b-shadow-h:  0 8px 40px rgba(30,190,120,.28), 0 0 0 1px rgba(60,225,140,.15);
+  --b-radius:    10px;
+  --b-radius-nav:8px;
+  --b-radius-tb: 11px;
 }
 
-/* ══════════════════════════════════════════════
-   🌸 樱花 — 粉白柔和，少女感，温暖透明
-══════════════════════════════════════════════ */
+/* 极光：按钮边框用渐变模拟绿紫流光 */
+body.theme-aurora .btn-primary {
+  border-color: transparent !important;
+  background-image: linear-gradient(rgba(0,22,30,.45), rgba(0,22,30,.45)),
+                    linear-gradient(135deg, rgba(0,225,135,.5), rgba(120,60,255,.4), rgba(0,225,135,.5)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  border: 1px solid transparent !important;
+}
+body.theme-aurora .btn-primary:hover {
+  background-image: linear-gradient(rgba(0,30,40,.58), rgba(0,30,40,.58)),
+                    linear-gradient(135deg, rgba(0,255,155,.7), rgba(140,80,255,.6), rgba(0,255,155,.7)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   🌸 樱花 — 粉白柔美，超大圆角，轻盈
+════════════════════════════════════════════════════════ */
 body.theme-sakura {
-  --btn-border:     rgba(255,180,200,.28);
-  --btn-border-h:   rgba(255,200,215,.65);
-  --btn-bg:         rgba(40,10,20,.28);
-  --btn-bg-h:       rgba(55,15,30,.42);
-  --btn-glow:       rgba(255,160,190,.07);
-  --btn-glow-h:     rgba(255,180,205,.2);
-  --btn-text:       rgba(255,210,220,.9);
-  --btn-text-h:     rgba(255,230,235,1);
-  --btn-shadow-h:   0 8px 28px rgba(220,100,140,.25);
-
-  --nav-border:     rgba(255,170,195,.22);
-  --nav-border-h:   rgba(255,195,210,.52);
-  --nav-bg:         rgba(40,10,20,.22);
-  --nav-bg-h:       rgba(60,18,32,.38);
-  --nav-solid-bg:   rgba(30,8,16,.48);
-  --nav-solid-bg-h: rgba(50,14,26,.62);
+  --b-border:    rgba(255,185,205,.32);
+  --b-border-h:  rgba(255,210,225,.72);
+  --b-bg:        rgba(38,8,18,.3);
+  --b-bg-h:      rgba(55,12,28,.45);
+  --b-text:      rgba(255,215,228,.92);
+  --b-text-h:    rgba(255,235,242,1);
+  --b-glow:      rgba(255,165,195,.08);
+  --b-glow-h:    rgba(255,185,210,.24);
+  --b-shadow-h:  0 8px 36px rgba(220,100,145,.25), 0 0 0 1px rgba(255,185,210,.14);
+  --b-radius:    24px;   /* 超圆，像花瓣 */
+  --b-radius-nav:18px;
+  --b-radius-tb: 16px;
 }
 
-/* ══════════════════════════════════════════════
-   🌅 火烧云 — 暖橙金边，燃烧质感
-══════════════════════════════════════════════ */
+body.theme-sakura .btn-primary {
+  background: linear-gradient(145deg, rgba(45,10,22,.35), rgba(65,15,32,.45)) !important;
+}
+body.theme-sakura .btn-primary:hover {
+  background: linear-gradient(145deg, rgba(60,14,30,.5), rgba(85,20,42,.6)) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   🌅 火烧云 — 暖橙金，厚重光晕，燃烧边框
+════════════════════════════════════════════════════════ */
 body.theme-sunset {
-  --btn-border:     rgba(255,160,60,.25);
-  --btn-border-h:   rgba(255,190,80,.62);
-  --btn-bg:         rgba(30,10,0,.35);
-  --btn-bg-h:       rgba(45,16,0,.5);
-  --btn-glow:       rgba(255,140,40,.07);
-  --btn-glow-h:     rgba(255,165,55,.22);
-  --btn-text:       rgba(255,210,150,.9);
-  --btn-text-h:     rgba(255,228,180,1);
-  --btn-shadow-h:   0 8px 32px rgba(200,80,0,.28);
-
-  --nav-border:     rgba(255,150,50,.2);
-  --nav-border-h:   rgba(255,180,70,.48);
-  --nav-bg:         rgba(30,10,0,.28);
-  --nav-bg-h:       rgba(50,18,0,.44);
-  --nav-solid-bg:   rgba(22,7,0,.52);
-  --nav-solid-bg-h: rgba(40,14,0,.68);
+  --b-border:    rgba(255,165,55,.28);
+  --b-border-h:  rgba(255,198,80,.68);
+  --b-bg:        rgba(28,8,0,.38);
+  --b-bg-h:      rgba(45,14,0,.54);
+  --b-text:      rgba(255,215,148,.92);
+  --b-text-h:    rgba(255,232,182,1);
+  --b-glow:      rgba(255,145,40,.08);
+  --b-glow-h:    rgba(255,170,55,.26);
+  --b-shadow-h:  0 8px 40px rgba(200,80,0,.3), 0 0 0 1px rgba(255,165,55,.15);
+  --b-radius:    8px;
+  --b-radius-nav:6px;
+  --b-radius-tb: 10px;
 }
 
-/* ══════════════════════════════════════════════
-   🏔️ 雪山 — 冰蓝白，清冷透明，高山气息
-══════════════════════════════════════════════ */
+/* 火烧云：按钮底部边框更亮，像地平线发光 */
+body.theme-sunset .btn-primary {
+  background: linear-gradient(145deg, rgba(35,10,0,.42), rgba(55,18,0,.52)) !important;
+  box-shadow: inset 0 -1px 0 rgba(255,165,55,.3) !important;
+}
+body.theme-sunset .btn-primary:hover {
+  background: linear-gradient(145deg, rgba(50,16,0,.58), rgba(75,25,0,.68)) !important;
+  box-shadow: inset 0 -1px 0 rgba(255,190,70,.45), var(--b-shadow-h) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   🏔️ 雪山 — 冰蓝白，结晶锐利，清冷透明
+════════════════════════════════════════════════════════ */
 body.theme-snow {
-  --btn-border:     rgba(200,225,255,.26);
-  --btn-border-h:   rgba(220,240,255,.6);
-  --btn-bg:         rgba(10,18,35,.32);
-  --btn-bg-h:       rgba(16,28,52,.46);
-  --btn-glow:       rgba(180,215,255,.06);
-  --btn-glow-h:     rgba(200,228,255,.18);
-  --btn-text:       rgba(210,232,255,.9);
-  --btn-text-h:     rgba(232,245,255,1);
-  --btn-shadow-h:   0 8px 28px rgba(80,140,220,.22);
-
-  --nav-border:     rgba(190,218,255,.2);
-  --nav-border-h:   rgba(215,235,255,.48);
-  --nav-bg:         rgba(10,18,35,.24);
-  --nav-bg-h:       rgba(18,30,55,.4);
-  --nav-solid-bg:   rgba(7,14,28,.5);
-  --nav-solid-bg-h: rgba(14,24,48,.65);
+  --b-border:    rgba(205,228,255,.28);
+  --b-border-h:  rgba(225,242,255,.65);
+  --b-bg:        rgba(8,16,38,.3);
+  --b-bg-h:      rgba(14,26,58,.45);
+  --b-text:      rgba(215,235,255,.9);
+  --b-text-h:    rgba(235,248,255,1);
+  --b-glow:      rgba(180,218,255,.07);
+  --b-glow-h:    rgba(200,232,255,.2);
+  --b-shadow-h:  0 8px 36px rgba(80,145,225,.22), 0 0 0 1px rgba(200,230,255,.12);
+  --b-radius:    6px;    /* 冰晶：锐利 */
+  --b-radius-nav:4px;
+  --b-radius-tb: 8px;
 }
 
-/* ══════════════════════════════════════════════
-   🌿 雨林 — 深绿苔藓，边框带湿气
-══════════════════════════════════════════════ */
+/* 雪山：按钮加冰面反光 */
+body.theme-snow .btn-primary::after,
+body.theme-snow .btn-nav-solid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(165deg, rgba(255,255,255,.08) 0%, transparent 50%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════
+   🌿 雨林 — 深绿苔藓，湿润，有机
+════════════════════════════════════════════════════════ */
 body.theme-forest_green {
-  --btn-border:     rgba(80,160,80,.25);
-  --btn-border-h:   rgba(100,195,100,.56);
-  --btn-bg:         rgba(5,20,8,.38);
-  --btn-bg-h:       rgba(8,32,12,.54);
-  --btn-glow:       rgba(60,150,60,.06);
-  --btn-glow-h:     rgba(80,180,80,.18);
-  --btn-text:       rgba(160,220,160,.88);
-  --btn-text-h:     rgba(195,240,195,1);
-  --btn-shadow-h:   0 8px 28px rgba(30,110,40,.24);
-
-  --nav-border:     rgba(70,150,70,.2);
-  --nav-border-h:   rgba(95,185,95,.46);
-  --nav-bg:         rgba(5,20,8,.28);
-  --nav-bg-h:       rgba(10,34,14,.44);
-  --nav-solid-bg:   rgba(3,15,5,.52);
-  --nav-solid-bg-h: rgba(7,26,10,.67);
+  --b-border:    rgba(88,168,88,.28);
+  --b-border-h:  rgba(112,205,112,.62);
+  --b-bg:        rgba(4,18,6,.38);
+  --b-bg-h:      rgba(7,30,10,.55);
+  --b-text:      rgba(162,228,162,.9);
+  --b-text-h:    rgba(198,245,198,1);
+  --b-glow:      rgba(65,158,65,.07);
+  --b-glow-h:    rgba(85,188,85,.22);
+  --b-shadow-h:  0 8px 36px rgba(30,115,40,.26), 0 0 0 1px rgba(90,175,90,.12);
+  --b-radius:    11px;
+  --b-radius-nav:8px;
+  --b-radius-tb: 11px;
 }
 
-/* ══════════════════════════════════════════════
-   ⬛ 纯黑 — 极细白边，极简
-══════════════════════════════════════════════ */
+body.theme-forest_green .btn-primary {
+  background: linear-gradient(145deg, rgba(4,20,6,.42), rgba(8,38,12,.52)) !important;
+}
+body.theme-forest_green .btn-primary:hover {
+  background: linear-gradient(145deg, rgba(6,28,9,.58), rgba(12,50,16,.68)) !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   ⬛ 纯黑 — 极简，极细白边
+════════════════════════════════════════════════════════ */
 body.theme-black {
-  --btn-border:     rgba(255,255,255,.12);
-  --btn-border-h:   rgba(255,255,255,.35);
-  --btn-bg:         rgba(255,255,255,.04);
-  --btn-bg-h:       rgba(255,255,255,.1);
-  --btn-glow:       rgba(255,255,255,.03);
-  --btn-glow-h:     rgba(255,255,255,.1);
-  --btn-text:       rgba(255,255,255,.7);
-  --btn-text-h:     rgba(255,255,255,.95);
-  --btn-shadow-h:   0 8px 24px rgba(0,0,0,.5);
-
-  --nav-border:     rgba(255,255,255,.1);
-  --nav-border-h:   rgba(255,255,255,.28);
-  --nav-bg:         rgba(255,255,255,.03);
-  --nav-bg-h:       rgba(255,255,255,.08);
-  --nav-solid-bg:   rgba(255,255,255,.05);
-  --nav-solid-bg-h: rgba(255,255,255,.12);
+  --b-border:    rgba(255,255,255,.1);
+  --b-border-h:  rgba(255,255,255,.3);
+  --b-bg:        rgba(255,255,255,.04);
+  --b-bg-h:      rgba(255,255,255,.09);
+  --b-text:      rgba(255,255,255,.65);
+  --b-text-h:    rgba(255,255,255,.92);
+  --b-glow:      rgba(255,255,255,.02);
+  --b-glow-h:    rgba(255,255,255,.08);
+  --b-shadow-h:  0 8px 28px rgba(0,0,0,.6);
+  --b-radius:    6px;
+  --b-radius-nav:4px;
+  --b-radius-tb: 8px;
 }
 
-/* ══════════════════════════════════════════════
-   重写按钮样式：全部读 CSS 变量
-══════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════
+   ⬜ 纯白 — 深色字，极简线条（已有 dm class 处理）
+════════════════════════════════════════════════════════ */
+body.theme-white {
+  --b-border:    rgba(0,0,0,.12);
+  --b-border-h:  rgba(0,0,0,.3);
+  --b-bg:        rgba(0,0,0,.05);
+  --b-bg-h:      rgba(0,0,0,.1);
+  --b-text:      rgba(0,0,0,.65);
+  --b-text-h:    rgba(0,0,0,.9);
+  --b-glow:      rgba(0,0,0,.02);
+  --b-glow-h:    rgba(0,0,0,.06);
+  --b-shadow-h:  0 8px 28px rgba(0,0,0,.12);
+  --b-radius:    8px;
+  --b-radius-nav:6px;
+  --b-radius-tb: 10px;
+}
+
+/* ════════════════════════════════════════════════════════
+   按钮样式：读变量，应用圆角
+════════════════════════════════════════════════════════ */
 
 /* Primary */
 .btn-primary {
-  border-color: var(--btn-border) !important;
-  background: var(--btn-bg) !important;
-  color: var(--btn-text) !important;
-  box-shadow: inset 0 0 20px var(--btn-glow);
-  transition: border-color .35s, background .35s, color .35s,
-              box-shadow .35s, transform .15s, text-shadow .35s !important;
-}
-.btn-primary::before {
-  background: var(--btn-glow-h) !important;
+  position: relative;
+  overflow: hidden;
+  border-color: var(--b-border) !important;
+  background: var(--b-bg) !important;
+  color: var(--b-text) !important;
+  border-radius: var(--b-radius) !important;
+  backdrop-filter: blur(var(--b-blur)) !important;
+  box-shadow: inset 0 0 24px var(--b-glow) !important;
 }
 .btn-primary:hover {
-  border-color: var(--btn-border-h) !important;
-  background: var(--btn-bg-h) !important;
-  color: var(--btn-text-h) !important;
-  box-shadow: inset 0 0 28px var(--btn-glow-h), var(--btn-shadow-h) !important;
+  border-color: var(--b-border-h) !important;
+  color: var(--b-text-h) !important;
+  box-shadow: inset 0 0 32px var(--b-glow-h), var(--b-shadow-h) !important;
+  transform: translateY(-2px) !important;
+}
+.btn-primary:active {
+  transform: translateY(0) scale(.97) !important;
+  box-shadow: inset 0 0 16px var(--b-glow) !important;
 }
 
 /* Secondary */
 .btn-secondary {
-  border-color: var(--btn-border) !important;
-  color: var(--btn-text) !important;
-  transition: border-color .35s, color .35s, transform .15s !important;
+  border-color: var(--b-border) !important;
+  color: var(--b-text) !important;
+  border-radius: var(--b-radius) !important;
 }
 .btn-secondary:hover {
-  border-color: var(--btn-border-h) !important;
-  color: var(--btn-text-h) !important;
+  border-color: var(--b-border-h) !important;
+  color: var(--b-text-h) !important;
+  box-shadow: var(--b-shadow-h) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* Nav ghost */
 .btn-nav-ghost {
-  background: var(--nav-bg) !important;
-  border-color: var(--nav-border) !important;
-  color: var(--btn-text) !important;
-  transition: background .28s, border-color .28s, color .28s,
-              transform .12s, box-shadow .28s !important;
+  background: var(--b-bg) !important;
+  border-color: var(--b-border) !important;
+  color: var(--b-text) !important;
+  border-radius: var(--b-radius-nav) !important;
+  backdrop-filter: blur(var(--b-blur)) !important;
 }
 .btn-nav-ghost:hover {
-  background: var(--nav-bg-h) !important;
-  border-color: var(--nav-border-h) !important;
-  color: var(--btn-text-h) !important;
-  box-shadow: var(--btn-shadow-h) !important;
+  background: var(--b-bg-h) !important;
+  border-color: var(--b-border-h) !important;
+  color: var(--b-text-h) !important;
+  box-shadow: var(--b-shadow-h) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* Nav solid */
 .btn-nav-solid {
-  background: var(--nav-solid-bg) !important;
-  border-color: var(--nav-border) !important;
-  color: var(--btn-text) !important;
-  transition: background .28s, border-color .28s, color .28s,
-              transform .12s, box-shadow .28s !important;
+  position: relative;
+  background: var(--b-bg-h) !important;
+  border-color: var(--b-border) !important;
+  color: var(--b-text) !important;
+  border-radius: var(--b-radius-nav) !important;
+  backdrop-filter: blur(var(--b-blur)) !important;
 }
 .btn-nav-solid:hover {
-  background: var(--nav-solid-bg-h) !important;
-  border-color: var(--nav-border-h) !important;
-  color: var(--btn-text-h) !important;
-  box-shadow: var(--btn-shadow-h) !important;
+  border-color: var(--b-border-h) !important;
+  color: var(--b-text-h) !important;
+  box-shadow: var(--b-shadow-h) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* Modal */
 .btn-modal {
-  border-color: var(--btn-border) !important;
-  background: var(--btn-bg) !important;
-  color: var(--btn-text) !important;
-  transition: background .28s, border-color .28s, color .28s,
-              transform .12s, box-shadow .28s !important;
+  border-color: var(--b-border) !important;
+  background: var(--b-bg) !important;
+  color: var(--b-text) !important;
+  border-radius: var(--b-radius) !important;
 }
 .btn-modal:hover {
-  background: var(--btn-bg-h) !important;
-  border-color: var(--btn-border-h) !important;
-  color: var(--btn-text-h) !important;
-  box-shadow: var(--btn-shadow-h) !important;
+  background: var(--b-bg-h) !important;
+  border-color: var(--b-border-h) !important;
+  color: var(--b-text-h) !important;
+  box-shadow: var(--b-shadow-h) !important;
+  transform: translateY(-1px) !important;
 }
 
-/* Theme card buttons */
+/* 主题卡片 */
 .tb {
-  border-color: var(--nav-border) !important;
-  background: var(--nav-bg) !important;
-  transition: border-color .25s, background .25s, transform .2s, box-shadow .25s !important;
+  border-color: var(--b-border) !important;
+  background: var(--b-bg) !important;
+  border-radius: var(--b-radius-tb) !important;
+  backdrop-filter: blur(8px) !important;
 }
 .tb:hover {
-  border-color: var(--nav-border-h) !important;
-  background: var(--nav-bg-h) !important;
-  box-shadow: 0 6px 20px var(--btn-glow-h) !important;
+  border-color: var(--b-border-h) !important;
+  background: var(--b-bg-h) !important;
+  box-shadow: 0 6px 24px var(--b-glow-h) !important;
+  transform: translateY(-3px) scale(1.05) !important;
 }
 .tb.on {
-  border-color: var(--btn-border-h) !important;
-  background: var(--btn-bg-h) !important;
-  box-shadow: 0 0 16px var(--btn-glow-h) !important;
+  border-color: var(--b-border-h) !important;
+  background: var(--b-bg-h) !important;
+  box-shadow: 0 0 20px var(--b-glow-h), inset 0 0 12px var(--b-glow) !important;
 }
-.tb .nm { color: var(--btn-text) !important; }
+.tb .nm { color: var(--b-text) !important; }
 
-/* 主题切换时按钮颜色平滑过渡 */
-.btn-primary, .btn-secondary, .btn-nav-ghost,
-.btn-nav-solid, .btn-modal, .tb {
-  transition-duration: .4s !important;
+/* ════════════════════════════════════════════════════════
+   点击粒子效果基类（JS 动态创建）
+════════════════════════════════════════════════════════ */
+.click-particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  animation: cp-out .6s cubic-bezier(.2,.8,.4,1) forwards;
 }
+@keyframes cp-out {
+  0%   { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
+}
+
+/* ripple 水波 */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
+  transform: scale(0);
+  animation: rippleAnim .6s linear;
+  pointer-events: none;
+}
+@keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
