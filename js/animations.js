@@ -300,66 +300,199 @@ function _stars(ctx, W, H) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌧️ 雨夜 — 3景深雨丝 + 玻璃水珠物理形变
+   🌧️ 雨天 — 玻璃窗视角
+   完全模拟玻璃内侧：
+   · 附着水珠（静止，积累变大，折射高光）
+   · 积累到阈值开始向下流淌，路径弯曲不规则
+   · 流痕：细窄弯曲水迹，带透明高光边
+   · 两条流痕偶尔合并
+   · 新水珠持续在随机位置冒出
+   不画任何外部雨丝
 ═══════════════════════════════════════════════════════ */
 function _rain(ctx, W, H) {
-  const layers = [
-    Array.from({length:115},()=>({x:rnd(0,W),y:rnd(0,H),len:rnd(5,12),sp:rnd(6,10),a:rnd(.034,.08),w:.36})),
-    Array.from({length:90}, ()=>({x:rnd(0,W),y:rnd(0,H),len:rnd(9,18),sp:rnd(10,16),a:rnd(.06,.14),w:.58})),
-    Array.from({length:52}, ()=>({x:rnd(0,W),y:rnd(0,H),len:rnd(14,24),sp:rnd(15,24),a:rnd(.09,.18),w:.98})),
-  ];
 
-  function mkD() {
-    return { x:rnd(0,W), y:-12, r:rnd(2.2,6.5), vy:0,
-             gr:rnd(.022,.042), a:rnd(.28,.45), trail:[], stretch:1 };
+  /* ── 附着水珠 ─────────────────────────────────────── */
+  function mkDot(init) {
+    return {
+      x: rnd(0, W),
+      y: init ? rnd(0, H) : rnd(0, H * .35),
+      r: rnd(1.5, 5.5),           /* 当前半径 */
+      maxR: rnd(5, 14),           /* 开始流动的阈值 */
+      growSpd: rnd(.008, .022),   /* 积水速度 */
+      a: rnd(.38, .62),
+      flowing: false,
+      /* 流动状态 */
+      vy: 0, vx: 0,
+      path: [],                   /* 流过的路径点 */
+      pathMaxLen: 120,
+      wobble: rnd(-.012, .012),   /* 左右摆动倾向 */
+      wobblePh: rnd(0, Math.PI*2),
+      dead: false,
+    };
   }
-  const drops = Array.from({length:44}, () => ({...mkD(), y:rnd(0,H), vy:rnd(0,2.5)}));
+
+  const dots = Array.from({length: 55}, () => mkDot(true));
+
+  /* 每隔一段时间补充新水珠 */
   iv(() => {
-    const i = Math.floor(Math.random()*drops.length);
-    Object.assign(drops[i], mkD());
-  }, 320);
+    const deadIdx = dots.findIndex(d => d.dead);
+    if (deadIdx >= 0) {
+      dots[deadIdx] = mkDot(false);
+    } else if (dots.length < 75) {
+      dots.push(mkDot(false));
+    }
+  }, 280);
 
+  /* ── 绘制单个水珠 ─────────────────────────────────── */
+  function drawDrop(x, y, r, a, stretch) {
+    const sy = stretch || 1;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1, sy);
+
+    /* 主体：径向渐变模拟折射 */
+    const g = ctx.createRadialGradient(
+      -r*.3, -r*.35, r*.04,
+       r*.1,  r*.1,  r
+    );
+    g.addColorStop(0,   `rgba(255,255,255,${a*.92})`);
+    g.addColorStop(.22, `rgba(230,242,255,${a*.72})`);
+    g.addColorStop(.55, `rgba(185,215,245,${a*.35})`);
+    g.addColorStop(.82, `rgba(155,195,235,${a*.12})`);
+    g.addColorStop(1,   `rgba(130,180,225,${a*.04})`);
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, PI2);
+    ctx.fillStyle = g; ctx.fill();
+
+    /* 边缘细环：表面张力感 */
+    ctx.strokeStyle = `rgba(180,215,248,${a*.22})`;
+    ctx.lineWidth = .6; ctx.stroke();
+
+    /* 左上高光（主光源） */
+    const hg = ctx.createRadialGradient(-r*.32,-r*.38, 0, -r*.28,-r*.32, r*.38);
+    hg.addColorStop(0, `rgba(255,255,255,${a*.88})`);
+    hg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, PI2);
+    ctx.fillStyle = hg; ctx.fill();
+
+    /* 右下暗面折射 */
+    ctx.beginPath();
+    ctx.arc(r*.22, r*.28, r*.28, 0, PI2);
+    ctx.fillStyle = `rgba(140,185,230,${a*.14})`; ctx.fill();
+
+    ctx.restore();
+  }
+
+  /* ── 绘制流痕 ─────────────────────────────────────── */
+  function drawTrail(path, r, a) {
+    if (path.length < 3) return;
+    const w = clamp(r * .55, .8, 3.5);
+
+    /* 流痕主体：细，半透明 */
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      /* 用二次贝塞尔让路径有自然弯曲 */
+      const mx = (path[i-1].x + path[i].x) * .5;
+      const my = (path[i-1].y + path[i].y) * .5;
+      ctx.quadraticCurveTo(path[i-1].x, path[i-1].y, mx, my);
+    }
+    ctx.strokeStyle = `rgba(200,228,252,${a * .28})`;
+    ctx.lineWidth = w;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    /* 流痕高光边：更细更亮 */
+    ctx.beginPath();
+    ctx.moveTo(path[0].x - w*.3, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i].x - w*.3, path[i].y);
+    }
+    ctx.strokeStyle = `rgba(255,255,255,${a * .18})`;
+    ctx.lineWidth = w * .35;
+    ctx.stroke();
+  }
+
+  let t = 0;
   function draw() {
-    ctx.clearRect(0,0,W,H);
+    ctx.clearRect(0, 0, W, H);
+    t++;
 
-    layers.forEach(lr => lr.forEach(d => {
-      d.y += d.sp; d.x += d.sp*.22;
-      if (d.y > H) { d.y=-d.len; d.x=rnd(0,W); }
-      ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x+d.len*.22,d.y+d.len);
-      ctx.strokeStyle=`rgba(168,205,242,${d.a})`; ctx.lineWidth=d.w; ctx.stroke();
-    }));
+    dots.forEach((d, i) => {
+      if (d.dead) return;
 
-    drops.forEach((b, i) => {
-      const roll = b.vy>.05;
-      if (roll) {
-        b.vy += b.gr; b.y += b.vy;
-        b.stretch = clamp(1+b.vy*.072, 1, 2.2);
-        b.trail.push({x:b.x, y:b.y});
-        if (b.trail.length>14) b.trail.shift();
+      if (!d.flowing) {
+        /* 积水阶段：缓慢变大 */
+        d.r += d.growSpd;
+
+        /* 稍微抖动，模拟玻璃振动 */
+        const jx = Math.sin(t * .04 + d.wobblePh) * .15;
+        const jy = Math.cos(t * .03 + d.wobblePh) * .08;
+
+        drawDrop(d.x + jx, d.y + jy, d.r, d.a, 1);
+
+        /* 达到阈值，开始流动 */
+        if (d.r >= d.maxR) {
+          d.flowing = true;
+          d.vy = rnd(.4, 1.2);
+          d.vx = d.wobble * d.r * 2;
+          d.path.push({x: d.x, y: d.y});
+        }
+
       } else {
-        b.vy += b.gr;
-      }
-      if (b.y > H+20) Object.assign(drops[i], mkD());
+        /* 流动阶段 */
+        d.vy = Math.min(d.vy + rnd(.018, .032), 3.8);
+        /* 流痕会左右轻微摆动 */
+        d.wobblePh += .045;
+        d.vx += Math.sin(d.wobblePh) * .04 + d.wobble * .15;
+        d.vx *= .88;  /* 横向阻尼 */
 
-      if (b.trail.length>2) {
-        ctx.beginPath(); ctx.moveTo(b.trail[0].x,b.trail[0].y);
-        b.trail.forEach(p => ctx.lineTo(p.x,p.y));
-        ctx.strokeStyle=`rgba(175,215,255,${b.a*.16})`; ctx.lineWidth=b.r*.62; ctx.stroke();
-      }
+        d.x += d.vx;
+        d.y += d.vy;
 
-      ctx.save(); ctx.translate(b.x,b.y); ctx.scale(1,b.stretch);
-      const g = ctx.createRadialGradient(-b.r*.28,-b.r*.28,b.r*.05, 0,0,b.r);
-      g.addColorStop(0,   `rgba(255,255,255,${b.a*.96})`);
-      g.addColorStop(.38, `rgba(215,235,255,${b.a*.58})`);
-      g.addColorStop(.76, `rgba(150,194,238,${b.a*.2})`);
-      g.addColorStop(1,   `rgba(90,160,218,${b.a*.04})`);
-      ctx.beginPath(); ctx.arc(0,0,b.r,0,PI2); ctx.fillStyle=g; ctx.fill();
-      ctx.strokeStyle=`rgba(134,178,228,${b.a*.28})`; ctx.lineWidth=.72; ctx.stroke();
-      /* 高光 */
-      ctx.beginPath(); ctx.arc(-b.r*.3,-b.r*.3,b.r*.3,0,PI2);
-      ctx.fillStyle=`rgba(255,255,255,${b.a*.82})`; ctx.fill();
-      ctx.restore();
+        /* 流动时水珠拉长 */
+        const stretch = clamp(1 + d.vy * .055, 1, 1.65);
+
+        d.path.push({x: d.x, y: d.y});
+        if (d.path.length > d.pathMaxLen) d.path.shift();
+
+        /* 先画流痕，再画水珠（水珠在最上面） */
+        drawTrail(d.path, d.r, d.a);
+        drawDrop(d.x, d.y, d.r * .85, d.a, stretch);
+
+        /* 偶尔留下残余小水珠 */
+        if (Math.random() < .012 && d.r > 5) {
+          dots.push({
+            ...mkDot(false),
+            x: d.x + rnd(-4, 4),
+            y: d.y - rnd(5, 20),
+            r: rnd(1, 3),
+            maxR: 999,   /* 不再流动 */
+            growSpd: 0,
+            flowing: false,
+            a: rnd(.2, .4),
+          });
+        }
+
+        /* 流出屏幕或合并（简化：流出屏幕则标记死亡） */
+        if (d.y > H + 20 || d.x < -10 || d.x > W + 10) {
+          d.dead = true;
+        }
+      }
     });
+
+    /* 清理死亡粒子，保留流痕继续显示一段时间 */
+    for (let i = dots.length - 1; i >= 0; i--) {
+      if (dots[i].dead && dots[i].path.length === 0) {
+        dots.splice(i, 1);
+      } else if (dots[i].dead) {
+        /* 流痕逐渐消失 */
+        dots[i].a -= .004;
+        if (dots[i].a > .05) drawTrail(dots[i].path, dots[i].r, dots[i].a);
+        else dots.splice(i, 1);
+      }
+    }
+
     raf(draw);
   } draw();
 }
