@@ -591,7 +591,6 @@ function _forest(ctx, W, H, tk) {
   }draw();
 }
 
-}
 
 function _rain(ctx, W, H, tk) {
 
