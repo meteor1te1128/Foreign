@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>回炉本 · Foreign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme-buttons.css" />
+  <link rel="stylesheet" href="css/learn.css" />
+  <style>
+    /* 回炉本专属 */
+    .review-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .review-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .review-header p {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.1em;
+    }
+    .wrong-list {
+      max-width: 560px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .wrong-item {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .wrong-item:hover {
+      background: rgba(255,255,255,0.11);
+      border-color: rgba(255,255,255,0.25);
+      transform: translateX(4px);
+    }
+    .wrong-item-left { display: flex; flex-direction: column; gap: 3px; }
+    .wrong-word {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 500;
+      color: #fff;
+    }
+    .wrong-meaning {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+    .wrong-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #f87171;
+      background: rgba(248,113,113,0.12);
+      border: 1px solid rgba(248,113,113,0.25);
+      border-radius: 20px;
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .empty-state p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    .empty-state small {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.06em;
+    }
+    .review-actions {
+      max-width: 560px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    /* 练习模式：复用 learn.css，额外覆盖标题 */
+    #screen-review-fill .learn-card .fill-context::before {
+      content: '回炉练习 · ';
+      color: #f87171;
+    }
+  </style>
+</head>
+<body class="theme-ocean">
+
+  <div id="bg-image" class="bg-image"></div>
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+  <div class="bg-overlay"></div>
+
+  <a href="index.html" class="back-btn">← 返回</a>
+
+  <!-- ── 回炉本列表 ───────────────────────────────────────── -->
+  <section id="screen-list" class="screen active" style="overflow-y:auto;padding-top:80px;padding-bottom:40px;justify-content:flex-start;">
+    <div style="max-width:560px;width:100%;">
+      <div class="review-header">
+        <h1>回炉本</h1>
+        <p>RELEARN · CONQUER YOUR WEAK SPOTS</p>
+      </div>
+
+      <div id="wrong-list-container">
+        <!-- 动态填充 -->
+      </div>
+
+      <div class="review-actions" id="review-actions" style="display:none">
+        <button class="btn-primary" id="btn-start-review">开始全部练习</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 填空练习（复用 learn 的 fill 屏结构）──────────────── -->
+  <section id="screen-review-fill" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span>回炉练习</span>
+        <span id="rf-progress-text">1 / ?</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="rf-progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="learn-card">
+      <p class="fill-context">FILL IN THE BLANK</p>
+      <p class="fill-meaning-hint" id="rf-meaning">含义</p>
+      <div class="fill-sentence-wrap" id="rf-sentence"></div>
+      <p class="fill-hint-text" id="rf-hint">提示</p>
+      <div class="fill-feedback hidden" id="rf-feedback"></div>
+      <button class="btn-primary" id="rf-confirm-btn">确认答案</button>
+      <button class="btn-primary hidden" id="rf-next-btn">继续 →</button>
+      <button class="btn-secondary" id="rf-skip-btn">跳过</button>
+    </div>
+  </section>
+
+  <!-- ── 练习完成 ─────────────────────────────────────────── -->
+  <section id="screen-review-done" class="screen">
+    <div class="learn-card" style="text-align:center">
+      <p class="result-title">练完了！</p>
+      <p class="result-msg" id="rv-msg">继续加油！</p>
+      <div class="result-score">
+        <div class="result-pct" id="rv-pct">—%</div>
+        <div class="result-detail">
+          答对 <span id="rv-correct">0</span> / <span id="rv-total">0</span>
+        </div>
+      </div>
+      <div class="result-bar-wrap">
+        <div class="result-bar" id="rv-bar"></div>
+      </div>
+      <button class="btn-primary" id="btn-rv-home">回到首页</button>
+      <button class="btn-secondary" id="btn-rv-again">再练一遍</button>
+    </div>
+  </section>
+
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/animations.js"></script>
+  <script type="module">
+    import { WORDS } from './js/wordbank.js';
+
+    // ── 主题继承
+    const theme = localStorage.getItem('fg_theme') || 'ocean';
+    document.body.className = `theme-${theme}`;
+
+    // ── 读取错题库
+    function loadWrong() {
+      try { return JSON.parse(localStorage.getItem('fg_wrong') || '{}'); }
+      catch { return {}; }
+    }
+    function saveWrong(data) { localStorage.setItem('fg_wrong', JSON.stringify(data)); }
+
+    const showScreen = name => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(name)?.classList.add('active');
+    };
+
+    // ── 渲染列表
+    function renderList() {
+      const wrong = loadWrong();
+      const entries = Object.entries(wrong).sort((a,b) => b[1]-a[1]);
+      const container = document.getElementById('wrong-list-container');
+      const actionsEl = document.getElementById('review-actions');
+
+      if (entries.length === 0) {
+        container.innerHTML = `
+          <div class="learn-card empty-state">
+            <div class="empty-icon">✨</div>
+            <p>回炉本是空的</p>
+            <small>答错的词会自动出现在这里</small>
+          </div>`;
+        return;
+      }
+
+      actionsEl.style.display = 'block';
+      container.innerHTML = `<div class="wrong-list">${
+        entries.map(([id, cnt]) => {
+          const word = WORDS.find(w => w.id === id);
+          if (!word) return '';
+          return `<div class="wrong-item" data-id="${id}">
+            <div class="wrong-item-left">
+              <span class="wrong-word">${word.word}</span>
+              <span class="wrong-meaning">${word.meaning}</span>
+            </div>
+            <span class="wrong-count">错 ${cnt} 次</span>
+          </div>`;
+        }).join('')
+      }</div>`;
+
+      // 单词点击 → 直接练这一个
+      container.querySelectorAll('.wrong-item').forEach(el => {
+        el.addEventListener('click', () => {
+          reviewQueue = [el.dataset.id];
+          startReview();
+        });
+      });
+    }
+
+    // ── 练习逻辑
+    let reviewQueue = [];
+    let reviewIdx   = 0;
+    let reviewResults = [];
+    let currentReviewWord = null;
+
+    function startReview() {
+      reviewIdx = 0;
+      reviewResults = [];
+      showNextReview();
+    }
+
+    function showNextReview() {
+      if (reviewIdx >= reviewQueue.length) { finishReview(); return; }
+      const id = reviewQueue[reviewIdx];
+      currentReviewWord = WORDS.find(w => w.id === id);
+      if (!currentReviewWord) { reviewIdx++; showNextReview(); return; }
+      renderReviewFill(currentReviewWord);
+      showScreen('screen-review-fill');
+    }
+
+    function renderReviewFill(word) {
+      document.getElementById('rf-progress-text').textContent = `${reviewIdx+1} / ${reviewQueue.length}`;
+      document.getElementById('rf-progress-bar').style.width = `${(reviewIdx/reviewQueue.length)*100}%`;
+      document.getElementById('rf-meaning').textContent = word.meaning;
+      document.getElementById('rf-hint').textContent = `提示：${word.hint}`;
+      document.getElementById('rf-feedback').className = 'fill-feedback hidden';
+      document.getElementById('rf-next-btn').classList.add('hidden');
+      document.getElementById('rf-confirm-btn').classList.remove('hidden');
+
+      const sentEl = document.getElementById('rf-sentence');
+      sentEl.innerHTML = '';
+      const parts = word.sentence.split('___');
+      sentEl.appendChild(document.createTextNode(parts[0]));
+      const input = document.createElement('input');
+      input.type = 'text'; input.className = 'fill-input'; input.id = 'rf-input';
+      input.placeholder = word.hint; input.autocomplete = 'off'; input.spellcheck = false;
+      sentEl.appendChild(input);
+      if (parts[1]) sentEl.appendChild(document.createTextNode(parts[1]));
+      setTimeout(() => input.focus(), 300);
+    }
+
+    function checkReview() {
+      const input = document.getElementById('rf-input');
+      if (!input) return;
+      const answer  = input.value.trim().toLowerCase();
+      const correct = answer === currentReviewWord.word.toLowerCase();
+      const fb = document.getElementById('rf-feedback');
+      fb.classList.remove('hidden','correct','wrong');
+      if (correct) {
+        fb.textContent = `✓ 正确！${currentReviewWord.word}`;
+        fb.classList.add('correct');
+        input.classList.add('input-correct');
+        // 答对了减少错误计数
+        const wrong = loadWrong();
+        if (wrong[currentReviewWord.id] > 1) wrong[currentReviewWord.id]--;
+        else delete wrong[currentReviewWord.id];
+        saveWrong(wrong);
+      } else {
+        fb.textContent = `答案是：${currentReviewWord.word}`;
+        fb.classList.add('wrong');
+        input.classList.add('input-wrong');
+      }
+      reviewResults.push({ id: currentReviewWord.id, correct });
+      document.getElementById('rf-confirm-btn').classList.add('hidden');
+      document.getElementById('rf-next-btn').classList.remove('hidden');
+    }
+
+    function finishReview() {
+      const total   = reviewResults.length;
+      const correct = reviewResults.filter(r => r.correct).length;
+      const pct = total ? Math.round(correct/total*100) : 0;
+      document.getElementById('rv-pct').textContent = pct + '%';
+      document.getElementById('rv-correct').textContent = correct;
+      document.getElementById('rv-total').textContent = total;
+      document.getElementById('rv-msg').textContent =
+        pct >= 80 ? '掌握得不错 👍' : pct >= 50 ? '继续加油 💪' : '多练几次就好了 🌱';
+      showScreen('screen-review-done');
+      setTimeout(() => { document.getElementById('rv-bar').style.width = pct + '%'; }, 300);
+    }
+
+    // ── 事件绑定
+    document.getElementById('btn-start-review')?.addEventListener('click', () => {
+      const wrong = loadWrong();
+      reviewQueue = Object.keys(wrong);
+      startReview();
+    });
+    document.getElementById('rf-confirm-btn')?.addEventListener('click', checkReview);
+    document.getElementById('rf-sentence')?.addEventListener('keydown', e => { if(e.key==='Enter') checkReview(); });
+    document.getElementById('rf-next-btn')?.addEventListener('click', () => { reviewIdx++; showNextReview(); });
+    document.getElementById('rf-skip-btn')?.addEventListener('click', () => { reviewIdx++; showNextReview(); });
+    document.getElementById('btn-rv-home')?.addEventListener('click', () => location.href='index.html');
+    document.getElementById('btn-rv-again')?.addEventListener('click', startReview);
+
+    // ── 启动
+    renderList();
+  </script>
+</body>
+</html>
