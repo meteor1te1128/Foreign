@@ -47,8 +47,8 @@ window.setTheme = function(key) {
     document.body.classList.remove('dm');
   }
 
-  stopAnim();
-  if (t.anim !== 'none') startAnim(t.anim, cv);
+  /* 始终调用 startAnim，anim==='none' 时它内部会清空 canvas */
+  startAnim(t.anim, cv);
   localStorage.setItem('fg_theme', key);
 };
 
