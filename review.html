@@ -11,104 +11,73 @@
   <link rel="stylesheet" href="css/theme-buttons.css" />
   <link rel="stylesheet" href="css/learn.css" />
   <style>
-    /* 回炉本专属 */
-    .review-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
+    .review-header { text-align:center; margin-bottom:28px; }
     .review-header h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(36px, 6vw, 56px);
-      font-weight: 500;
-      color: #fff;
-      margin-bottom: 6px;
-      letter-spacing: -0.02em;
+      font-family:'Cormorant Garamond',serif;
+      font-size: clamp(36px,6vw,52px);
+      font-weight:500; color:#fff;
+      margin-bottom:6px; letter-spacing:-0.02em;
     }
     .review-header p {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
-      letter-spacing: 0.1em;
+      font-family:'Space Mono',monospace;
+      font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:0.1em;
     }
+    /* 列表容器 */
     .wrong-list {
-      max-width: 560px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 60vh;
-      overflow-y: auto;
-      padding-right: 4px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      display:flex; flex-direction:column; gap:10px;
+      max-height:52vh; overflow-y:auto; padding-right:4px;
+      scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.15) transparent;
     }
     .wrong-item {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: all 0.2s;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px; padding:16px 20px;
+      display:flex; align-items:center;
+      justify-content:space-between;
+      cursor:pointer; transition:all 0.2s;
     }
     .wrong-item:hover {
-      background: rgba(255,255,255,0.11);
-      border-color: rgba(255,255,255,0.25);
-      transform: translateX(4px);
+      background:rgba(255,255,255,0.11);
+      border-color:rgba(255,255,255,0.25);
+      transform:translateX(4px);
     }
-    .wrong-item-left { display: flex; flex-direction: column; gap: 3px; }
+    .wrong-item-left { display:flex; flex-direction:column; gap:3px; }
     .wrong-word {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
-      font-weight: 500;
-      color: #fff;
+      font-family:'Cormorant Garamond',serif;
+      font-size:22px; font-weight:500; color:#fff;
     }
     .wrong-meaning {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
+      font-family:'DM Sans',sans-serif;
+      font-size:13px; color:rgba(255,255,255,0.5);
     }
     .wrong-count {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: #f87171;
-      background: rgba(248,113,113,0.12);
-      border: 1px solid rgba(248,113,113,0.25);
-      border-radius: 20px;
-      padding: 3px 10px;
-      white-space: nowrap;
+      font-family:'Space Mono',monospace; font-size:11px;
+      color:#f87171;
+      background:rgba(248,113,113,0.12);
+      border:1px solid rgba(248,113,113,0.25);
+      border-radius:20px; padding:3px 10px; white-space:nowrap;
     }
-    .empty-state {
-      text-align: center;
-      padding: 48px 32px;
+    .empty-card {
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:20px; padding:48px 32px; text-align:center;
     }
-    .empty-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
+    .empty-icon { font-size:48px; margin-bottom:16px; }
+    .empty-card p {
+      font-family:'DM Sans',sans-serif;
+      font-size:16px; color:rgba(255,255,255,0.5); margin-bottom:8px;
     }
-    .empty-state p {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 8px;
+    .empty-card small {
+      font-family:'Space Mono',monospace;
+      font-size:11px; color:rgba(255,255,255,0.3); letter-spacing:0.06em;
     }
-    .empty-state small {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.3);
-      letter-spacing: 0.06em;
+    .list-screen-inner {
+      max-width:560px; width:100%;
     }
-    .review-actions {
-      max-width: 560px;
-      width: 100%;
-      margin-top: 20px;
-    }
-    /* 练习模式：复用 learn.css，额外覆盖标题 */
-    #screen-review-fill .learn-card .fill-context::before {
-      content: '回炉练习 · ';
-      color: #f87171;
+    #screen-list {
+      justify-content:flex-start;
+      padding-top:72px; padding-bottom:40px;
+      overflow-y:auto;
     }
   </style>
 </head>
@@ -120,25 +89,23 @@
 
   <a href="index.html" class="back-btn">← 返回</a>
 
-  <!-- ── 回炉本列表 ───────────────────────────────────────── -->
-  <section id="screen-list" class="screen active" style="overflow-y:auto;padding-top:80px;padding-bottom:40px;justify-content:flex-start;">
-    <div style="max-width:560px;width:100%;">
+  <!-- 列表页 -->
+  <section id="screen-list" class="screen active">
+    <div class="list-screen-inner">
       <div class="review-header">
         <h1>回炉本</h1>
         <p>RELEARN · CONQUER YOUR WEAK SPOTS</p>
       </div>
 
-      <div id="wrong-list-container">
-        <!-- 动态填充 -->
-      </div>
+      <div id="wrong-list-container"></div>
 
-      <div class="review-actions" id="review-actions" style="display:none">
-        <button class="btn-primary" id="btn-start-review">开始全部练习</button>
+      <div id="review-actions" style="display:none; margin-top:20px;">
+        <button class="btn-primary" id="btn-start-review">全部重新练一遍</button>
       </div>
     </div>
   </section>
 
-  <!-- ── 填空练习（复用 learn 的 fill 屏结构）──────────────── -->
+  <!-- 填空练习 -->
   <section id="screen-review-fill" class="screen">
     <div class="progress-wrap">
       <div class="progress-meta">
@@ -158,11 +125,11 @@
       <div class="fill-feedback hidden" id="rf-feedback"></div>
       <button class="btn-primary" id="rf-confirm-btn">确认答案</button>
       <button class="btn-primary hidden" id="rf-next-btn">继续 →</button>
-      <button class="btn-secondary" id="rf-skip-btn">跳过</button>
+      <button class="btn-secondary" id="rf-skip-btn" style="margin-top:8px">跳过这题</button>
     </div>
   </section>
 
-  <!-- ── 练习完成 ─────────────────────────────────────────── -->
+  <!-- 练习完成 -->
   <section id="screen-review-done" class="screen">
     <div class="learn-card" style="text-align:center">
       <p class="result-title">练完了！</p>
@@ -177,7 +144,7 @@
         <div class="result-bar" id="rv-bar"></div>
       </div>
       <button class="btn-primary" id="btn-rv-home">回到首页</button>
-      <button class="btn-secondary" id="btn-rv-again">再练一遍</button>
+      <button class="btn-secondary" id="btn-rv-again" style="margin-top:8px">再练一遍</button>
     </div>
   </section>
 
@@ -186,55 +153,57 @@
   <script type="module">
     import { WORDS } from './js/wordbank.js';
 
-    // ── 主题继承
+    // 主题
     const theme = localStorage.getItem('fg_theme') || 'ocean';
     document.body.className = `theme-${theme}`;
 
-    // ── 读取错题库
+    // 工具
+    function $(id) { return document.getElementById(id); }
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      $(name)?.classList.add('active');
+    }
     function loadWrong() {
       try { return JSON.parse(localStorage.getItem('fg_wrong') || '{}'); }
       catch { return {}; }
     }
-    function saveWrong(data) { localStorage.setItem('fg_wrong', JSON.stringify(data)); }
+    function saveWrong(data) {
+      localStorage.setItem('fg_wrong', JSON.stringify(data));
+    }
 
-    const showScreen = name => {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(name)?.classList.add('active');
-    };
-
-    // ── 渲染列表
+    // ── 列表渲染 ────────────────────────────────────────────
     function renderList() {
-      const wrong = loadWrong();
-      const entries = Object.entries(wrong).sort((a,b) => b[1]-a[1]);
-      const container = document.getElementById('wrong-list-container');
-      const actionsEl = document.getElementById('review-actions');
+      const wrong   = loadWrong();
+      const entries = Object.entries(wrong).sort((a, b) => b[1] - a[1]);
+      const container = $('wrong-list-container');
+      const actionsEl = $('review-actions');
 
       if (entries.length === 0) {
         container.innerHTML = `
-          <div class="learn-card empty-state">
+          <div class="empty-card">
             <div class="empty-icon">✨</div>
             <p>回炉本是空的</p>
             <small>答错的词会自动出现在这里</small>
           </div>`;
+        actionsEl.style.display = 'none';
         return;
       }
 
       actionsEl.style.display = 'block';
-      container.innerHTML = `<div class="wrong-list">${
-        entries.map(([id, cnt]) => {
-          const word = WORDS.find(w => w.id === id);
-          if (!word) return '';
-          return `<div class="wrong-item" data-id="${id}">
-            <div class="wrong-item-left">
-              <span class="wrong-word">${word.word}</span>
-              <span class="wrong-meaning">${word.meaning}</span>
-            </div>
-            <span class="wrong-count">错 ${cnt} 次</span>
-          </div>`;
-        }).join('')
-      }</div>`;
+      const html = entries.map(([id, cnt]) => {
+        const word = WORDS.find(w => w.id === id);
+        if (!word) return '';
+        return `<div class="wrong-item" data-id="${id}">
+          <div class="wrong-item-left">
+            <span class="wrong-word">${word.word}</span>
+            <span class="wrong-meaning">${word.meaning}</span>
+          </div>
+          <span class="wrong-count">错 ${cnt} 次</span>
+        </div>`;
+      }).join('');
+      container.innerHTML = `<div class="wrong-list">${html}</div>`;
 
-      // 单词点击 → 直接练这一个
+      // 点击单词 → 单练
       container.querySelectorAll('.wrong-item').forEach(el => {
         el.addEventListener('click', () => {
           reviewQueue = [el.dataset.id];
@@ -243,101 +212,127 @@
       });
     }
 
-    // ── 练习逻辑
-    let reviewQueue = [];
-    let reviewIdx   = 0;
+    // ── 练习逻辑 ────────────────────────────────────────────
+    let reviewQueue   = [];
+    let reviewIdx     = 0;
     let reviewResults = [];
-    let currentReviewWord = null;
+    let currentWord   = null;
 
     function startReview() {
-      reviewIdx = 0;
+      reviewIdx     = 0;
       reviewResults = [];
       showNextReview();
     }
 
     function showNextReview() {
       if (reviewIdx >= reviewQueue.length) { finishReview(); return; }
+
       const id = reviewQueue[reviewIdx];
-      currentReviewWord = WORDS.find(w => w.id === id);
-      if (!currentReviewWord) { reviewIdx++; showNextReview(); return; }
-      renderReviewFill(currentReviewWord);
+      currentWord = WORDS.find(w => w.id === id);
+      if (!currentWord) { reviewIdx++; showNextReview(); return; }
+
+      renderFill(currentWord);
       showScreen('screen-review-fill');
     }
 
-    function renderReviewFill(word) {
-      document.getElementById('rf-progress-text').textContent = `${reviewIdx+1} / ${reviewQueue.length}`;
-      document.getElementById('rf-progress-bar').style.width = `${(reviewIdx/reviewQueue.length)*100}%`;
-      document.getElementById('rf-meaning').textContent = word.meaning;
-      document.getElementById('rf-hint').textContent = `提示：${word.hint}`;
-      document.getElementById('rf-feedback').className = 'fill-feedback hidden';
-      document.getElementById('rf-next-btn').classList.add('hidden');
-      document.getElementById('rf-confirm-btn').classList.remove('hidden');
+    function renderFill(word) {
+      const total = reviewQueue.length;
+      $('rf-progress-text').textContent  = `${reviewIdx + 1} / ${total}`;
+      $('rf-progress-bar').style.width   = `${(reviewIdx / total) * 100}%`;
+      $('rf-meaning').textContent        = word.meaning;
+      $('rf-hint').textContent           = `提示：${word.hint}`;
 
-      const sentEl = document.getElementById('rf-sentence');
+      // 构建填空句
+      const sentEl = $('rf-sentence');
       sentEl.innerHTML = '';
       const parts = word.sentence.split('___');
       sentEl.appendChild(document.createTextNode(parts[0]));
+
       const input = document.createElement('input');
-      input.type = 'text'; input.className = 'fill-input'; input.id = 'rf-input';
-      input.placeholder = word.hint; input.autocomplete = 'off'; input.spellcheck = false;
+      input.type         = 'text';
+      input.className    = 'fill-input';
+      input.id           = 'rf-input-field';
+      input.placeholder  = word.hint;
+      input.autocomplete = 'off';
+      input.autocorrect  = 'off';
+      input.spellcheck   = false;
+      // Enter 直接确认——绑定在 input 上，不会有时机问题
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') checkFill(); });
       sentEl.appendChild(input);
       if (parts[1]) sentEl.appendChild(document.createTextNode(parts[1]));
-      setTimeout(() => input.focus(), 300);
+
+      // 复位
+      $('rf-feedback').className = 'fill-feedback hidden';
+      $('rf-confirm-btn').classList.remove('hidden');
+      $('rf-next-btn').classList.add('hidden');
+
+      showScreen('screen-review-fill');
+      setTimeout(() => input.focus(), 320);
     }
 
-    function checkReview() {
-      const input = document.getElementById('rf-input');
-      if (!input) return;
+    function checkFill() {
+      const input = $('rf-input-field');
+      if (!input || !currentWord) return;
+
       const answer  = input.value.trim().toLowerCase();
-      const correct = answer === currentReviewWord.word.toLowerCase();
-      const fb = document.getElementById('rf-feedback');
-      fb.classList.remove('hidden','correct','wrong');
+      const target  = currentWord.word.toLowerCase();
+      const correct = answer === target ||
+        (answer.length >= 3 && target.startsWith(answer) && answer.length >= target.length - 3);
+
+      const fb = $('rf-feedback');
+      fb.classList.remove('hidden', 'correct', 'wrong');
+      input.classList.remove('input-correct', 'input-wrong');
+
       if (correct) {
-        fb.textContent = `✓ 正确！${currentReviewWord.word}`;
+        fb.textContent = `✓ 正确！${currentWord.word}`;
         fb.classList.add('correct');
         input.classList.add('input-correct');
-        // 答对了减少错误计数
+        // 答对：错误次数 -1，降为 0 就删除
         const wrong = loadWrong();
-        if (wrong[currentReviewWord.id] > 1) wrong[currentReviewWord.id]--;
-        else delete wrong[currentReviewWord.id];
+        if (wrong[currentWord.id] > 1) wrong[currentWord.id]--;
+        else delete wrong[currentWord.id];
         saveWrong(wrong);
       } else {
-        fb.textContent = `答案是：${currentReviewWord.word}`;
+        fb.textContent = `✗ 答案是：${currentWord.word}`;
         fb.classList.add('wrong');
         input.classList.add('input-wrong');
       }
-      reviewResults.push({ id: currentReviewWord.id, correct });
-      document.getElementById('rf-confirm-btn').classList.add('hidden');
-      document.getElementById('rf-next-btn').classList.remove('hidden');
+
+      reviewResults.push({ id: currentWord.id, correct });
+      $('rf-confirm-btn').classList.add('hidden');
+      $('rf-next-btn').classList.remove('hidden');
     }
 
     function finishReview() {
       const total   = reviewResults.length;
       const correct = reviewResults.filter(r => r.correct).length;
-      const pct = total ? Math.round(correct/total*100) : 0;
-      document.getElementById('rv-pct').textContent = pct + '%';
-      document.getElementById('rv-correct').textContent = correct;
-      document.getElementById('rv-total').textContent = total;
-      document.getElementById('rv-msg').textContent =
-        pct >= 80 ? '掌握得不错 👍' : pct >= 50 ? '继续加油 💪' : '多练几次就好了 🌱';
+      const pct     = total ? Math.round(correct / total * 100) : 100;
+
+      $('rv-pct').textContent     = pct + '%';
+      $('rv-correct').textContent = correct;
+      $('rv-total').textContent   = total;
+      $('rv-msg').textContent     =
+        pct >= 80 ? '掌握得不错 👍' :
+        pct >= 50 ? '继续加油 💪'   : '多练几次就好了 🌱';
+
       showScreen('screen-review-done');
-      setTimeout(() => { document.getElementById('rv-bar').style.width = pct + '%'; }, 300);
+      setTimeout(() => { $('rv-bar').style.width = pct + '%'; }, 300);
+      // 刷新列表（可能有单词已经清除）
+      renderList();
     }
 
-    // ── 事件绑定
-    document.getElementById('btn-start-review')?.addEventListener('click', () => {
-      const wrong = loadWrong();
-      reviewQueue = Object.keys(wrong);
+    // ── 事件 ────────────────────────────────────────────────
+    $('btn-start-review')?.addEventListener('click', () => {
+      reviewQueue = Object.keys(loadWrong());
       startReview();
     });
-    document.getElementById('rf-confirm-btn')?.addEventListener('click', checkReview);
-    document.getElementById('rf-sentence')?.addEventListener('keydown', e => { if(e.key==='Enter') checkReview(); });
-    document.getElementById('rf-next-btn')?.addEventListener('click', () => { reviewIdx++; showNextReview(); });
-    document.getElementById('rf-skip-btn')?.addEventListener('click', () => { reviewIdx++; showNextReview(); });
-    document.getElementById('btn-rv-home')?.addEventListener('click', () => location.href='index.html');
-    document.getElementById('btn-rv-again')?.addEventListener('click', startReview);
+    $('rf-confirm-btn')?.addEventListener('click', checkFill);
+    $('rf-next-btn')?.addEventListener('click', () => { reviewIdx++; showNextReview(); });
+    $('rf-skip-btn')?.addEventListener('click', () => { reviewIdx++; showNextReview(); });
+    $('btn-rv-home')?.addEventListener('click', () => location.href = 'index.html');
+    $('btn-rv-again')?.addEventListener('click', startReview);
 
-    // ── 启动
+    // ── 启动 ────────────────────────────────────────────────
     renderList();
   </script>
 </body>

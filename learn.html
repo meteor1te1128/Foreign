@@ -13,26 +13,22 @@
 </head>
 <body class="theme-ocean">
 
-  <!-- 背景层 -->
   <div id="bg-image" class="bg-image"></div>
   <canvas id="bg-canvas" class="bg-canvas"></canvas>
   <div class="bg-overlay"></div>
 
-  <!-- 返回 -->
   <a href="index.html" class="back-btn">← 返回</a>
 
-  <!-- ── Loading ─────────────────────────────────────────── -->
+  <!-- Loading -->
   <section id="screen-loading" class="screen active">
-    <div class="loading-dots">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="loading-dots"><span></span><span></span><span></span></div>
   </section>
 
-  <!-- ── Intro ───────────────────────────────────────────── -->
+  <!-- Intro -->
   <section id="screen-intro" class="screen">
     <div class="learn-card">
       <p class="intro-title">今日学习</p>
-      <p class="intro-date" id="intro-date-str">LOADING...</p>
+      <p class="intro-date" id="intro-date-str"></p>
 
       <div class="intro-stats">
         <div class="stat-box">
@@ -54,13 +50,12 @@
       </div>
 
       <button class="btn-primary" id="btn-start-learn">开始学习</button>
-      <a href="index.html" class="btn-secondary" style="display:block;text-align:center;text-decoration:none;padding:12px;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.08);">今天先跳过</a>
+      <a href="index.html" style="display:block;text-align:center;text-decoration:none;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:rgba(255,255,255,0.4);">今天先跳过</a>
     </div>
   </section>
 
-  <!-- ── 情景卡片 ─────────────────────────────────────────── -->
+  <!-- 情景卡片 -->
   <section id="screen-card" class="screen">
-    <!-- 进度 -->
     <div class="progress-wrap">
       <div class="progress-meta">
         <span>PROGRESS</span>
@@ -72,23 +67,19 @@
     </div>
 
     <div class="learn-card">
-      <!-- 标签 -->
       <div class="card-tags">
         <span class="tag" id="card-type-badge" data-type="new">新词</span>
         <span class="tag" id="card-dim-label">☀️ 日常词汇</span>
         <span class="tag" id="card-level-label">B1</span>
       </div>
 
-      <!-- 单词主体 -->
       <div class="card-word" id="card-word">word</div>
       <div class="card-phonetic" id="card-phonetic">/wɜːrd/</div>
       <div class="card-meaning" id="card-meaning">含义</div>
 
-      <!-- 例句 -->
-      <div class="card-sentence" id="card-sentence">Example sentence here.</div>
-      <div class="card-translation hidden" id="card-translation">中文翻译</div>
+      <div class="card-sentence" id="card-sentence"></div>
+      <div class="card-translation hidden" id="card-translation"></div>
 
-      <!-- 操作 -->
       <button class="btn-reveal" id="card-reveal-btn">查看翻译 · 自我评估</button>
 
       <div class="rating-area hidden" id="card-rating-area">
@@ -112,11 +103,11 @@
     </div>
   </section>
 
-  <!-- ── 填空题 ────────────────────────────────────────────── -->
+  <!-- 填空题 -->
   <section id="screen-fill" class="screen">
     <div class="progress-wrap">
       <div class="progress-meta">
-        <span>FILL IN</span>
+        <span>FILL IN THE BLANK</span>
         <span id="fill-progress-text">1 / 10</span>
       </div>
       <div class="progress-track">
@@ -125,23 +116,17 @@
     </div>
 
     <div class="learn-card">
-      <p class="fill-context">FILL IN THE BLANK</p>
+      <p class="fill-context">根据中文含义，填入英文单词</p>
       <p class="fill-meaning-hint" id="fill-meaning">含义</p>
-
-      <div class="fill-sentence-wrap" id="fill-sentence">
-        <!-- 动态生成：文字 + input + 文字 -->
-      </div>
-
+      <div class="fill-sentence-wrap" id="fill-sentence"></div>
       <p class="fill-hint-text" id="fill-hint">提示：w___d</p>
-
       <div class="fill-feedback hidden" id="fill-feedback"></div>
-
       <button class="btn-primary" id="fill-confirm-btn">确认答案</button>
       <button class="btn-primary hidden" id="fill-next-btn">继续 →</button>
     </div>
   </section>
 
-  <!-- ── 结算 ──────────────────────────────────────────────── -->
+  <!-- 结算 -->
   <section id="screen-result" class="screen">
     <div class="learn-card" style="text-align:center">
       <p class="result-title">完成！</p>
@@ -159,9 +144,9 @@
       </div>
 
       <div class="result-streak-row">
-        <span>🌟 连击</span>
+        <span>连击</span>
         <span class="result-streak-num" id="result-streak">0</span>
-        <span>天</span>
+        <span>天 🌟</span>
       </div>
 
       <button class="btn-primary" id="btn-result-home">回到首页</button>
@@ -169,15 +154,8 @@
     </div>
   </section>
 
-  <!-- scripts -->
   <script type="module" src="js/main.js"></script>
   <script type="module" src="js/animations.js"></script>
-  <script type="module">
-    // 设置今日日期显示
-    const d = new Date();
-    const dateStr = d.toLocaleDateString('zh-CN', { month:'long', day:'numeric', weekday:'long' });
-    document.getElementById('intro-date-str').textContent = dateStr.toUpperCase();
-  </script>
   <script type="module" src="js/learn.js"></script>
 </body>
 </html>
