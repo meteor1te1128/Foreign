@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="css/theme-buttons.css" />
   <link rel="stylesheet" href="css/learn.css" />
 </head>
-<body class="theme-ocean">
+<body>
 
   <div id="bg-image" class="bg-image"></div>
   <canvas id="bg-canvas" class="bg-canvas"></canvas>
@@ -29,7 +29,6 @@
     <div class="learn-card">
       <p class="intro-title">今日学习</p>
       <p class="intro-date" id="intro-date-str"></p>
-
       <div class="intro-stats">
         <div class="stat-box">
           <span class="stat-num" id="intro-new-count">0</span>
@@ -48,7 +47,6 @@
           <span class="stat-label">本次合计</span>
         </div>
       </div>
-
       <button class="btn-primary" id="btn-start-learn">开始学习</button>
       <a href="index.html" style="display:block;text-align:center;text-decoration:none;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:rgba(255,255,255,0.4);">今天先跳过</a>
     </div>
@@ -57,48 +55,26 @@
   <!-- 情景卡片 -->
   <section id="screen-card" class="screen">
     <div class="progress-wrap">
-      <div class="progress-meta">
-        <span>PROGRESS</span>
-        <span id="card-progress-text">1 / 10</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="card-progress-bar" style="width:0%"></div>
-      </div>
+      <div class="progress-meta"><span>PROGRESS</span><span id="card-progress-text">1 / 10</span></div>
+      <div class="progress-track"><div class="progress-fill" id="card-progress-bar" style="width:0%"></div></div>
     </div>
-
     <div class="learn-card">
       <div class="card-tags">
         <span class="tag" id="card-type-badge" data-type="new">新词</span>
         <span class="tag" id="card-dim-label">☀️ 日常词汇</span>
         <span class="tag" id="card-level-label">B1</span>
       </div>
-
       <div class="card-word" id="card-word">word</div>
       <div class="card-phonetic" id="card-phonetic">/wɜːrd/</div>
       <div class="card-meaning" id="card-meaning">含义</div>
-
       <div class="card-sentence" id="card-sentence"></div>
       <div class="card-translation hidden" id="card-translation"></div>
-
       <button class="btn-reveal" id="card-reveal-btn">查看翻译 · 自我评估</button>
-
       <div class="rating-area hidden" id="card-rating-area">
-        <button class="btn-rating" data-rating="1">
-          <span class="rating-emoji">😰</span>
-          <span class="rating-label">又忘了</span>
-        </button>
-        <button class="btn-rating" data-rating="2">
-          <span class="rating-emoji">😅</span>
-          <span class="rating-label">勉强</span>
-        </button>
-        <button class="btn-rating" data-rating="3">
-          <span class="rating-emoji">😊</span>
-          <span class="rating-label">记住了</span>
-        </button>
-        <button class="btn-rating" data-rating="4">
-          <span class="rating-emoji">😎</span>
-          <span class="rating-label">轻松</span>
-        </button>
+        <button class="btn-rating" data-rating="1"><span class="rating-emoji">😰</span><span class="rating-label">又忘了</span></button>
+        <button class="btn-rating" data-rating="2"><span class="rating-emoji">😅</span><span class="rating-label">勉强</span></button>
+        <button class="btn-rating" data-rating="3"><span class="rating-emoji">😊</span><span class="rating-label">记住了</span></button>
+        <button class="btn-rating" data-rating="4"><span class="rating-emoji">😎</span><span class="rating-label">轻松</span></button>
       </div>
     </div>
   </section>
@@ -106,15 +82,9 @@
   <!-- 填空题 -->
   <section id="screen-fill" class="screen">
     <div class="progress-wrap">
-      <div class="progress-meta">
-        <span>FILL IN THE BLANK</span>
-        <span id="fill-progress-text">1 / 10</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="fill-progress-bar" style="width:0%"></div>
-      </div>
+      <div class="progress-meta"><span>FILL IN THE BLANK</span><span id="fill-progress-text">1 / 10</span></div>
+      <div class="progress-track"><div class="progress-fill" id="fill-progress-bar" style="width:0%"></div></div>
     </div>
-
     <div class="learn-card">
       <p class="fill-context">根据中文含义，填入英文单词</p>
       <p class="fill-meaning-hint" id="fill-meaning">含义</p>
@@ -131,31 +101,45 @@
     <div class="learn-card" style="text-align:center">
       <p class="result-title">完成！</p>
       <p class="result-msg" id="result-msg">太厉害了！🎉</p>
-
       <div class="result-score">
         <div class="result-pct" id="result-pct">—%</div>
-        <div class="result-detail">
-          答对 <span id="result-correct">0</span> / <span id="result-total">0</span> 题
-        </div>
+        <div class="result-detail">答对 <span id="result-correct">0</span> / <span id="result-total">0</span> 题</div>
       </div>
-
-      <div class="result-bar-wrap">
-        <div class="result-bar" id="result-bar"></div>
-      </div>
-
+      <div class="result-bar-wrap"><div class="result-bar" id="result-bar"></div></div>
       <div class="result-streak-row">
-        <span>连击</span>
-        <span class="result-streak-num" id="result-streak">0</span>
-        <span>天 🌟</span>
+        <span>连击</span><span class="result-streak-num" id="result-streak">0</span><span>天 🌟</span>
       </div>
-
       <button class="btn-primary" id="btn-result-home">回到首页</button>
       <button class="btn-secondary" id="btn-result-again">再练一遍错题</button>
     </div>
   </section>
 
-  <script type="module" src="js/main.js"></script>
-  <script type="module" src="js/animations.js"></script>
+  <!-- 只用一个 module 脚本做背景初始化，learn.js 单独管业务逻辑 -->
+  <script type="module">
+    import { startAnim } from './js/animations.js';
+    const THEME_IMGS = {
+      ocean:'assets/images/ocean.jpg', fog_forest:'assets/images/fog_forest.jpg',
+      galaxy:'assets/images/galaxy.jpg', rain:'assets/images/rain.jpg',
+      aurora:'assets/images/aurora.jpg', sakura:'assets/images/sakura.jpg',
+      sunset:'assets/images/sunset.jpg', snow:'assets/images/snow.jpg',
+      forest_green:'assets/images/forest_green.jpg',
+    };
+    const THEME_ANIMS = {
+      ocean:'ocean', fog_forest:'mist', galaxy:'stars', rain:'rain',
+      aurora:'aurora', sakura:'sakura', sunset:'clouds', snow:'snow', forest_green:'forest',
+    };
+    const theme = localStorage.getItem('fg_theme') || 'ocean';
+    document.body.className = `theme-${theme}`;
+    if (theme === 'white') { document.body.style.background='#f6f5f0'; document.body.classList.add('dm'); }
+    else if (theme === 'black') { document.body.style.background='#080808'; }
+    const bg = document.getElementById('bg-image');
+    const cv = document.getElementById('bg-canvas');
+    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    window.addEventListener('resize', () => { cv.width=window.innerWidth; cv.height=window.innerHeight; });
+    if (THEME_IMGS[theme]) { bg.style.backgroundImage=`url(${THEME_IMGS[theme]})`; bg.style.opacity='1'; }
+    else { bg.style.opacity='0'; }
+    if (THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cv);
+  </script>
   <script type="module" src="js/learn.js"></script>
 </body>
 </html>
