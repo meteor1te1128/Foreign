@@ -4,25 +4,18 @@ import { getTodayPlan, getOrCreateCard, reviewCard, updateCard, RATING } from '.
 import { getStreak, markTodayDone, playStreakAnim } from './streak.js';
 
 // ── 状态 ────────────────────────────────────────────────────
-let plan        = [];   // 今日词汇ID列表
-let currentIdx  = 0;
-let phase       = 'card'; // card | fill
-let sessionResults = []; // { wordId, correct }
-let currentWord = null;
-let showingAnswer = false;
+let plan           = [];
+let currentIdx     = 0;
+let sessionResults = [];
+let currentWord    = null;
 
-// ── DOM refs ─────────────────────────────────────────────────
-const screens = {
-  loading:  document.getElementById('screen-loading'),
-  intro:    document.getElementById('screen-intro'),
-  card:     document.getElementById('screen-card'),
-  fill:     document.getElementById('screen-fill'),
-  result:   document.getElementById('screen-result'),
-};
+// ── DOM ─────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
 
 function showScreen(name) {
-  Object.values(screens).forEach(s => s && s.classList.remove('active'));
-  if (screens[name]) screens[name].classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = $('screen-' + name);
+  if (el) el.classList.add('active');
 }
 
 // ── 主题继承 ─────────────────────────────────────────────────
@@ -34,41 +27,35 @@ function initTheme() {
 
 // ── 初始化 ──────────────────────────────────────────────────
 async function init() {
-  const theme = initTheme();
+  initTheme();
   showScreen('loading');
+  await new Promise(r => setTimeout(r, 500));
 
-  // 模拟加载（背景图加载时间）
-  await new Promise(r => setTimeout(r, 600));
-
-  const allIds = WORDS.map(w => w.id);
+  const allIds   = WORDS.map(w => w.id);
   const todayPlan = getTodayPlan(allIds);
   plan = todayPlan.all;
 
-  updateIntroStats(todayPlan);
+  // 日期显示
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('zh-CN', { month:'long', day:'numeric', weekday:'long' });
+  const dateEl = $('intro-date-str');
+  if (dateEl) dateEl.textContent = dateStr.toUpperCase();
+
+  // 统计
+  $('intro-new-count').textContent    = todayPlan.newWords.length;
+  $('intro-review-count').textContent = todayPlan.due.length;
+  $('intro-total-count').textContent  = plan.length;
+
+  const streak = getStreak();
+  $('intro-streak-count').textContent = streak.count;
+
   showScreen('intro');
 }
 
-// ── Intro 屏 ─────────────────────────────────────────────────
-function updateIntroStats({ due, newWords }) {
-  const streak = getStreak();
-
-  const el = id => document.getElementById(id);
-  el('intro-new-count').textContent    = newWords.length;
-  el('intro-review-count').textContent = due.length;
-  el('intro-streak-count').textContent = streak.count;
-  el('intro-total-count').textContent  = plan.length;
-
-  // 是否今天已完成
-  const doneEl = document.getElementById('intro-done-badge');
-  if (streak.lastDay === new Date().toISOString().slice(0,10)) {
-    doneEl && doneEl.classList.remove('hidden');
-  }
-}
-
-document.getElementById('btn-start-learn')?.addEventListener('click', () => {
+// ── Intro ────────────────────────────────────────────────────
+$('btn-start-learn')?.addEventListener('click', () => {
   if (plan.length === 0) {
-    showScreen('result');
-    renderResult();
+    finishSession();
     return;
   }
   currentIdx = 0;
@@ -76,225 +63,211 @@ document.getElementById('btn-start-learn')?.addEventListener('click', () => {
   showNextCard();
 });
 
-// ── 情景卡片 (phase: card) ───────────────────────────────────
+// ── 情景卡片 ─────────────────────────────────────────────────
 function showNextCard() {
   if (currentIdx >= plan.length) {
     finishSession();
     return;
   }
-
   const wordId = plan[currentIdx];
   currentWord  = WORDS.find(w => w.id === wordId);
   if (!currentWord) { currentIdx++; showNextCard(); return; }
 
-  const card = getOrCreateCard(wordId);
-  phase = 'card';
-  showingAnswer = false;
-  renderCard(currentWord, card);
+  renderCard(currentWord);
   showScreen('card');
 }
 
-function renderCard(word, card) {
-  const dim = DIMENSIONS[word.dimension];
+function renderCard(word) {
+  const dim  = DIMENSIONS[word.dimension];
+  const card = getOrCreateCard(word.id);
+  const pct  = Math.round((currentIdx / plan.length) * 100);
 
   // 进度
-  document.getElementById('card-progress-text').textContent =
-    `${currentIdx + 1} / ${plan.length}`;
-  document.getElementById('card-progress-bar').style.width =
-    `${((currentIdx) / plan.length) * 100}%`;
+  $('card-progress-text').textContent    = `${currentIdx + 1} / ${plan.length}`;
+  $('card-progress-bar').style.width     = pct + '%';
 
   // 标签
-  document.getElementById('card-dim-label').textContent  = dim.icon + ' ' + dim.label;
-  document.getElementById('card-level-label').textContent = word.level;
+  const badge = $('card-type-badge');
+  badge.textContent  = card.state === 'new' ? '新词' : '复习';
+  badge.dataset.type = card.state === 'new' ? 'new'  : 'review';
+  $('card-dim-label').textContent   = dim.icon + ' ' + dim.label;
+  $('card-level-label').textContent = word.level;
 
-  // 单词主体
-  document.getElementById('card-word').textContent     = word.word;
-  document.getElementById('card-phonetic').textContent = word.phonetic;
-  document.getElementById('card-meaning').textContent  = word.meaning;
+  // 内容
+  $('card-word').textContent     = word.word;
+  $('card-phonetic').textContent = word.phonetic;
+  $('card-meaning').textContent  = word.meaning;
 
-  // 例句（先隐藏翻译）
-  const sentEl = document.getElementById('card-sentence');
-  sentEl.innerHTML = word.sentence.replace('___',
+  // 例句：高亮单词
+  $('card-sentence').innerHTML = word.sentence.replace(
+    '___',
     `<span class="blank-word">${word.word}</span>`
   );
-  document.getElementById('card-translation').textContent = word.translation;
-  document.getElementById('card-translation').classList.add('hidden');
+  const transEl = $('card-translation');
+  transEl.textContent = word.translation;
+  transEl.classList.add('hidden');
 
-  // 按钮区
-  document.getElementById('card-reveal-btn').classList.remove('hidden');
-  document.getElementById('card-rating-area').classList.add('hidden');
-
-  // FSRS 状态标记
-  const isNew = card.state === 'new';
-  document.getElementById('card-type-badge').textContent = isNew ? '新词' : '复习';
-  document.getElementById('card-type-badge').dataset.type = isNew ? 'new' : 'review';
+  // 按钮复位
+  $('card-reveal-btn').classList.remove('hidden');
+  $('card-rating-area').classList.add('hidden');
 }
 
-// 翻转显示翻译
-document.getElementById('card-reveal-btn')?.addEventListener('click', () => {
-  document.getElementById('card-translation').classList.remove('hidden');
-  document.getElementById('card-reveal-btn').classList.add('hidden');
-  document.getElementById('card-rating-area').classList.remove('hidden');
-  showingAnswer = true;
+// 查看翻译
+$('card-reveal-btn')?.addEventListener('click', () => {
+  $('card-translation').classList.remove('hidden');
+  $('card-reveal-btn').classList.add('hidden');
+  $('card-rating-area').classList.remove('hidden');
 });
 
-// FSRS 评分按钮
+// FSRS 评分
 document.querySelectorAll('[data-rating]').forEach(btn => {
   btn.addEventListener('click', () => {
-    const rating = parseInt(btn.dataset.rating);
-    const card   = getOrCreateCard(currentWord.id);
+    const rating  = parseInt(btn.dataset.rating);
+    const card    = getOrCreateCard(currentWord.id);
     const updated = reviewCard(card, rating);
     updateCard(updated);
 
-    // 记录结果
     const correct = rating >= RATING.GOOD;
     sessionResults.push({ wordId: currentWord.id, correct, rating });
 
-    // 答错了存回炉本
-    if (!correct) {
-      markWrong(currentWord.id);
-    }
+    if (!correct) markWrong(currentWord.id);
 
-    // 下一阶段：进填空
-    phase = 'fill';
+    // 进入填空
     showFill(currentWord);
   });
 });
 
-// ── 填空题 (phase: fill) ─────────────────────────────────────
+// ── 填空题 ───────────────────────────────────────────────────
 function showFill(word) {
-  // 构建带空格的句子
-  const parts = word.sentence.split('___');
-  const sentenceEl = document.getElementById('fill-sentence');
-  sentenceEl.innerHTML = '';
+  const pct = Math.round((currentIdx / plan.length) * 100);
+  $('fill-progress-text').textContent = `${currentIdx + 1} / ${plan.length}`;
+  $('fill-progress-bar').style.width  = pct + '%';
+  $('fill-meaning').textContent = word.meaning;
+  $('fill-hint').textContent    = `提示：${word.hint}`;
 
-  const before = document.createTextNode(parts[0]);
-  sentenceEl.appendChild(before);
+  // 构建带 input 的句子
+  const sentEl = $('fill-sentence');
+  sentEl.innerHTML = '';
+  const parts  = word.sentence.split('___');
+  sentEl.appendChild(document.createTextNode(parts[0]));
 
   const input = document.createElement('input');
-  input.type  = 'text';
-  input.className = 'fill-input';
-  input.id    = 'fill-input';
+  input.type        = 'text';
+  input.className   = 'fill-input';
+  input.id          = 'fill-input-field';
   input.placeholder = word.hint;
   input.autocomplete = 'off';
   input.autocorrect  = 'off';
   input.spellcheck   = false;
-  sentenceEl.appendChild(input);
+  // Enter 键确认
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') checkFill(word); });
+  sentEl.appendChild(input);
 
-  if (parts[1]) {
-    sentenceEl.appendChild(document.createTextNode(parts[1]));
-  }
+  if (parts[1]) sentEl.appendChild(document.createTextNode(parts[1]));
 
-  // 提示
-  document.getElementById('fill-hint').textContent     = `提示：${word.hint}`;
-  document.getElementById('fill-meaning').textContent  = word.meaning;
-  document.getElementById('fill-word-label').textContent = word.word;
-  document.getElementById('fill-feedback').className   = 'fill-feedback hidden';
-  document.getElementById('fill-next-btn').classList.add('hidden');
-  document.getElementById('fill-confirm-btn').classList.remove('hidden');
+  // 反馈 + 按钮复位
+  const fb = $('fill-feedback');
+  fb.className = 'fill-feedback hidden';
+  $('fill-next-btn').classList.add('hidden');
+  $('fill-confirm-btn').classList.remove('hidden');
 
   showScreen('fill');
-  setTimeout(() => input.focus(), 300);
+  setTimeout(() => input.focus(), 320);
 }
 
-document.getElementById('fill-confirm-btn')?.addEventListener('click', checkFill);
-document.getElementById('fill-input')?.addEventListener?.('keydown', (e) => {
-  if (e.key === 'Enter') checkFill();
+$('fill-confirm-btn')?.addEventListener('click', () => {
+  if (currentWord) checkFill(currentWord);
 });
 
-// 动态绑定（因为input是动态创建的）
-document.getElementById('fill-sentence')?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') checkFill();
-});
-
-function checkFill() {
-  const input   = document.getElementById('fill-input');
+function checkFill(word) {
+  const input = $('fill-input-field');
   if (!input) return;
-  const answer  = input.value.trim().toLowerCase();
-  const correct = answer === currentWord.word.toLowerCase() ||
-                  currentWord.word.toLowerCase().includes(answer) && answer.length >= 3;
 
-  const fb = document.getElementById('fill-feedback');
+  const answer  = input.value.trim().toLowerCase();
+  const target  = word.word.toLowerCase();
+  // 习语允许部分匹配（答案长度>=3且目标包含答案）
+  const correct = answer === target ||
+    (answer.length >= 3 && target.startsWith(answer) && answer.length >= target.length - 3);
+
+  const fb = $('fill-feedback');
   fb.classList.remove('hidden', 'correct', 'wrong');
+  input.classList.remove('input-correct', 'input-wrong');
 
   if (correct) {
-    fb.textContent = `✓ 正确！${currentWord.word} — ${currentWord.meaning}`;
+    fb.textContent = `✓ 正确！${word.word} — ${word.meaning}`;
     fb.classList.add('correct');
     input.classList.add('input-correct');
   } else {
-    fb.textContent = `答案是：${currentWord.word}`;
+    fb.textContent = `✗ 答案是：${word.word}`;
     fb.classList.add('wrong');
     input.classList.add('input-wrong');
+    // 填空答错也记录
+    if (!sessionResults.find(r => r.wordId === word.id && r.fillWrong)) {
+      markWrong(word.id);
+    }
   }
 
-  document.getElementById('fill-confirm-btn').classList.add('hidden');
-  document.getElementById('fill-next-btn').classList.remove('hidden');
+  $('fill-confirm-btn').classList.add('hidden');
+  $('fill-next-btn').classList.remove('hidden');
 }
 
-document.getElementById('fill-next-btn')?.addEventListener('click', () => {
+$('fill-next-btn')?.addEventListener('click', () => {
   currentIdx++;
   showNextCard();
 });
 
 // ── 错题记录 ─────────────────────────────────────────────────
 function markWrong(wordId) {
-  const data = JSON.parse(localStorage.getItem('fg_wrong') || '{}');
-  data[wordId] = (data[wordId] || 0) + 1;
-  localStorage.setItem('fg_wrong', JSON.stringify(data));
+  try {
+    const data = JSON.parse(localStorage.getItem('fg_wrong') || '{}');
+    data[wordId] = (data[wordId] || 0) + 1;
+    localStorage.setItem('fg_wrong', JSON.stringify(data));
+  } catch(e) {}
 }
 
-// ── 完成结算 ─────────────────────────────────────────────────
+// ── 结算 ─────────────────────────────────────────────────────
 function finishSession() {
+  const total   = sessionResults.length;
+  const correct = sessionResults.filter(r => r.correct).length;
+  const pct     = total ? Math.round((correct / total) * 100) : 100;
   const newStreak = markTodayDone();
-  renderResult(newStreak);
-  showScreen('result');
 
-  // 播放连击动画
-  const canvas = document.getElementById('bg-canvas');
-  const theme  = (localStorage.getItem('fg_theme') || 'ocean');
-  if (canvas && newStreak > 1) {
-    setTimeout(() => {
-      // 动态import streak anim
-      import('./streak.js').then(m => m.playStreakAnim(canvas, theme, newStreak));
-    }, 600);
+  $('result-correct').textContent = correct;
+  $('result-total').textContent   = total;
+  $('result-pct').textContent     = pct + '%';
+  $('result-streak').textContent  = newStreak;
+  $('result-msg').textContent     =
+    pct >= 90 ? '太厉害了！🎉' :
+    pct >= 70 ? '掌握得不错 👍' :
+    pct >= 50 ? '继续加油 💪'  : '明天继续努力 🌱';
+
+  showScreen('result');
+  setTimeout(() => { $('result-bar').style.width = pct + '%'; }, 200);
+
+  // 连击动画
+  if (newStreak >= 1) {
+    const canvas = $('bg-canvas');
+    const theme  = localStorage.getItem('fg_theme') || 'ocean';
+    if (canvas) setTimeout(() => playStreakAnim(canvas, theme, newStreak), 600);
   }
 }
 
-function renderResult(streakCount) {
-  const total   = sessionResults.length;
-  const correct = sessionResults.filter(r => r.correct).length;
-  const pct     = total ? Math.round((correct / total) * 100) : 0;
-  const streak  = streakCount || getStreak().count;
-
-  document.getElementById('result-correct').textContent = correct;
-  document.getElementById('result-total').textContent   = total;
-  document.getElementById('result-pct').textContent     = pct + '%';
-  document.getElementById('result-streak').textContent  = streak;
-
-  // 评语
-  const msg = pct >= 90 ? '太厉害了！🎉' :
-              pct >= 70 ? '掌握得不错 👍' :
-              pct >= 50 ? '继续加油 💪' : '明天继续努力 🌱';
-  document.getElementById('result-msg').textContent = msg;
-
-  // 进度条动画
-  setTimeout(() => {
-    document.getElementById('result-bar').style.width = pct + '%';
-  }, 300);
-}
-
-document.getElementById('btn-result-home')?.addEventListener('click', () => {
+$('btn-result-home')?.addEventListener('click', () => {
   window.location.href = 'index.html';
 });
 
-document.getElementById('btn-result-again')?.addEventListener('click', () => {
+$('btn-result-again')?.addEventListener('click', () => {
+  // 只练本次答错的词
+  const wrongIds = sessionResults.filter(r => !r.correct).map(r => r.wordId);
+  if (wrongIds.length === 0) {
+    window.location.href = 'index.html';
+    return;
+  }
+  plan       = wrongIds;
   currentIdx = 0;
   sessionResults = [];
-  // 只复习答错的
-  const wrong = sessionResults.filter(r => !r.correct).map(r => r.wordId);
-  if (wrong.length > 0) plan = wrong;
   showNextCard();
 });
 
 // ── 启动 ─────────────────────────────────────────────────────
-init();
+init().catch(console.error);
