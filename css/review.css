@@ -1,0 +1,332 @@
+/* Foreign · review.css — 回炉本专属样式 */
+
+/* ── 回炉本列表 ────────────────────────────────────── */
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.review-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(15,23,42,.5);
+  border: 1px solid rgba(241,245,249,.1);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: all .2s cubic-bezier(.34,1.2,.64,1);
+  animation: reviewItemIn .3s ease backwards;
+}
+.review-item:hover {
+  background: rgba(15,23,42,.7);
+  border-color: rgba(241,245,249,.2);
+  transform: translateX(4px);
+}
+@keyframes reviewItemIn {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* 错误次数徽章 */
+.review-badge {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(248,113,113,.2);
+  border: 1px solid rgba(248,113,113,.3);
+  color: #f87171;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.review-word {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #f1f5f9;
+  flex: 1;
+}
+.review-zh {
+  font-size: 13px;
+  color: rgba(241,245,249,.45);
+}
+.review-dim {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: rgba(241,245,249,.3);
+  flex-shrink: 0;
+}
+
+/* 手动添加按钮 */
+.review-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: rgba(241,245,249,.06);
+  border: 1px dashed rgba(241,245,249,.2);
+  border-radius: 14px;
+  color: rgba(241,245,249,.55);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .2s;
+  width: 100%;
+}
+.review-add-btn:hover {
+  background: rgba(241,245,249,.1);
+  border-color: rgba(241,245,249,.35);
+  color: rgba(241,245,249,.85);
+}
+
+/* ── 搜索添加面板 ───────────────────────────────────── */
+.review-search-panel {
+  background: rgba(8,15,28,.85);
+  border: 1px solid rgba(241,245,249,.12);
+  border-radius: 16px;
+  backdrop-filter: blur(24px);
+  padding: 16px;
+  margin: 0 24px 12px;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  display: none;
+}
+.review-search-panel.open { display: block; animation: panelIn .22s ease; }
+@keyframes panelIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+.review-search-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(241,245,249,.07);
+  border: 1px solid rgba(241,245,249,.12);
+  border-radius: 10px;
+  color: #f1f5f9;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .18s;
+  margin-bottom: 10px;
+}
+.review-search-input:focus { border-color: rgba(241,245,249,.3); }
+.review-search-input::placeholder { color: rgba(241,245,249,.3); }
+
+.review-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.review-search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.review-search-result-item:hover { background: rgba(241,245,249,.1); }
+.review-search-result-word {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: #f1f5f9;
+  flex:1;
+}
+.review-search-result-zh { font-size:12px; color:rgba(241,245,249,.4); }
+.review-search-result-add {
+  font-size:11px; font-family:'Space Mono',monospace;
+  color: var(--theme-color,#3b82f6); opacity:.7;
+}
+.review-search-result-item:hover .review-search-result-add { opacity:1; }
+
+/* ── 练习卡片（单词练习区域） ─────────────────────── */
+.review-practice-area {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* 回翻导航（答题时可以往回看） */
+.review-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.review-nav-btn {
+  padding: 8px 16px;
+  background: rgba(241,245,249,.08);
+  border: 1px solid rgba(241,245,249,.12);
+  border-radius: 8px;
+  color: rgba(241,245,249,.6);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .18s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.review-nav-btn:hover:not(:disabled) {
+  background: rgba(241,245,249,.14);
+  color: rgba(241,245,249,.9);
+}
+.review-nav-btn:disabled { opacity:.28; cursor:not-allowed; }
+.review-nav-counter {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: rgba(241,245,249,.4);
+}
+
+/* 练习卡片 */
+.review-card {
+  background: rgba(15,23,42,.55);
+  border: 1px solid rgba(241,245,249,.1);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  padding: 32px;
+  transition: transform .3s cubic-bezier(.34,1.2,.64,1);
+}
+.review-card.slide-left  { animation: slideLeft  .25s ease; }
+.review-card.slide-right { animation: slideRight .25s ease; }
+@keyframes slideLeft  { from{transform:translateX(20px);opacity:.6} to{transform:translateX(0);opacity:1} }
+@keyframes slideRight { from{transform:translateX(-20px);opacity:.6} to{transform:translateX(0);opacity:1} }
+
+.review-card-word {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 500;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+.review-card-phonetic {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: rgba(241,245,249,.35);
+  margin-bottom: 12px;
+}
+.review-card-example {
+  font-size: 15px;
+  color: rgba(241,245,249,.6);
+  line-height: 1.65;
+  border-left: 2px solid rgba(241,245,249,.15);
+  padding-left: 14px;
+  margin-bottom: 24px;
+}
+.review-card-example .blank-word {
+  color: var(--theme-color,#3b82f6);
+  font-weight: 500;
+}
+
+/* 输入区 */
+.review-input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.review-input {
+  flex:1;
+  padding: 12px 16px;
+  background: rgba(241,245,249,.07);
+  border: 1px solid rgba(241,245,249,.14);
+  border-radius: 10px;
+  color: #f1f5f9;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  outline: none;
+  transition: border-color .18s;
+}
+.review-input:focus { border-color: rgba(241,245,249,.32); }
+.review-input.correct { border-color: #4ade80; background: rgba(74,222,128,.08); }
+.review-input.wrong   { border-color: #f87171; background: rgba(248,113,113,.08); }
+
+.review-confirm-btn {
+  padding: 12px 20px;
+  background: var(--theme-color,#3b82f6);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .18s;
+  opacity: .5;
+}
+.review-confirm-btn.ready { opacity:1; }
+.review-confirm-btn:hover.ready { filter: brightness(1.1); transform: scale(1.03); }
+
+/* 答对/错反馈 */
+.review-feedback {
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-top: 4px;
+  display: none;
+}
+.review-feedback.show { display:flex; gap:10px; align-items:flex-start; animation:fadeIn .2s ease; }
+.review-feedback.correct { background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.2); color:#4ade80; }
+.review-feedback.wrong   { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.2); color:#f87171; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* 下方按钮组 */
+.review-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.review-skip-btn {
+  padding: 10px 16px;
+  background: rgba(241,245,249,.06);
+  border: 1px solid rgba(241,245,249,.1);
+  border-radius: 10px;
+  color: rgba(241,245,249,.5);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.review-skip-btn:hover { background:rgba(241,245,249,.12); color:rgba(241,245,249,.8); }
+
+/* ── 亮色主题适配 ──────────────────────────────────── */
+body.theme-white .review-item {
+  background: rgba(255,255,255,.7);
+  border-color: rgba(30,41,59,.1);
+}
+body.theme-white .review-item:hover {
+  background: rgba(255,255,255,.9);
+  border-color: rgba(30,41,59,.2);
+}
+body.theme-white .review-word { color: #1e293b; }
+body.theme-white .review-zh   { color: rgba(30,41,59,.5); }
+body.theme-white .review-card {
+  background: rgba(255,255,255,.72);
+  border-color: rgba(30,41,59,.1);
+}
+body.theme-white .review-card-word { color: #1e293b; }
+body.theme-white .review-input {
+  background: rgba(30,41,59,.05);
+  border-color: rgba(30,41,59,.12);
+  color: #1e293b;
+}
+body.theme-white .review-search-panel {
+  background: rgba(255,255,255,.92);
+  border-color: rgba(30,41,59,.1);
+}
+body.theme-white .review-search-input {
+  background: rgba(30,41,59,.05);
+  border-color: rgba(30,41,59,.1);
+  color: #1e293b;
+}
+body.theme-white .review-search-result-word { color: #1e293b; }
