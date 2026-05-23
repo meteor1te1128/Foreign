@@ -1,23 +1,20 @@
-/* Foreign · main.js — 震撼主题选择器 v2
-   设计参考：Arc Browser侧边栏 + Linear主题切换 + Vercel Dashboard
-   交互：点击触发 → 弧形爆炸展开 → hover全屏预览 → 选中涟漪收回   */
-
+/* Foreign · main.js */
 import { startAnim }      from './animations.js';
 import { initAllButtons } from './buttons.js';
 import { getStreak, isDoneToday } from './streak.js';
 
 const THEMES = {
-  ocean:        { img:'assets/images/ocean.jpg',        anim:'ocean',  label:'深海',   label_en:'OCEAN',      color:'#3b82f6' },
-  fog_forest:   { img:'assets/images/fog_forest.jpg',   anim:'mist',   label:'雾林',   label_en:'FOG FOREST', color:'#6ee7b7' },
-  galaxy:       { img:'assets/images/galaxy.jpg',       anim:'stars',  label:'星空',   label_en:'GALAXY',     color:'#818cf8' },
-  rain:         { img:'assets/images/rain.jpg',         anim:'rain',   label:'雨天',   label_en:'RAIN',       color:'#93c5fd' },
-  aurora:       { img:'assets/images/aurora.jpg',       anim:'aurora', label:'极光',   label_en:'AURORA',     color:'#34d399' },
-  sakura:       { img:'assets/images/sakura.jpg',       anim:'sakura', label:'樱花',   label_en:'SAKURA',     color:'#f9a8d4' },
-  sunset:       { img:'assets/images/sunset.jpg',       anim:'clouds', label:'火烧云', label_en:'SUNSET',     color:'#fb923c' },
-  snow:         { img:'assets/images/snow.jpg',         anim:'snow',   label:'雪山',   label_en:'SNOW',       color:'#bae6fd' },
-  forest_green: { img:'assets/images/forest_green.jpg', anim:'forest', label:'雨林',   label_en:'FOREST',     color:'#86efac' },
-  white:        { img:null, anim:'none', label:'纯白', label_en:'WHITE', color:'#e2e8f0', dm:true  },
-  black:        { img:null, anim:'none', label:'纯黑', label_en:'BLACK', color:'#334155', dm:false },
+  ocean:        { img:'assets/images/ocean.jpg',        anim:'ocean',  label:'深海',   label_en:'OCEAN',      color:'#3b82f6', rgb:'59,130,246'   },
+  fog_forest:   { img:'assets/images/fog_forest.jpg',   anim:'mist',   label:'雾林',   label_en:'FOG FOREST', color:'#6ee7b7', rgb:'110,231,183'  },
+  galaxy:       { img:'assets/images/galaxy.jpg',       anim:'stars',  label:'星空',   label_en:'GALAXY',     color:'#818cf8', rgb:'129,140,248'  },
+  rain:         { img:'assets/images/rain.jpg',         anim:'rain',   label:'雨天',   label_en:'RAIN',       color:'#93c5fd', rgb:'147,197,253'  },
+  aurora:       { img:'assets/images/aurora.jpg',       anim:'aurora', label:'极光',   label_en:'AURORA',     color:'#34d399', rgb:'52,211,153'   },
+  sakura:       { img:'assets/images/sakura.jpg',       anim:'sakura', label:'樱花',   label_en:'SAKURA',     color:'#f9a8d4', rgb:'249,168,212'  },
+  sunset:       { img:'assets/images/sunset.jpg',       anim:'clouds', label:'火烧云', label_en:'SUNSET',     color:'#fb923c', rgb:'251,146,60'   },
+  snow:         { img:'assets/images/snow.jpg',         anim:'snow',   label:'雪山',   label_en:'SNOW',       color:'#bae6fd', rgb:'186,230,253'  },
+  forest_green: { img:'assets/images/forest_green.jpg', anim:'forest', label:'雨林',   label_en:'FOREST',     color:'#86efac', rgb:'134,239,172'  },
+  white:        { img:null, anim:'none', label:'纯白', label_en:'WHITE', color:'#e2e8f0', rgb:'226,232,240', dm:true  },
+  black:        { img:null, anim:'none', label:'纯黑', label_en:'BLACK', color:'#334155', rgb:'51,65,85',   dm:false },
 };
 
 const bg = document.getElementById('bg-image');
@@ -38,17 +35,20 @@ function applyTheme(key, isPreview = false) {
   const t = THEMES[key];
 
   if (!isPreview) {
-    document.body.classList.remove(...Object.keys(THEMES).map(k=>`theme-${k}`), 'dm');
+    document.body.classList.remove(...Object.keys(THEMES).map(k => `theme-${k}`), 'dm');
     document.body.classList.add(`theme-${key}`);
     if (t.dm) document.body.classList.add('dm');
     document.body.style.background =
-      key==='white' ? '#f6f5f0' : key==='black' ? '#080808' : '';
+      key === 'white' ? '#f6f5f0' : key === 'black' ? '#080808' : '';
+    // 主题色 CSS 变量（按钮颜色跟随）
+    document.documentElement.style.setProperty('--theme-color', t.color);
+    document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
     localStorage.setItem('fg_theme', key);
   }
 
   if (bg) {
-    if (t.img) { bg.style.backgroundImage=`url(${t.img})`; bg.style.opacity='1'; }
-    else        { bg.style.backgroundImage='none'; bg.style.opacity= isPreview ? '0' : '0'; }
+    if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
+    else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
   }
 
   if (!isPreview && cv) startAnim(t.anim, cv);
@@ -58,7 +58,6 @@ function applyTheme(key, isPreview = false) {
   });
 }
 
-// 恢复真实主题（hover结束后）
 function restoreTheme() {
   applyTheme(cur);
 }
@@ -67,18 +66,13 @@ window.setTheme = applyTheme;
 
 /* ═══════════════════════════════════════════════════════
    震撼主题选择器
-   结构：
-   · .dock-trigger — 右下角常驻小圆点（呼吸光环）
-   · .dock-panel   — 展开后的主面板（全屏覆盖层）
-   · .dock-grid    — 主题卡片网格（3列）
-   · .dock-preview — hover时的全屏背景预览
 ═══════════════════════════════════════════════════════ */
 function renderDock() {
   const dock = document.getElementById('theme-dock');
   if (!dock) return;
   dock.innerHTML = '';
 
-  // ── 触发按钮（右下角常驻）──
+  // ── 触发按钮 ──
   const trigger = document.createElement('button');
   trigger.className = 'dock-trigger';
   trigger.setAttribute('aria-label', '切换主题');
@@ -108,9 +102,8 @@ function renderDock() {
 
   // ── 主题卡片 ──
   const grid = overlay.querySelector('#dockGrid');
-  const keys = Object.keys(THEMES);
 
-  keys.forEach((key) => {
+  Object.keys(THEMES).forEach(key => {
     const t = THEMES[key];
     const card = document.createElement('button');
     card.className = 'dock-card';
@@ -126,17 +119,14 @@ function renderDock() {
       <span class="dock-card-en">${t.label_en}</span>
     `;
 
-    // Hover → 全屏背景预览（只换图，不换动画，性能好）
+    // Hover → 背景预览
     card.addEventListener('mouseenter', () => {
-      // 更新背景图预览
       if (bg) {
-        if (t.img) { bg.style.backgroundImage=`url(${t.img})`; bg.style.opacity='1'; }
-        else { bg.style.backgroundImage='none'; bg.style.opacity='0'; }
+        if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
+        else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
       }
-      // 更新底部标签
       const label = overlay.querySelector('#dockCurrentLabel');
       if (label) label.textContent = `${t.label} · ${t.label_en}`;
-      // 卡片放大
       card.classList.add('hovered');
     });
     card.addEventListener('mouseleave', () => {
@@ -148,7 +138,6 @@ function renderDock() {
 
     // 点击选中
     card.addEventListener('click', () => {
-      // 涟漪爆炸效果
       const ripple = document.createElement('span');
       ripple.className = 'dock-select-ripple';
       ripple.style.background = t.color;
@@ -158,10 +147,12 @@ function renderDock() {
       applyTheme(key);
       closePanel();
 
-      // 更新所有卡片激活态
       grid.querySelectorAll('.dock-card').forEach(c => {
         c.classList.toggle('active', c.dataset.t === key);
       });
+
+      // 更新触发按钮颜色
+      updateTriggerColor();
     });
 
     grid.appendChild(card);
@@ -174,11 +165,9 @@ function renderDock() {
     isOpen = true;
     overlay.classList.add('open');
     trigger.classList.add('open');
-    // 更新激活态
     grid.querySelectorAll('.dock-card').forEach(c => {
       c.classList.toggle('active', c.dataset.t === cur);
     });
-    // 卡片入场动画：交错
     grid.querySelectorAll('.dock-card').forEach((c, i) => {
       c.style.transitionDelay = `${i * 28}ms`;
       c.classList.add('visible');
@@ -199,21 +188,21 @@ function renderDock() {
   trigger.addEventListener('click', () => isOpen ? closePanel() : openPanel());
   overlay.querySelector('.dock-close').addEventListener('click', closePanel);
   overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
-  document.addEventListener('keydown', e => { if (e.key==='Escape' && isOpen) closePanel(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen) closePanel(); });
 
-  // 更新触发按钮颜色（跟随当前主题）
-  function updateTrigger() {
+  function updateTriggerColor() {
     const t = THEMES[cur];
-    trigger.querySelector('.dock-trigger-dot').style.background = t.color;
-    trigger.querySelector('.dock-trigger-ring').style.borderColor = t.color;
+    const dot  = trigger.querySelector('.dock-trigger-dot');
+    const ring = trigger.querySelector('.dock-trigger-ring');
+    if (dot)  dot.style.background    = t.color;
+    if (ring) ring.style.borderColor  = t.color;
   }
-  updateTrigger();
-  const _origApply = window.setTheme;
-  window.setTheme = (key) => { _origApply(key); updateTrigger(); };
+  updateTriggerColor();
 }
 
 /* ── 首页动态内容 ──────────────────────────────────── */
 async function initHomeContent() {
+  // 连击
   try {
     const streak = getStreak();
     if (streak.count > 0) {
@@ -223,6 +212,7 @@ async function initHomeContent() {
     }
   } catch(e) {}
 
+  // 今日学习
   const learnSub = document.getElementById('learn-sub');
   if (learnSub) {
     try {
@@ -238,12 +228,24 @@ async function initHomeContent() {
     } catch(e) { learnSub.textContent = 'TODAY'; }
   }
 
+  // 单词库词数
   try {
-    const cnt = Object.keys(JSON.parse(localStorage.getItem('fg_wrong')||'{}')).length;
-    const el  = document.getElementById('wrong-sub');
-    if (cnt > 0 && el) { el.textContent=cnt+' WORDS'; el.style.color='#f87171'; }
+    const { TOTAL } = await import('./wordbank.js');
+    const el = document.getElementById('wordbank-sub');
+    if (el && TOTAL) el.textContent = TOTAL + ' WORDS';
   } catch(e) {}
 
+  // 回炉本
+  try {
+    const cnt = Object.keys(JSON.parse(localStorage.getItem('fg_wrong') || '{}')).length;
+    const el  = document.getElementById('wrong-sub');
+    if (el) {
+      if (cnt > 0) { el.textContent = cnt + ' WORDS'; el.style.color = '#f87171'; }
+      else           el.textContent = 'REVIEW';
+    }
+  } catch(e) {}
+
+  // 账号
   const user    = localStorage.getItem('fg_user');
   const display = document.getElementById('account-display');
   const btn     = document.getElementById('btn-login');
