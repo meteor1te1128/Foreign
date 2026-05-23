@@ -74,6 +74,9 @@ function previewTheme(key) {
     document.body.style.background = '';
   }
 
+  // 预览时切换 dm class，确保文字颜色跟着背景变
+  if (key === 'white') document.body.classList.add('dm');
+  else document.body.classList.remove('dm');
   if (cv) startAnim(t.anim, cv);
 }
 
