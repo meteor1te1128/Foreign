@@ -1,8 +1,11 @@
-/* Foreign · main.js */
-import { startAnim }      from './animations.js';
-import { initAllButtons } from './buttons.js';
-import { getStreak, isDoneToday } from './streak.js';
+// main.js — Foreign 首页主逻辑 + 主题选择器
+import { startAnim, stopAnim } from './animations.js';
+import { initAllButtons }       from './buttons.js';
+import { getTodayPlan }         from './fsrs.js';
+import { WORDS }                from './wordbank.js';
+import { getRecentLog }         from './study-log.js';
 
+// ── 主题配置 ──────────────────────────────────────────────
 const THEMES = {
   ocean:        { img:'assets/images/ocean.jpg',        anim:'ocean',  label:'深海',   label_en:'OCEAN',      color:'#3b82f6', rgb:'59,130,246'   },
   fog_forest:   { img:'assets/images/fog_forest.jpg',   anim:'mist',   label:'雾林',   label_en:'FOG FOREST', color:'#6ee7b7', rgb:'110,231,183'  },
@@ -14,88 +17,67 @@ const THEMES = {
   snow:         { img:'assets/images/snow.jpg',         anim:'snow',   label:'雪山',   label_en:'SNOW',       color:'#bae6fd', rgb:'186,230,253'  },
   forest_green: { img:'assets/images/forest_green.jpg', anim:'forest', label:'雨林',   label_en:'FOREST',     color:'#86efac', rgb:'134,239,172'  },
   white:        { img:null, anim:'none', label:'纯白', label_en:'WHITE', color:'#e2e8f0', rgb:'226,232,240', dm:true  },
-  black:        { img:null, anim:'none', label:'纯黑', label_en:'BLACK', color:'#334155', rgb:'51,65,85',   dm:false },
+  black:        { img:null, anim:'none', label:'纯黑', label_en:'BLACK', color:'#334155', rgb:'51,65,85'              },
 };
 
-const bg = document.getElementById('bg-image');
-const cv = document.getElementById('bg-canvas');
+const bg = document.getElementById('bg');
+const cv = document.getElementById('cv');
+let cur  = localStorage.getItem('fg_theme') || 'ocean';
+if (!THEMES[cur]) cur = 'ocean';
 
-function resize() {
-  if (!cv) return;
-  cv.width = window.innerWidth; cv.height = window.innerHeight;
-}
+function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight; }
 resize();
 window.addEventListener('resize', () => { resize(); applyTheme(cur); });
 
-let cur = 'ocean';
-
-function applyTheme(key, isPreview = false) {
-  if (!THEMES[key]) key = 'ocean';
-  if (!isPreview) cur = key;
+function applyTheme(key, save = true) {
+  if (!THEMES[key]) return;
+  cur = key;
   const t = THEMES[key];
-
-  if (!isPreview) {
-    document.body.classList.remove(...Object.keys(THEMES).map(k => `theme-${k}`), 'dm');
-    document.body.classList.add(`theme-${key}`);
-    if (t.dm) document.body.classList.add('dm');
-    document.body.style.background =
-      key === 'white' ? '#f6f5f0' : key === 'black' ? '#080808' : '';
-    document.documentElement.style.setProperty('--theme-color', t.color);
-    document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
-    localStorage.setItem('fg_theme', key);
-  }
-
-  if (bg) {
-    if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
-    else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
-  }
-
-  if (cv) startAnim(t.anim, cv);
-
-  document.querySelectorAll('.theme-dot').forEach(d => {
-    d.classList.toggle('on', d.dataset.t === key);
-  });
+  document.body.classList.remove(...Object.keys(THEMES).map(k => `theme-${k}`), 'dm');
+  document.body.classList.add(`theme-${key}`);
+  if (t.dm) document.body.classList.add('dm');
+  document.body.style.background = key==='white'?'#f6f5f0':key==='black'?'#080808':'';
+  document.documentElement.style.setProperty('--theme-color', t.color);
+  document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
+  if (t.img) { bg.style.backgroundImage=`url(${t.img})`; bg.style.opacity='1'; }
+  else        { bg.style.backgroundImage='none'; bg.style.opacity='0'; }
+  stopAnim(); if (t.anim !== 'none') startAnim(t.anim, cv);
+  if (save) localStorage.setItem('fg_theme', key);
+  updateTrigger();
+  document.querySelectorAll('.dock-card').forEach(c => c.classList.toggle('active', c.dataset.t === key));
 }
 
-/* 预览某主题（hover时）：换背景图+动画，但不写 localStorage 不改 body class */
 function previewTheme(key) {
   if (!THEMES[key]) return;
   const t = THEMES[key];
-
-  if (bg) {
-    if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
-    else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
-  }
-
-  // 纯白/纯黑预览时也换 body 背景色
-  if (!t.img) {
-    document.body.style.background = key === 'white' ? '#f6f5f0' : '#080808';
-  } else {
-    document.body.style.background = '';
-  }
-
-  // 预览时切换 dm class，确保文字颜色跟着背景变
+  if (t.img) { bg.style.backgroundImage=`url(${t.img})`; bg.style.opacity='1'; }
+  else        { bg.style.backgroundImage='none'; bg.style.opacity='0'; }
+  document.body.style.background = !t.img ? (key==='white'?'#f6f5f0':'#080808') : '';
   if (key === 'white') document.body.classList.add('dm');
   else document.body.classList.remove('dm');
-  if (cv) startAnim(t.anim, cv);
+  stopAnim(); if (t.anim !== 'none') startAnim(t.anim, cv);
 }
 
-/* 恢复当前真实主题 */
-function restoreTheme() {
-  applyTheme(cur);
+function restoreTheme() { applyTheme(cur, false); }
+
+// ── 今日计划统计 ──────────────────────────────────────────
+function initStats() {
+  const plan = getTodayPlan(WORDS.map(w => w.id));
+  document.getElementById('stat-new').textContent    = plan.newWords.length;
+  document.getElementById('stat-review').textContent = plan.due.length;
+  document.getElementById('stat-total').textContent  = plan.all.length;
+
+  const streak = parseInt(localStorage.getItem('fg_streak') || '0');
+  const el = document.getElementById('stat-streak');
+  if (el) el.textContent = streak;
 }
 
-window.setTheme = applyTheme;
-
-/* ═══════════════════════════════════════════════════════
-   震撼主题选择器
-═══════════════════════════════════════════════════════ */
+// ── 主题选择器 ────────────────────────────────────────────
 function renderDock() {
   const dock = document.getElementById('theme-dock');
   if (!dock) return;
-  dock.innerHTML = '';
 
-  // ── 触发按钮 ──
+  // 触发按钮
   const trigger = document.createElement('button');
   trigger.className = 'dock-trigger';
   trigger.setAttribute('aria-label', '切换主题');
@@ -103,12 +85,12 @@ function renderDock() {
   trigger.innerHTML = `
     <span class="dock-trigger-ring"></span>
     <span class="dock-trigger-dot"></span>
-    <span class="dock-trigger-label">${THEMES[cur]?.label||'主题'}</span>
+    <span class="dock-trigger-label">${THEMES[cur]?.label || '主题'}</span>
     <span class="dock-trigger-icon">🎨</span>
   `;
   dock.appendChild(trigger);
 
-  // ── 遮罩 + 面板 ──
+  // 面板
   const overlay = document.createElement('div');
   overlay.className = 'dock-overlay';
   overlay.innerHTML = `
@@ -121,185 +103,152 @@ function renderDock() {
       <div class="dock-panel-footer">
         <span class="dock-current-label" id="dockCurrentLabel"></span>
       </div>
-    </div>
-  `;
+    </div>`;
   dock.appendChild(overlay);
 
-  // ── 主题卡片 ──
   const grid = overlay.querySelector('#dockGrid');
-
-  // hover 防抖：快速划过时不频繁重启动画
-  let hoverTimer = null;
+  let hoverTimer = null, panelClosing = false, isOpen = false;
 
   Object.keys(THEMES).forEach(key => {
     const t = THEMES[key];
     const card = document.createElement('button');
-    card.className = 'dock-card';
-    card.dataset.t = key;
+    card.className = 'dock-card'; card.dataset.t = key;
     if (key === cur) card.classList.add('active');
-
     card.innerHTML = `
       <span class="dock-card-swatch" style="background:${t.color}">
-        ${t.img ? `<img src="${t.img}" alt="" aria-hidden="true" loading="lazy">` : ''}
+        ${t.img ? `<img src="${t.img}" alt="" aria-hidden="true" loading="lazy" draggable="false">` : ''}
         <span class="dock-card-ring" style="border-color:${t.color}"></span>
       </span>
-      <span class="dock-card-name">${t.label}</span>
-      <span class="dock-card-en">${t.label_en}</span>
-    `;
+      <span class="dock-card-name">${t.label}</span>`;
 
     card.addEventListener('mouseenter', () => {
       card.classList.add('hovered');
-      const label = overlay.querySelector('#dockCurrentLabel');
-      if (label) label.textContent = `${t.label} · ${t.label_en}`;
-
-      // 防抖 80ms，避免快速扫过时动画疯狂切换
+      const lbl = overlay.querySelector('#dockCurrentLabel');
+      if (lbl) lbl.textContent = t.label;
       clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => previewTheme(key), 80);
+      hoverTimer = setTimeout(() => { if (!panelClosing) previewTheme(key); }, 80);
     });
-
     card.addEventListener('mouseleave', () => {
       card.classList.remove('hovered');
-      const label = overlay.querySelector('#dockCurrentLabel');
-      if (label) label.textContent = '';
-
+      const lbl = overlay.querySelector('#dockCurrentLabel');
+      if (lbl) lbl.textContent = '';
       clearTimeout(hoverTimer);
-      // 离开后短暂延迟再恢复，防止快速移到下一个卡片时闪烁
-      hoverTimer = setTimeout(() => restoreTheme(), 120);
+      hoverTimer = setTimeout(() => { if (!panelClosing) restoreTheme(); }, 120);
     });
-
     card.addEventListener('click', () => {
       clearTimeout(hoverTimer);
-
       const ripple = document.createElement('span');
-      ripple.className = 'dock-select-ripple';
-      ripple.style.background = t.color;
-      card.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 600);
-
-      applyTheme(key);
-      closePanel();
-
-      grid.querySelectorAll('.dock-card').forEach(c => {
-        c.classList.toggle('active', c.dataset.t === key);
-      });
-
-      updateTriggerColor();
+      ripple.className = 'dock-select-ripple'; ripple.style.background = t.color;
+      card.appendChild(ripple); setTimeout(() => ripple.remove(), 500);
+      applyTheme(key); closePanel();
     });
-
     grid.appendChild(card);
   });
 
-  // ── 开关逻辑 ──
-  let isOpen = false;
-
   function openPanel() {
-    isOpen = true;
-    overlay.classList.add('open');
-    trigger.classList.add('open');
-    grid.querySelectorAll('.dock-card').forEach(c => {
-      c.classList.toggle('active', c.dataset.t === cur);
-    });
+    isOpen = true; panelClosing = false;
+    overlay.classList.add('open'); trigger.classList.add('open');
     grid.querySelectorAll('.dock-card').forEach((c, i) => {
-      c.style.transitionDelay = `${i * 28}ms`;
-      c.classList.add('visible');
+      c.classList.toggle('active', c.dataset.t === cur);
+      c.style.transitionDelay = `${i * 24}ms`; c.classList.add('visible');
     });
   }
-
   function closePanel() {
-    isOpen = false;
-    clearTimeout(hoverTimer);
-    overlay.classList.remove('open');
-    trigger.classList.remove('open');
+    isOpen = false; panelClosing = true; clearTimeout(hoverTimer);
+    overlay.classList.remove('open'); trigger.classList.remove('open');
     grid.querySelectorAll('.dock-card').forEach(c => {
-      c.style.transitionDelay = '0ms';
-      c.classList.remove('visible', 'hovered');
+      c.style.transitionDelay = '0ms'; c.classList.remove('visible', 'hovered');
     });
     restoreTheme();
+    setTimeout(() => { panelClosing = false; }, 400);
   }
 
   trigger.addEventListener('click', () => isOpen ? closePanel() : openPanel());
   overlay.querySelector('.dock-close').addEventListener('click', closePanel);
   overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen) closePanel(); });
-
-  function updateTriggerColor() {
-    const t = THEMES[cur];
-    const dot   = trigger.querySelector('.dock-trigger-dot');
-    const ring  = trigger.querySelector('.dock-trigger-ring');
-    const label = trigger.querySelector('.dock-trigger-label');
-    if (dot)   dot.style.background   = t.color;
-    if (ring)  ring.style.borderColor = t.color;
-    if (label) label.textContent      = t.label;
-  }
-  updateTriggerColor();
 }
 
-/* ── 首页动态内容 ──────────────────────────────────── */
-async function initHomeContent() {
-  // 连击
-  try {
-    const streak = getStreak();
-    if (streak.count > 0) {
-      document.getElementById('streak-badge')?.classList.remove('hidden');
-      const n = document.getElementById('streak-num');
-      if (n) n.textContent = streak.count;
-    }
-  } catch(e) {}
-
-  // 今日学习
-  const learnSub = document.getElementById('learn-sub');
-  if (learnSub) {
-    try {
-      if (isDoneToday()) {
-        learnSub.textContent = '✓ 已完成';
-        learnSub.style.color = '#4ade80';
-      } else {
-        const { WORDS }        = await import('./wordbank.js');
-        const { getTodayPlan } = await import('./fsrs.js');
-        const plan = getTodayPlan(WORDS.map(w => w.id));
-        learnSub.textContent = plan.all.length + ' WORDS';
-      }
-    } catch(e) { learnSub.textContent = 'TODAY'; }
-  }
-
-  // 单词库词数
-  try {
-    const { TOTAL } = await import('./wordbank.js');
-    const el = document.getElementById('wordbank-sub');
-    if (el && TOTAL) el.textContent = TOTAL + ' WORDS';
-  } catch(e) {}
-
-  // 回炉本
-  try {
-    const cnt = Object.keys(JSON.parse(localStorage.getItem('fg_wrong') || '{}')).length;
-    const el  = document.getElementById('wrong-sub');
-    if (el) {
-      if (cnt > 0) { el.textContent = cnt + ' WORDS'; el.style.color = '#f87171'; }
-      else           el.textContent = 'REVIEW';
-    }
-  } catch(e) {}
-
-  // 账号
-  const user    = localStorage.getItem('fg_user');
-  const display = document.getElementById('account-display');
-  const btn     = document.getElementById('btn-login');
-  if (user && display && btn) {
-    display.textContent = user; display.style.display = 'inline-block';
-    btn.textContent = '退出';
-    btn.onclick = () => { localStorage.removeItem('fg_user'); location.reload(); };
-  } else if (btn) {
-    btn.onclick = () => {
-      const name = prompt('用户名：');
-      if (name?.trim()) { localStorage.setItem('fg_user', name.trim()); location.reload(); }
-    };
-  }
+function updateTrigger() {
+  const t = THEMES[cur];
+  const dot   = document.querySelector('.dock-trigger-dot');
+  const ring  = document.querySelector('.dock-trigger-ring');
+  const label = document.querySelector('.dock-trigger-label');
+  if (dot)   dot.style.background   = t.color;
+  if (ring)  ring.style.borderColor = t.color;
+  if (label) label.textContent      = t.label;
 }
 
-/* ── 初始化 ────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', async () => {
+// ── 初始化 ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(cur, false);
+  initStats();
   renderDock();
   initAllButtons();
-  const saved = localStorage.getItem('fg_theme');
-  applyTheme(saved && THEMES[saved] ? saved : 'ocean');
-  if (document.getElementById('theme-dock')) await initHomeContent();
+});
+
+// ── 统计更新 ──────────────────────────────────────────────
+function updateStatMeta() {
+  try {
+    const plan = getTodayPlan(WORDS.map(w => w.id));
+    const meta = document.getElementById('stat-meta');
+    const total = document.getElementById('stat-total');
+    if (meta)  meta.textContent  = `${plan.newWords.length} NEW · ${plan.due.length} REVIEW`;
+    if (total) total.textContent = plan.all.length;
+  } catch(e) {}
+}
+
+// ── 登录模态框 ────────────────────────────────────────────
+function initLogin() {
+  const modal  = document.getElementById('login-modal');
+  const box    = document.getElementById('login-box');
+  const btnL   = document.getElementById('btn-login');
+  const btnC   = document.getElementById('close-modal');
+  const tabs   = document.querySelectorAll('.md-tab');
+  const btnSub = document.getElementById('btn-submit');
+  const msg    = document.getElementById('auth-msg');
+  if (!modal) return;
+
+  let mode = 'login';
+  const isDark = () => !document.body.classList.contains('dm');
+
+  function openModal() {
+    modal.classList.add('open');
+    box.className = 'md' + (isDark() ? '' : ' lt');
+  }
+  function closeModal() { modal.classList.remove('open'); }
+
+  btnL?.addEventListener('click', openModal);
+  btnC?.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      mode = t.dataset.tab;
+      tabs.forEach(x => x.classList.toggle('on', x === t));
+      btnSub.textContent = mode === 'login' ? '登录' : '注册';
+      if (msg) msg.textContent = '';
+    });
+  });
+
+  btnSub?.addEventListener('click', () => {
+    const user = document.getElementById('inp-user')?.value.trim();
+    const pass = document.getElementById('inp-pass')?.value.trim();
+    if (!user || !pass) { if (msg) { msg.textContent = '请填写所有字段'; msg.className = 'mmsg err'; } return; }
+    localStorage.setItem('fg_user', user);
+    if (msg) { msg.textContent = mode === 'login' ? '登录成功！' : '注册成功！'; msg.className = 'mmsg ok'; }
+    setTimeout(closeModal, 800);
+  });
+
+  // 更新登录按钮文字
+  const savedUser = localStorage.getItem('fg_user');
+  if (savedUser && btnL) btnL.textContent = savedUser;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(cur, false);
+  updateStatMeta();
+  renderDock();
+  initLogin();
+  initAllButtons();
 });
