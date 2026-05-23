@@ -2,14 +2,31 @@
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html, body { width:100%; height:100%; overflow:hidden; background:#000; font-family:"DM Sans",sans-serif; }
 
+/* ── quiz.html 背景元素（用 ID）── */
 #bg { position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; transition:background-image .8s ease; animation:bgBreath 16s ease-in-out infinite alternate; }
 @keyframes bgBreath { 0%{transform:scale(1)} 100%{transform:scale(1.035)} }
 #bg.white-bg { background:#f6f5f0 !important; animation:none; }
 #bg.black-bg { background:#080808 !important; animation:none; }
-
 #vignette { position:fixed; inset:0; z-index:1; pointer-events:none; transition:opacity .5s; background:radial-gradient(ellipse 120% 100% at 50% 50%, transparent 20%, rgba(0,0,0,.62) 100%); }
 #grad { position:fixed; inset:0; z-index:1; pointer-events:none; transition:opacity .5s; background:linear-gradient(180deg, rgba(0,0,0,.52) 0%, transparent 28%, transparent 58%, rgba(0,0,0,.72) 100%); }
 #cv { position:fixed; inset:0; z-index:2; pointer-events:none; }
+
+/* ── 子页面背景（learn/review/wordbank/vocab 用 class）── */
+.bg-image {
+  position:fixed; inset:0; z-index:0;
+  background-size:cover; background-position:center;
+  transition:background-image .8s ease, opacity .6s ease;
+  animation:bgBreath 16s ease-in-out infinite alternate;
+  opacity:0;
+}
+.bg-canvas {
+  position:fixed; inset:0; z-index:1;
+  width:100%; height:100%; pointer-events:none;
+}
+.bg-overlay {
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  background:radial-gradient(ellipse 120% 100% at 50% 50%, transparent 20%, rgba(0,0,0,.55) 100%);
+}
 
 /* nav */
 nav { position:fixed; top:0; left:0; right:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:20px 52px; }
@@ -63,7 +80,7 @@ h1 em { font-style:italic; display:block; }
 .xb:hover { color:rgba(255,255,255,.75); }
 .md.lt .xb:hover { color:rgba(0,0,0,.65); }
 
-/* dark mode (white theme) */
+/* dark mode */
 body.dm .logo { color:#111; }
 body.dm .eyebrow { color:rgba(0,0,0,.38); }
 body.dm .eyebrow::before, body.dm .eyebrow::after { background:rgba(0,0,0,.18); }
@@ -78,110 +95,49 @@ body.dm .btn-secondary:hover { color:#111; }
 body.dm .btn-nav-ghost { color:rgba(0,0,0,.62); border-color:rgba(0,0,0,.15); background:rgba(0,0,0,.05); }
 body.dm .btn-nav-solid { color:#111; border-color:rgba(0,0,0,.18); background:rgba(0,0,0,.07); }
 
-/* ═══════════════════════════
-   BUTTONS
-═══════════════════════════ */
-
-/* 1. Primary — liquid fill */
-.btn-primary {
-  position:relative; overflow:hidden;
-  border:1px solid rgba(255,255,255,.28); color:#fff;
-  padding:14px 40px; border-radius:8px; font-size:15px; font-weight:500;
-  cursor:pointer; font-family:"DM Sans",sans-serif;
-  background:rgba(0,0,0,.3); backdrop-filter:blur(12px);
-  letter-spacing:.3px; transition:border-color .3s, transform .15s, box-shadow .3s;
-  z-index:0;
-}
-.btn-primary::before {
-  content:""; position:absolute; bottom:-120%; left:-10%; width:120%; height:240%;
-  background:rgba(255,255,255,.14); border-radius:50%;
-  transition:bottom .55s cubic-bezier(.4,0,.2,1); z-index:-1;
-}
+/* ═══ BUTTONS ═══ */
+.btn-primary { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.28); color:#fff; padding:14px 40px; border-radius:8px; font-size:15px; font-weight:500; cursor:pointer; font-family:"DM Sans",sans-serif; background:rgba(0,0,0,.3); backdrop-filter:blur(12px); letter-spacing:.3px; transition:border-color .3s, transform .15s, box-shadow .3s; z-index:0; }
+.btn-primary::before { content:""; position:absolute; bottom:-120%; left:-10%; width:120%; height:240%; background:rgba(255,255,255,.14); border-radius:50%; transition:bottom .55s cubic-bezier(.4,0,.2,1); z-index:-1; }
 .btn-primary:hover { border-color:rgba(255,255,255,.65); transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,0,0,.3); }
 .btn-primary:hover::before { bottom:-25%; }
 .btn-primary:active { transform:translateY(1px) scale(.97); box-shadow:none; }
 
-/* 2. Secondary — scanning border */
-.btn-secondary {
-  position:relative; overflow:hidden; background:transparent;
-  border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.6);
-  padding:14px 40px; border-radius:8px; font-size:15px;
-  cursor:pointer; font-family:"DM Sans",sans-serif; transition:color .3s, transform .15s;
-}
-.btn-secondary::after {
-  content:""; position:absolute; top:0; left:-100%; width:60%; height:100%;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
-  transition:left .5s ease;
-}
+.btn-secondary { position:relative; overflow:hidden; background:transparent; border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.6); padding:14px 40px; border-radius:8px; font-size:15px; cursor:pointer; font-family:"DM Sans",sans-serif; transition:color .3s, transform .15s; }
+.btn-secondary::after { content:""; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transition:left .5s ease; }
 .btn-secondary:hover { color:#fff; border-color:rgba(255,255,255,.45); }
 .btn-secondary:hover::after { left:160%; }
 .btn-secondary:active { transform:scale(.97); }
 
-/* 3. Nav ghost */
-.btn-nav-ghost {
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18);
-  color:rgba(255,255,255,.75); padding:8px 20px; border-radius:6px; font-size:13px;
-  cursor:pointer; font-family:"DM Sans",sans-serif; backdrop-filter:blur(8px);
-  transition:background .25s, color .25s, border-color .25s, transform .12s, box-shadow .25s;
-}
+.btn-nav-ghost { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.75); padding:8px 20px; border-radius:6px; font-size:13px; cursor:pointer; font-family:"DM Sans",sans-serif; backdrop-filter:blur(8px); transition:background .25s, color .25s, border-color .25s, transform .12s, box-shadow .25s; }
 .btn-nav-ghost:hover { background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.38); box-shadow:0 4px 18px rgba(0,0,0,.22); transform:translateY(-1px); }
 .btn-nav-ghost:active { transform:scale(.94) translateY(1px); box-shadow:none; }
 
-/* 4. Nav solid — ripple */
-.btn-nav-solid {
-  position:relative; overflow:hidden;
-  border:1px solid rgba(255,255,255,.24); color:#fff; padding:8px 20px; border-radius:6px;
-  font-size:13px; cursor:pointer; font-family:"DM Sans",sans-serif;
-  background:rgba(20,20,20,.45); backdrop-filter:blur(8px);
-  transition:background .25s, transform .12s, box-shadow .25s;
-}
+.btn-nav-solid { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.24); color:#fff; padding:8px 20px; border-radius:6px; font-size:13px; cursor:pointer; font-family:"DM Sans",sans-serif; background:rgba(20,20,20,.45); backdrop-filter:blur(8px); transition:background .25s, transform .12s, box-shadow .25s; }
 .btn-nav-solid:hover { background:rgba(50,50,50,.58); box-shadow:0 4px 18px rgba(0,0,0,.3); transform:translateY(-1px); }
 .btn-nav-solid:active { transform:scale(.95) translateY(1px); }
 
-/* 5. Modal submit — shine sweep */
-.btn-modal {
-  position:relative; overflow:hidden; width:100%;
-  border:1px solid rgba(255,255,255,.18); color:#fff; padding:13px; border-radius:9px;
-  font-size:14px; font-weight:600; cursor:pointer; font-family:"DM Sans",sans-serif;
-  background:rgba(255,255,255,.12); transition:background .25s, transform .12s, box-shadow .25s;
-}
-.btn-modal::after {
-  content:""; position:absolute; top:-50%; left:-75%; width:50%; height:200%;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
-  transform:skewX(-20deg); transition:left .5s ease;
-}
+.btn-modal { position:relative; overflow:hidden; width:100%; border:1px solid rgba(255,255,255,.18); color:#fff; padding:13px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; font-family:"DM Sans",sans-serif; background:rgba(255,255,255,.12); transition:background .25s, transform .12s, box-shadow .25s; }
+.btn-modal::after { content:""; position:absolute; top:-50%; left:-75%; width:50%; height:200%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent); transform:skewX(-20deg); transition:left .5s ease; }
 .btn-modal:hover { background:rgba(255,255,255,.2); box-shadow:0 4px 20px rgba(0,0,0,.22); }
 .btn-modal:hover::after { left:135%; }
 .btn-modal:active { transform:scale(.97) translateY(1px); box-shadow:none; }
 .md.lt .btn-modal { background:rgba(0,0,0,.08); color:#111; border-color:rgba(0,0,0,.13); }
 .md.lt .btn-modal::after { background:linear-gradient(90deg,transparent,rgba(0,0,0,.07),transparent); }
 
-/* ripple */
 .ripple { position:absolute; border-radius:50%; background:rgba(255,255,255,.28); transform:scale(0); animation:rippleAnim .55s linear; pointer-events:none; }
 @keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
 
-/* theme card */
-.tb {
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  cursor:pointer; padding:7px 10px; border-radius:10px;
-  border:1.5px solid rgba(255,255,255,.1); background:rgba(0,0,0,.3);
-  backdrop-filter:blur(8px); min-width:56px; position:relative; overflow:hidden;
-  transition:border-color .25s, background .25s, transform .2s, box-shadow .25s;
-}
+.tb { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:7px 10px; border-radius:10px; border:1.5px solid rgba(255,255,255,.1); background:rgba(0,0,0,.3); backdrop-filter:blur(8px); min-width:56px; position:relative; overflow:hidden; transition:border-color .25s, background .25s, transform .2s, box-shadow .25s; }
 .tb:hover { border-color:rgba(255,255,255,.45); transform:translateY(-3px) scale(1.05); box-shadow:0 8px 24px rgba(0,0,0,.35); }
 .tb:active { transform:translateY(0) scale(.96); }
 .tb.on { border-color:rgba(255,255,255,.85); background:rgba(255,255,255,.18); box-shadow:0 0 14px rgba(255,255,255,.14); }
 .tb .em { font-size:17px; line-height:1; }
 .tb .nm { font-size:10px; color:rgba(255,255,255,.62); letter-spacing:.2px; white-space:nowrap; }
 
-/* ── 补丁：纯白/纯黑主题取消暗色遮罩 ── 加到 styles.css 末尾 */
-
-/* 纯白：遮罩完全透明，保持干净白底 */
-body.theme-white .bg-overlay {
-  background: none !important;
-}
-
-/* 纯黑：遮罩也不需要，黑底已经够深 */
-body.theme-black .bg-overlay {
-  background: none !important;
-}
+/* 纯白/纯黑取消遮罩 */
+body.theme-white .bg-overlay,
+body.theme-black .bg-overlay { background:none !important; }
+body.theme-white #vignette,
+body.theme-white #grad,
+body.theme-black #vignette,
+body.theme-black #grad { opacity:0 !important; }
