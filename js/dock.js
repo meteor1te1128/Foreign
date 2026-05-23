@@ -1,6 +1,4 @@
 // dock.js — 子页面主题选择器独立模块
-// 用法：在任意子页面底部 import { initDock } from './dock.js'; initDock();
-
 import { startAnim } from './animations.js';
 
 const THEMES = {
@@ -39,7 +37,7 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
     }
     if (cv) startAnim(t.anim, cv);
     localStorage.setItem('fg_theme', key);
-    updateTriggerColor();
+    updateTrigger();
     dock.querySelectorAll('.dock-card').forEach(c=>c.classList.toggle('active',c.dataset.t===key));
   }
 
@@ -60,10 +58,17 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
   const dock = document.createElement('div');
   dock.id = 'theme-dock';
 
+  // 触发按钮：胶囊形
   const trigger = document.createElement('button');
   trigger.className = 'dock-trigger';
   trigger.setAttribute('aria-label','切换主题');
-  trigger.innerHTML = `<span class="dock-trigger-ring"></span><span class="dock-trigger-dot"></span><span class="dock-trigger-label">主题</span>`;
+  trigger.style.position = 'relative';
+  trigger.innerHTML = `
+    <span class="dock-trigger-ring"></span>
+    <span class="dock-trigger-dot"></span>
+    <span class="dock-trigger-label">${THEMES[cur].label}</span>
+    <span class="dock-trigger-icon">🎨</span>
+  `;
   dock.appendChild(trigger);
 
   const overlay = document.createElement('div');
@@ -75,7 +80,9 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
         <button class="dock-close" aria-label="关闭">✕</button>
       </div>
       <div class="dock-grid" id="dockGrid"></div>
-      <div class="dock-panel-footer"><span class="dock-current-label" id="dockCurrentLabel"></span></div>
+      <div class="dock-panel-footer">
+        <span class="dock-current-label" id="dockCurrentLabel"></span>
+      </div>
     </div>`;
   dock.appendChild(overlay);
   document.body.appendChild(dock);
@@ -113,7 +120,7 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
       clearTimeout(hoverTimer);
       const ripple = document.createElement('span');
       ripple.className='dock-select-ripple'; ripple.style.background=t.color;
-      card.appendChild(ripple); setTimeout(()=>ripple.remove(), 600);
+      card.appendChild(ripple); setTimeout(()=>ripple.remove(), 500);
       applyTheme(key); closePanel();
     });
     grid.appendChild(card);
@@ -124,7 +131,7 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
     overlay.classList.add('open'); trigger.classList.add('open');
     grid.querySelectorAll('.dock-card').forEach((c,i)=>{
       c.classList.toggle('active',c.dataset.t===cur);
-      c.style.transitionDelay=`${i*28}ms`; c.classList.add('visible');
+      c.style.transitionDelay=`${i*24}ms`; c.classList.add('visible');
     });
   }
   function closePanel() {
@@ -142,20 +149,20 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
   overlay.addEventListener('click', e=>{ if(e.target===overlay) closePanel(); });
   document.addEventListener('keydown', e=>{ if(e.key==='Escape'&&isOpen) closePanel(); });
 
-  function updateTriggerColor() {
+  function updateTrigger() {
     const t = THEMES[cur];
-    const dot  = trigger.querySelector('.dock-trigger-dot');
-    const ring = trigger.querySelector('.dock-trigger-ring');
-    if (dot)  dot.style.background   = t.color;
-    if (ring) ring.style.borderColor = t.color;
+    const dot   = trigger.querySelector('.dock-trigger-dot');
+    const label = trigger.querySelector('.dock-trigger-label');
+    if (dot)   dot.style.background = t.color;
+    if (label) label.textContent    = t.label;
   }
 
-  // 初始化当前主题（不重启动画，只同步视觉）
+  // 初始化
   const t = THEMES[cur];
   document.body.classList.remove(...Object.keys(THEMES).map(k=>`theme-${k}`),'dm');
   document.body.classList.add(`theme-${cur}`);
   if (t.dm) document.body.classList.add('dm');
   document.documentElement.style.setProperty('--theme-color', t.color);
   document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
-  updateTriggerColor();
+  updateTrigger();
 }
