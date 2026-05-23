@@ -17,7 +17,7 @@
   <canvas id="bg-canvas" class="bg-canvas"></canvas>
   <div class="bg-overlay"></div>
 
-  <a href="index.html" class="back-btn">← 返回</a>
+  <button class="back-btn" onclick="history.length > 1 ? history.back() : location.href='index.html'">← 返回</button>
 
   <!-- Loading -->
   <section id="screen-loading" class="screen active">
