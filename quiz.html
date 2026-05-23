@@ -8,16 +8,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/quiz.css">
+  <link rel="stylesheet" href="css/dock.css">
 </head>
 <body>
 
-  <!-- 复用首页相同结构：#bg + #vignette + #grad + #cv -->
   <div id="bg"></div>
   <div id="vignette"></div>
   <div id="grad"></div>
   <canvas id="cv"></canvas>
 
-  <!-- Nav -->
   <nav>
     <a href="index.html" class="logo">Foreign<sup>EN</sup></a>
     <div class="nav-progress-wrap" id="navProgress" style="display:none">
@@ -28,35 +27,25 @@
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════════
-       SCREEN 1 · INTRO
-  ═══════════════════════════════════ -->
+  <!-- INTRO -->
   <section class="qscreen active" id="screenIntro">
     <div class="intro-content">
       <div class="eyebrow">词汇水平测试</div>
       <h1>你的英语词汇<em>藏在哪里？</em></h1>
-      <p class="sub">
-        20道填空题 · 约5分钟<br/>
-        测完即刻生成你的专属词汇雷达图
-      </p>
+      <p class="sub">20道填空题 · 约5分钟<br/>测完即刻生成你的专属词汇雷达图</p>
       <div class="intro-meta">
         <div class="meta-item"><span class="meta-icon">🎯</span><span>难度自动调节</span></div>
         <div class="meta-item"><span class="meta-icon">📊</span><span>六维度分析</span></div>
         <div class="meta-item"><span class="meta-icon">🚀</span><span>个性化推荐</span></div>
       </div>
-      <div class="cta">
-        <button class="btn-primary" id="btnStart">开始测试</button>
-      </div>
+      <div class="cta"><button class="btn-primary" id="btnStart">开始测试</button></div>
       <p class="intro-tip">不用紧张，不会的就跳过，结果只属于你</p>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════
-       SCREEN 2 · QUIZ
-  ═══════════════════════════════════ -->
+  <!-- QUIZ -->
   <section class="qscreen" id="screenQuiz">
     <div class="quiz-wrap">
-
       <div class="q-card" id="qCard">
         <div class="q-header">
           <span class="q-category" id="qCategory">日常词汇</span>
@@ -68,23 +57,14 @@
         <div class="q-translation" id="qTranslation"></div>
         <div class="q-input-row">
           <div class="q-input-wrap">
-            <input
-              type="text"
-              class="q-input"
-              id="qInput"
+            <input type="text" class="q-input" id="qInput"
               placeholder="填入你认为正确的单词…"
-              autocomplete="off"
-              autocorrect="off"
-              autocapitalize="none"
-              spellcheck="false"
-            />
+              autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
             <div class="q-input-line"></div>
           </div>
           <button class="btn-nav-solid btn-confirm" id="btnConfirm">确认</button>
         </div>
         <button class="btn-skip" id="btnSkip">不认识，跳过 →</button>
-
-        <!-- Feedback overlay inside card -->
         <div class="q-feedback" id="qFeedback">
           <div class="feedback-icon" id="feedbackIcon"></div>
           <div class="feedback-word" id="feedbackWord"></div>
@@ -92,21 +72,17 @@
           <button class="btn-nav-ghost btn-next" id="btnNext">继续 →</button>
         </div>
       </div>
-
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════
-       SCREEN 3 · RESULTS
-  ═══════════════════════════════════ -->
+  <!-- RESULT -->
   <section class="qscreen" id="screenResult">
     <div class="result-wrap">
-
       <div class="result-header">
         <div class="result-badge" id="resultBadge">🎓</div>
         <p class="result-title-label">你的英语水平</p>
         <p class="result-level" id="resultLevel">B2 · 中高级</p>
-        <p class="result-vocab" id="resultVocab">预计掌握词汇量约 <strong>6,200</strong> 个</p>
+        <p class="result-vocab" id="resultVocab">预计掌握词汇量约 <strong>5,500</strong> 个</p>
       </div>
 
       <div class="radar-wrap">
@@ -115,18 +91,121 @@
 
       <div class="dimension-bars" id="dimensionBars"></div>
 
+      <!-- 薄弱维度推荐（新增） -->
+      <div class="weak-reco" id="weakReco" style="display:none">
+        <p class="eyebrow">薄弱维度 · 优先攻克</p>
+        <div class="weak-reco-list" id="weakRecoList"></div>
+      </div>
+
       <div class="result-cta">
         <p class="eyebrow" id="resultPathTitle">推荐学习路径</p>
         <p class="sub" style="margin-bottom:24px" id="resultPathDesc">每日15分钟，专攻你的薄弱维度</p>
-        <div class="cta" style="flex-direction:column; gap:10px">
+        <div class="cta" style="flex-direction:column;gap:10px">
           <button class="btn-primary" id="btnStartLearn">开始我的学习计划</button>
           <button class="btn-secondary" id="btnRetake">重新测试</button>
         </div>
       </div>
-
     </div>
   </section>
 
+  <style>
+  /* 薄弱维度推荐卡片 */
+  .weak-reco {
+    margin: 24px 0;
+    padding: 0 4px;
+  }
+  .weak-reco .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: rgba(255,255,255,.38);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .weak-reco-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .weak-reco-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    padding: 12px 16px;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .weak-reco-item:hover {
+    background: rgba(255,255,255,.11);
+    border-color: rgba(255,255,255,.2);
+    transform: translateX(4px);
+  }
+  .weak-reco-icon { font-size: 20px; flex-shrink: 0; }
+  .weak-reco-info { flex: 1; }
+  .weak-reco-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .weak-reco-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.38);
+  }
+  .weak-reco-bar-wrap {
+    width: 80px;
+    height: 4px;
+    background: rgba(255,255,255,.1);
+    border-radius: 99px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .weak-reco-bar {
+    height: 100%;
+    border-radius: 99px;
+    background: #f87171;
+    transition: width 1s cubic-bezier(.4,0,.2,1);
+  }
+  </style>
+
   <script type="module" src="js/quiz.js"></script>
+  <script type="module">
+    import { initDock } from './js/dock.js';
+    initDock('bg', 'cv');
+
+    // 结果页薄弱维度渲染（在 quiz.js 的 showResults 之后调用）
+    window.renderWeakReco = function(dimPcts, DIMENSIONS) {
+      const sorted = Object.entries(dimPcts).sort((a,b)=>a[1]-b[1]).slice(0,3);
+      const wrap = document.getElementById('weakReco');
+      const list = document.getElementById('weakRecoList');
+      if (!wrap || !list) return;
+      list.innerHTML = '';
+      sorted.forEach(([dim, pct]) => {
+        const info = DIMENSIONS.find(d=>d.key===dim)||{label:dim,color:'#94a3b8',icon:'✦'};
+        const item = document.createElement('a');
+        item.className = 'weak-reco-item';
+        item.href = 'learn.html';
+        item.innerHTML = `
+          <span class="weak-reco-icon">${info.icon||'✦'}</span>
+          <div class="weak-reco-info">
+            <div class="weak-reco-name">${info.label}</div>
+            <div class="weak-reco-score">本次得分 ${pct}%</div>
+          </div>
+          <div class="weak-reco-bar-wrap">
+            <div class="weak-reco-bar" style="width:0%" data-pct="${pct}"></div>
+          </div>`;
+        list.appendChild(item);
+        setTimeout(()=>{
+          item.querySelector('.weak-reco-bar').style.width=pct+'%';
+        }, 300);
+      });
+      wrap.style.display = 'block';
+    };
+  </script>
 </body>
 </html>
