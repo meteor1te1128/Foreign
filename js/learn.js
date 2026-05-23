@@ -4,11 +4,12 @@ import { WORDS, DIMENSIONS } from './wordbank.js';
 import { getTodayPlan, getOrCreateCard, reviewCard, updateCard, RATING } from './fsrs.js';
 import { getStreak, markTodayDone, playStreakAnim } from './streak.js';
 import { recordStudyLog } from './study-log.js';
+import { pushToCloud, getCurrentUser } from './auth.js';
 
 // ── 状态 ─────────────────────────────────────────────────────
 let plan           = [];
 let currentIdx     = 0;
-let sessionResults = [];   // [{wordId, correct, rating, fillWrong}]
+let sessionResults = [];
 let currentWord    = null;
 
 // ── DOM ──────────────────────────────────────────────────────
@@ -59,7 +60,6 @@ async function init() {
   showScreen('intro');
 }
 
-// ── Intro ─────────────────────────────────────────────────────
 $('btn-start-learn')?.addEventListener('click', () => {
   if (plan.length === 0) { finishSession(); return; }
   currentIdx     = 0;
@@ -67,7 +67,6 @@ $('btn-start-learn')?.addEventListener('click', () => {
   showNextCard();
 });
 
-// ── 情景卡片 ──────────────────────────────────────────────────
 function showNextCard() {
   if (currentIdx >= plan.length) { finishSession(); return; }
   const wordId = plan[currentIdx];
@@ -105,7 +104,6 @@ function renderCard(word) {
   $('card-translation').textContent = word.exZh || word.translation || '';
 }
 
-// ── 评分（两档）──────────────────────────────────────────────
 document.querySelectorAll('[data-rating]').forEach(btn => {
   btn.addEventListener('click', () => {
     const rating  = parseInt(btn.dataset.rating);
@@ -125,7 +123,6 @@ document.querySelectorAll('[data-rating]').forEach(btn => {
   });
 });
 
-// ── 填空题 ────────────────────────────────────────────────────
 function showFill(word) {
   const pct = Math.round((currentIdx / plan.length) * 100);
   $('fill-progress-text').textContent = `${currentIdx + 1} / ${plan.length}`;
@@ -219,7 +216,6 @@ function advanceFill() {
 
 $('fill-next-btn')?.addEventListener('click', advanceFill);
 
-// ── 错题记录 ──────────────────────────────────────────────────
 function markWrong(wordId) {
   try {
     const data = JSON.parse(localStorage.getItem('fg_wrong') || '{}');
@@ -228,8 +224,7 @@ function markWrong(wordId) {
   } catch(e) {}
 }
 
-// ── 结算 ──────────────────────────────────────────────────────
-function finishSession() {
+async function finishSession() {
   const total     = sessionResults.length;
   const correct   = sessionResults.filter(r => r.correct).length;
   const pct       = total ? Math.round((correct / total) * 100) : 100;
@@ -254,6 +249,12 @@ function finishSession() {
     const theme  = localStorage.getItem('fg_theme') || 'ocean';
     if (canvas) setTimeout(() => playStreakAnim(canvas, theme, newStreak), 600);
   }
+
+  // 学完同步云端
+  try {
+    const user = await getCurrentUser();
+    if (user) await pushToCloud();
+  } catch(e) {}
 }
 
 $('btn-result-home')?.addEventListener('click', () => {
@@ -271,5 +272,4 @@ $('btn-result-again')?.addEventListener('click', () => {
   showNextCard();
 });
 
-// ── 启动 ──────────────────────────────────────────────────────
 init().catch(console.error);
