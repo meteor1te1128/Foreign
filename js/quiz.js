@@ -1,7 +1,8 @@
-// quiz.js v3 — Oxford场景分类 + 答错自动入回炉 + 答对可手动加入
+// quiz.js v3 — Oxford场景分类 + 答错自动入回炉 + 云端同步
 
 import { startAnim, stopAnim } from './animations.js';
 import { initAllButtons } from './buttons.js';
+import { pushToCloud, getCurrentUser } from './auth.js';
 
 const THEMES = {
   ocean:{img:'assets/images/ocean.jpg',anim:'ocean'},
@@ -31,7 +32,6 @@ function applyTheme(){
   stopAnim();if(t.anim!=='none')startAnim(t.anim,cv);
 }
 
-// ── Oxford 场景维度 ────────────────────────────────────────
 export const SCENES = [
   {key:'daily',  label:'日常生活', color:'rgba(100,180,255,.85)', icon:'🏠'},
   {key:'food',   label:'饮食',     color:'rgba(255,200,100,.85)', icon:'🍜'},
@@ -41,9 +41,7 @@ export const SCENES = [
   {key:'social', label:'社交',     color:'rgba(255,175,100,.85)', icon:'🗣'},
 ];
 
-// ── 题库（内置题 + 动态加载扩展题）────────────────────────
 const BUILTIN_QUESTIONS = [
-  // 每个场景各保留几题作为保底
   {id:'dy001',scene:'daily',level:1,word:'routine',sentence:'Exercise is part of his daily ___.',zh:'锻炼是他日常惯例的一部分。',hint:'惯例/日常'},
   {id:'dy002',scene:'daily',level:2,word:'commute',sentence:'His daily ___ takes over an hour each way.',zh:'他每天的通勤单程超过一小时。',hint:'通勤'},
   {id:'dy003',scene:'daily',level:3,word:'mortgage',sentence:'They took out a ___ to buy the house.',zh:'他们贷款买了这栋房子。',hint:'房贷'},
@@ -78,7 +76,6 @@ const BUILTIN_QUESTIONS = [
 
 let EXTENDED_QUESTIONS = [];
 
-// 动态加载扩展题库
 async function loadExtended() {
   try {
     const [d, f, w] = await Promise.all([
@@ -98,12 +95,10 @@ async function loadExtended() {
 
 function getAllQuestions() {
   const all = [...BUILTIN_QUESTIONS, ...EXTENDED_QUESTIONS];
-  // 去重
   const seen = new Set();
   return all.filter(q => { if(seen.has(q.id)) return false; seen.add(q.id); return true; });
 }
 
-// ── 随机抽题：每个场景各抽3-4题，共20题 ──────────────────
 function buildQuiz() {
   const all = getAllQuestions();
   const perScene = {};
@@ -127,7 +122,14 @@ function buildQuiz() {
 
 const DOTS = ['●○○○○','●●○○○','●●●○○','●●●●○','●●●●●'];
 
-// ── 回炉本操作 ────────────────────────────────────────────
+// ── 回炉本操作（含云端同步）────────────────────────────────
+async function syncCloud() {
+  try {
+    const user = await getCurrentUser();
+    if (user) await pushToCloud();
+  } catch(e) {}
+}
+
 function addToReview(wordId) {
   try {
     const w = JSON.parse(localStorage.getItem('fg_wrong')||'{}');
@@ -147,7 +149,6 @@ function isInReview(wordId) {
   try { return !!(JSON.parse(localStorage.getItem('fg_wrong')||'{}')[wordId]); } catch { return false; }
 }
 
-// ── 状态 ──────────────────────────────────────────────────
 let QUESTIONS=[], currentIndex=0, score=0, sceneScores={};
 
 function resetState() {
@@ -155,7 +156,6 @@ function resetState() {
   SCENES.forEach(s=>{ sceneScores[s.key]={correct:0,total:0}; });
 }
 
-// ── DOM ───────────────────────────────────────────────────
 const screenIntro  = document.getElementById('screenIntro');
 const screenQuiz   = document.getElementById('screenQuiz');
 const screenResult = document.getElementById('screenResult');
@@ -218,9 +218,11 @@ function checkAnswer(skipped=false) {
 
   if(ok) { score++; if(sceneScores[q.scene]) sceneScores[q.scene].correct++; }
 
-  // 答错自动加入回炉本
   if(!ok && !skipped) addToReview(q.id);
   if(skipped) addToReview(q.id);
+
+  // 答题后同步云端（fire and forget）
+  syncCloud();
 
   const inReview = isInReview(q.id);
 
@@ -232,7 +234,6 @@ function checkAnswer(skipped=false) {
     feedbackIcon.textContent='✨';
     feedbackWord.textContent=raw; feedbackWord.className='feedback-word correct';
     feedbackExplain.textContent=q.hint||'回答正确！';
-    // 答对：显示「加入回炉本」按钮
     const addBtn = qFeedback.querySelector('.feedback-add-btn');
     if(addBtn) {
       addBtn.textContent = inReview ? '✓ 已在回炉本' : '＋ 加入回炉本';
@@ -246,6 +247,7 @@ function checkAnswer(skipped=false) {
           addToReview(q.id);
           addBtn.textContent='✓ 已在回炉本';
         }
+        syncCloud();
       };
     }
   } else {
@@ -260,7 +262,6 @@ function checkAnswer(skipped=false) {
 }
 
 function nextQuestion() {
-  // 隐藏加入按钮
   const addBtn=qFeedback.querySelector('.feedback-add-btn');
   if(addBtn) addBtn.style.display='none';
   qFeedback.classList.remove('visible');
@@ -334,7 +335,6 @@ function renderDimBars(scenePcts){
   requestAnimationFrame(()=>{ container.querySelectorAll('.dim-bar-fill').forEach(bar=>{ setTimeout(()=>{ bar.style.width=bar.dataset.pct+'%'; },100); }); });
 }
 
-// 事件
 btnStart.addEventListener('click',startQuiz);
 btnConfirm.addEventListener('click',()=>{ if(qInput.value.trim())checkAnswer(false); });
 btnSkip.addEventListener('click',()=>checkAnswer(true));
