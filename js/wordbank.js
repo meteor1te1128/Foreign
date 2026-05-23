@@ -50,9 +50,9 @@ export const WORDS = [
 {id:'d035',dim:'daily',level:1,word:'alarm',phonetic:'/əˈlɑːrm/',zh:'闹钟/警报',example:'I set my alarm for six every morning.',exZh:'我每天早上六点定闹钟。'},
 {id:'d036',dim:'daily',level:1,word:'queue',phonetic:'/kjuː/',zh:'排队',example:'We queued for an hour to get tickets.',exZh:'我们排队一个小时买票。'},
 {id:'d037',dim:'daily',level:2,word:'neighbourhood',phonetic:'/ˈneɪbəhʊd/',zh:'街区/邻里',example:'It is a quiet and friendly neighbourhood.',exZh:'这是一个安静友好的街区。'},
-{id:'d038',dim:'daily',level:2,word:'appliance',phonetic:'/əˈplaɪəns/',zh:'家用电器',example:'The washing machine is our most used appliance.',exZh:'洗衣机是我们用得最多的家用电器。'},
+{id:'d038',dim:'daily',level:2,word:'tidy',phonetic:'/ˈtaɪdi/',zh:'整洁的/整理',example:'She likes to keep her desk tidy.',exZh:'她喜欢保持桌面整洁。'},
 {id:'d039',dim:'daily',level:3,word:'mortgage',phonetic:'/ˈmɔːrɡɪdʒ/',zh:'房贷/抵押贷款',example:'They took out a mortgage to buy the house.',exZh:'他们贷款买了这栋房子。'},
-{id:'d040',dim:'daily',level:3,word:'commute',phonetic:'/kəˈmjuːt/',zh:'通勤',example:'His daily commute takes over an hour.',exZh:'他每天通勤超过一个小时。'},
+{id:'d040',dim:'daily',level:3,word:'tenant',phonetic:'/ˈtɛnənt/',zh:'租户',example:'The tenant paid rent on time every month.',exZh:'租户每月按时交租。'},
 {id:'d041',dim:'daily',level:4,word:'prerogative',phonetic:'/prɪˈrɒɡətɪv/',zh:'特权/专属权利',example:'Changing your mind is your prerogative.',exZh:'改变主意是你的权利。'},
 {id:'d042',dim:'daily',level:4,word:'discretionary',phonetic:'/dɪˈskreʃəneri/',zh:'可自由支配的',example:'Discretionary spending fell during the recession.',exZh:'经济衰退期间可支配消费大幅下降。'},
 {id:'d043',dim:'daily',level:5,word:'deprivation',phonetic:'/ˌdeprɪˈveɪʃən/',zh:'剥夺/匮乏',example:'Sleep deprivation affects concentration.',exZh:'睡眠剥夺会影响注意力。'},
@@ -269,7 +269,7 @@ export const WORDS = [
 {id:'s046',dim:'social',level:6,word:'ingratiating',phonetic:'/ɪnˈɡreɪʃieɪtɪŋ/',zh:'讨好的/刻意迎合的',example:'His ingratiating smile made her uncomfortable.',exZh:'他讨好式的微笑让她感到不舒服。'},
 {id:'s047',dim:'social',level:2,word:'rumour',phonetic:'/ˈruːmər/',zh:'谣言/传言',example:'A rumour spread quickly through the office.',exZh:'一则谣言在办公室里迅速传播。'},
 {id:'s048',dim:'social',level:3,word:'peer pressure',phonetic:'/pɪər ˈprɛʃər/',zh:'同伴压力',example:'Peer pressure can influence bad decisions.',exZh:'同伴压力可能导致错误决定。'},
-{id:'s049',dim:'social',level:4,word:'friction',phonetic:'/ˈfrɪkʃən/',zh:'摩擦不和',example:'Friction between teams slows progress.',exZh:'团队之间的摩擦会拖慢进度。'},
+{id:'s049',dim:'social',level:4,word:'etiquette',phonetic:'/ˈɛtɪkɛt/',zh:'礼仪/规矩',example:'Business etiquette varies across cultures.',exZh:'商务礼仪因文化而异。'},
 {id:'s050',dim:'social',level:5,word:'gregarious',phonetic:'/ɡrɪˈɡɛəriəs/',zh:'爱交际的',example:'She was gregarious and made friends easily.',exZh:'她生性爱交际，很容易交到朋友。'},
 
 // ─── ACADEMIC 学术书面 ×50 ────────────────────────────────
