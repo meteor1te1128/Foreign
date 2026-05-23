@@ -1,8 +1,4 @@
-// learn.js — 每日学习页逻辑
-// 改动：
-// 1. 字段对齐新版 wordbank.js (dim/zh/example/exZh)
-// 2. 填空页顶部「← 返回重选」，可撤回FSRS评分重选
-// 3. 接入 study-log，学完记录日期和词数
+// learn.js — 每日学习页逻辑（简化版：直接显示翻译，两档评分）
 
 import { WORDS, DIMENSIONS } from './wordbank.js';
 import { getTodayPlan, getOrCreateCard, reviewCard, updateCard, RATING } from './fsrs.js';
@@ -14,7 +10,6 @@ let plan           = [];
 let currentIdx     = 0;
 let sessionResults = [];   // [{wordId, correct, rating, fillWrong}]
 let currentWord    = null;
-let lastRating     = null; // 记录本词FSRS评分，撤回时用
 
 // ── DOM ──────────────────────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -78,13 +73,11 @@ function showNextCard() {
   const wordId = plan[currentIdx];
   currentWord  = WORDS.find(w => w.id === wordId);
   if (!currentWord) { currentIdx++; showNextCard(); return; }
-  lastRating = null;
   renderCard(currentWord);
   showScreen('card');
 }
 
 function renderCard(word) {
-  // 维度：新版字段是 word.dim
   const dimKey = word.dim || word.dimension;
   const dim    = DIMENSIONS[dimKey] || { icon:'✦', label: dimKey };
   const card   = getOrCreateCard(word.id);
@@ -101,9 +94,7 @@ function renderCard(word) {
   $('card-level-label').textContent = word.level || '';
   $('card-word').textContent        = word.word;
   $('card-phonetic').textContent    = word.phonetic || '';
-
-  // 新版字段：zh / example / exZh；兼容旧版 meaning / sentence / translation
-  $('card-meaning').textContent = word.zh || word.meaning || '';
+  $('card-meaning').textContent     = word.zh || word.meaning || '';
 
   const sentence = word.example || word.sentence || '';
   $('card-sentence').innerHTML = sentence.replace(
@@ -111,21 +102,10 @@ function renderCard(word) {
     `<span class="blank-word">${word.word}</span>`
   );
 
-  const transEl = $('card-translation');
-  transEl.textContent = word.exZh || word.translation || '';
-  transEl.classList.add('hidden');
-
-  $('card-reveal-btn').classList.remove('hidden');
-  $('card-rating-area').classList.add('hidden');
+  $('card-translation').textContent = word.exZh || word.translation || '';
 }
 
-$('card-reveal-btn')?.addEventListener('click', () => {
-  $('card-translation').classList.remove('hidden');
-  $('card-reveal-btn').classList.add('hidden');
-  $('card-rating-area').classList.remove('hidden');
-});
-
-// FSRS 评分
+// ── 评分（两档）──────────────────────────────────────────────
 document.querySelectorAll('[data-rating]').forEach(btn => {
   btn.addEventListener('click', () => {
     const rating  = parseInt(btn.dataset.rating);
@@ -133,13 +113,10 @@ document.querySelectorAll('[data-rating]').forEach(btn => {
     const updated = reviewCard(card, rating);
     updateCard(updated);
 
-    lastRating = rating;
     const correct = rating >= RATING.GOOD;
 
-    // 先从 sessionResults 移除本词旧记录（如果是从填空页撤回重选的）
     const existIdx = sessionResults.findIndex(r => r.wordId === currentWord.id);
     if (existIdx >= 0) sessionResults.splice(existIdx, 1);
-
     sessionResults.push({ wordId: currentWord.id, correct, rating });
 
     if (!correct) markWrong(currentWord.id);
@@ -154,7 +131,6 @@ function showFill(word) {
   $('fill-progress-text').textContent = `${currentIdx + 1} / ${plan.length}`;
   $('fill-progress-bar').style.width  = pct + '%';
 
-  // 新版字段兼容
   $('fill-meaning').textContent = word.zh || word.meaning || '';
   $('fill-hint').textContent    = `提示：${word.zh || word.meaning || ''}`;
 
@@ -162,22 +138,20 @@ function showFill(word) {
   const sentEl   = $('fill-sentence');
   sentEl.innerHTML = '';
 
-  // 把句子里的单词替换成输入框
   const wordLower = word.word.toLowerCase();
   const idx       = sentence.toLowerCase().indexOf(wordLower);
   if (idx >= 0) {
     sentEl.appendChild(document.createTextNode(sentence.slice(0, idx)));
   } else {
-    // fallback：用 ___ 分割
     const parts = sentence.split('___');
     sentEl.appendChild(document.createTextNode(parts[0]));
   }
 
   const input = document.createElement('input');
-  input.type        = 'text';
-  input.className   = 'fill-input';
-  input.id          = 'fill-input-field';
-  input.placeholder = '输入答案…';
+  input.type         = 'text';
+  input.className    = 'fill-input';
+  input.id           = 'fill-input-field';
+  input.placeholder  = '输入答案…';
   input.autocomplete = 'off';
   input.autocorrect  = 'off';
   input.spellcheck   = false;
@@ -212,8 +186,8 @@ function checkFill(word) {
   const input = $('fill-input-field');
   if (!input) return;
 
-  const answer = input.value.trim().toLowerCase();
-  const target = word.word.toLowerCase();
+  const answer  = input.value.trim().toLowerCase();
+  const target  = word.word.toLowerCase();
   const correct = answer === target ||
     (answer.length >= 3 && target.startsWith(answer) && answer.length >= target.length - 3);
 
@@ -230,7 +204,6 @@ function checkFill(word) {
     fb.classList.add('wrong');
     input.classList.add('input-wrong');
     markWrong(word.id);
-    // 标记填空答错
     const r = sessionResults.find(r => r.wordId === word.id);
     if (r) r.fillWrong = true;
   }
@@ -246,33 +219,6 @@ function advanceFill() {
 
 $('fill-next-btn')?.addEventListener('click', advanceFill);
 
-// ── 返回重选（撤回FSRS评分）────────────────────────────────
-$('btn-back-to-card')?.addEventListener('click', () => {
-  if (!currentWord) return;
-
-  // 撤销这个词的FSRS评分：用对立评分重新apply，最简单的方式是
-  // 直接从sessionResults移除，下一轮不统计；卡片数据恢复用again
-  // 实际上直接重新显示情景卡片让用户重选，重选时会覆盖updateCard
-  const existIdx = sessionResults.findIndex(r => r.wordId === currentWord.id);
-  if (existIdx >= 0) sessionResults.splice(existIdx, 1);
-
-  // 如果之前把这个词加进了fg_wrong，也先撤回
-  try {
-    const wrong = JSON.parse(localStorage.getItem('fg_wrong') || '{}');
-    if (wrong[currentWord.id] > 1) wrong[currentWord.id]--;
-    else delete wrong[currentWord.id];
-    localStorage.setItem('fg_wrong', JSON.stringify(wrong));
-  } catch(e) {}
-
-  // 重新展示情景卡片，让用户重新评分
-  renderCard(currentWord);
-  // 直接显示评分区（不需要再点「查看」）
-  $('card-translation').classList.remove('hidden');
-  $('card-reveal-btn').classList.add('hidden');
-  $('card-rating-area').classList.remove('hidden');
-  showScreen('card');
-});
-
 // ── 错题记录 ──────────────────────────────────────────────────
 function markWrong(wordId) {
   try {
@@ -284,12 +230,11 @@ function markWrong(wordId) {
 
 // ── 结算 ──────────────────────────────────────────────────────
 function finishSession() {
-  const total   = sessionResults.length;
-  const correct = sessionResults.filter(r => r.correct).length;
-  const pct     = total ? Math.round((correct / total) * 100) : 100;
+  const total     = sessionResults.length;
+  const correct   = sessionResults.filter(r => r.correct).length;
+  const pct       = total ? Math.round((correct / total) * 100) : 100;
   const newStreak = markTodayDone();
 
-  // 记录学习日志（热力图数据）
   try { recordStudyLog(total); } catch(e) {}
 
   $('result-correct').textContent = correct;
@@ -316,7 +261,6 @@ $('btn-result-home')?.addEventListener('click', () => {
 });
 
 $('btn-result-again')?.addEventListener('click', () => {
-  // FSRS评分差 + 填空答错 的词都进再练队列
   const wrongIds = sessionResults
     .filter(r => !r.correct || r.fillWrong)
     .map(r => r.wordId);
