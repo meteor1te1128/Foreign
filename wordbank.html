@@ -8,141 +8,87 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/theme-buttons.css" />
+  <link rel="stylesheet" href="css/dock.css" />
   <style>
-    .bg-image  { position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;transition:background-image .8s,opacity .6s;animation:bgBreath 16s ease-in-out infinite alternate; }
-    .bg-canvas { position:fixed;inset:0;z-index:1;width:100%;height:100%;pointer-events:none; }
-    .bg-overlay{ position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 20%,rgba(0,0,0,.55) 100%); }
-    @keyframes bgBreath { 0%{transform:scale(1)} 100%{transform:scale(1.035)} }
+    .bg-image{position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;transition:background-image .8s,opacity .6s;animation:bgBreath 16s ease-in-out infinite alternate}
+    .bg-canvas{position:fixed;inset:0;z-index:1;width:100%;height:100%;pointer-events:none}
+    .bg-overlay{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 20%,rgba(0,0,0,.55) 100%)}
+    @keyframes bgBreath{0%{transform:scale(1)}100%{transform:scale(1.035)}}
 
-    .page-wrap {
-      position:relative; z-index:10;
-      max-width:760px; margin:0 auto;
-      padding:80px 24px 60px;
-      min-height:100vh;
-    }
+    .page-wrap{position:relative;z-index:10;max-width:760px;margin:0 auto;padding:80px 24px 120px;min-height:100vh}
 
-    /* 顶部 */
-    .page-header {
-      display:flex; align-items:center; gap:16px;
-      margin-bottom:40px;
-    }
-    .back-btn {
-      font-family:'Space Mono',monospace; font-size:11px;
-      color:rgba(255,255,255,.5); background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.14); border-radius:8px;
-      padding:7px 14px; cursor:pointer; text-decoration:none;
-      transition:all .2s; letter-spacing:.05em; flex-shrink:0;
-    }
-    .back-btn:hover { color:rgba(255,255,255,.9); background:rgba(255,255,255,.13); }
-    .page-title {
-      font-family:'Cormorant Garamond',serif;
-      font-size:clamp(28px,5vw,44px); font-weight:600;
-      color:#fff; letter-spacing:-.02em;
-    }
+    .page-header{display:flex;align-items:center;gap:16px;margin-bottom:40px}
+    .back-link{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 14px;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.05em;flex-shrink:0}
+    .back-link:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.13)}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,44px);font-weight:600;color:#fff;letter-spacing:-.02em}
 
-    /* 维度筛选 */
-    .dim-tabs {
-      display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px;
-    }
-    .dim-tab {
-      font-family:'Space Mono',monospace; font-size:10px;
-      color:rgba(255,255,255,.45); background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.12); border-radius:20px;
-      padding:6px 14px; cursor:pointer; transition:all .2s;
-      letter-spacing:.04em;
-    }
-    .dim-tab:hover { background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); }
-    .dim-tab.on    { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.35); color:#fff; }
+    /* 筛选 tabs */
+    .dim-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .dim-tab{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.45);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
+    .dim-tab:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+    .dim-tab.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);color:#fff}
+
+    /* 搜索框 */
+    .search-wrap{margin-bottom:20px}
+    .search-input{width:100%;padding:11px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .18s}
+    .search-input:focus{border-color:rgba(255,255,255,.3)}
+    .search-input::placeholder{color:rgba(255,255,255,.28)}
 
     /* 统计栏 */
-    .stats-bar {
-      display:flex; gap:20px; margin-bottom:28px;
-      font-family:'Space Mono',monospace; font-size:10px;
-      color:rgba(255,255,255,.35); letter-spacing:.06em;
-    }
-    .stats-bar span { display:flex; align-items:center; gap:5px; }
-    .stats-bar strong { color:rgba(255,255,255,.7); font-size:14px; font-family:'Cormorant Garamond',serif; font-weight:600; }
+    .stats-bar{display:flex;gap:20px;margin-bottom:24px;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.06em}
+    .stats-bar span{display:flex;align-items:center;gap:5px}
+    .stats-bar strong{color:rgba(255,255,255,.7);font-size:14px;font-family:'Cormorant Garamond',serif;font-weight:600}
 
-    /* 单词卡列表 */
-    .word-list {
-      display:flex; flex-direction:column; gap:10px;
-    }
-    .word-card {
-      background:rgba(255,255,255,.07); backdrop-filter:blur(16px);
-      border:1px solid rgba(255,255,255,.11); border-radius:16px;
-      padding:18px 22px; cursor:pointer;
-      transition:all .2s; display:flex; align-items:center; gap:16px;
-    }
-    .word-card:hover { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.22); transform:translateX(4px); }
-    .word-card.expanded { border-color:rgba(255,255,255,.25); background:rgba(255,255,255,.1); }
-
-    .word-main { flex:1; min-width:0; }
-    .word-en {
-      font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600;
-      color:#fff; margin-bottom:3px; display:flex; align-items:center; gap:10px;
-    }
-    .word-phonetic { font-family:'DM Sans',sans-serif; font-size:12px; color:rgba(255,255,255,.38); font-weight:300; }
-    .word-zh { font-family:'DM Sans',sans-serif; font-size:13px; color:rgba(255,255,255,.6); margin-top:2px; }
-
-    .word-meta { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
-    .word-level {
-      font-family:'Space Mono',monospace; font-size:9px;
-      color:rgba(255,255,255,.35); border:1px solid rgba(255,255,255,.15);
-      border-radius:4px; padding:2px 7px; letter-spacing:.06em;
-    }
-    .word-status {
-      font-size:11px; display:flex; align-items:center; gap:4px;
-      color:rgba(255,255,255,.35); font-family:'Space Mono',monospace; font-size:9px;
-    }
-    .status-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.2); }
-    .status-dot.new      { background:#64748b; }
-    .status-dot.learning { background:#f59e0b; }
-    .status-dot.review   { background:#22c55e; }
-    .status-dot.mastered { background:#818cf8; }
+    /* 单词卡 */
+    .word-list{display:flex;flex-direction:column;gap:10px}
+    .word-card{background:rgba(255,255,255,.07);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:18px 22px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px}
+    .word-card:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);transform:translateX(4px)}
+    .word-card.expanded{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.1)}
+    .word-main{flex:1;min-width:0}
+    .word-en{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;margin-bottom:3px;display:flex;align-items:center;gap:10px}
+    .word-phonetic{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.38);font-weight:300}
+    .word-zh{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.6);margin-top:2px}
+    .word-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+    .word-level{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:2px 7px;letter-spacing:.06em}
+    .word-status{font-size:9px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.35);font-family:'Space Mono',monospace}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2)}
+    .status-dot.new{background:#64748b}
+    .status-dot.learning{background:#f59e0b}
+    .status-dot.review{background:#22c55e}
+    .status-dot.mastered{background:#818cf8}
 
     /* 展开详情 */
-    .word-detail {
-      display:none; margin-top:14px; padding-top:14px;
-      border-top:1px solid rgba(255,255,255,.1);
-    }
-    .word-card.expanded .word-detail { display:block; }
-    .word-sentence {
-      font-family:'Cormorant Garamond',serif; font-size:16px; font-style:italic;
-      color:rgba(255,255,255,.75); line-height:1.7; margin-bottom:6px;
-    }
-    .blank-word { color:#fff; font-style:normal; font-weight:600; border-bottom:1px solid rgba(255,255,255,.4); }
-    .word-translation { font-family:'DM Sans',sans-serif; font-size:13px; color:rgba(255,255,255,.45); }
-    .word-actions { display:flex; gap:10px; margin-top:14px; }
-    .word-action-btn {
-      font-family:'Space Mono',monospace; font-size:10px;
-      color:rgba(255,255,255,.5); background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.14); border-radius:8px;
-      padding:6px 14px; cursor:pointer; transition:all .2s; letter-spacing:.04em;
-    }
-    .word-action-btn:hover { background:rgba(255,255,255,.14); color:rgba(255,255,255,.9); }
-    .word-action-btn.danger:hover { background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.3); color:#f87171; }
+    .word-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+    .word-card.expanded .word-detail{display:block}
+    .word-sentence{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:6px}
+    .blank-word{color:#fff;font-style:normal;font-weight:600;border-bottom:1px solid rgba(255,255,255,.4)}
+    .word-translation{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.45)}
+    .word-actions{display:flex;gap:10px;margin-top:14px}
+    .word-action-btn{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
+    .word-action-btn:hover{background:rgba(255,255,255,.14);color:rgba(255,255,255,.9)}
+    .word-action-btn.in-review{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.3);color:#4ade80}
+    .word-action-btn.in-review:hover{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.3);color:#f87171}
 
-    /* 空状态 */
-    .empty-state {
-      text-align:center; padding:80px 24px;
-      font-family:'DM Sans',sans-serif; color:rgba(255,255,255,.3);
-    }
-    .empty-state .empty-icon { font-size:48px; margin-bottom:16px; }
-    .empty-state p { font-size:14px; }
+    /* 空/无结果 */
+    .empty-state{text-align:center;padding:80px 24px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.3)}
+    .empty-state .empty-icon{font-size:48px;margin-bottom:16px}
+    .empty-state p{font-size:14px}
 
-    /* 暗色主题适配 */
-    body.dm .back-btn     { color:rgba(0,0,0,.5); background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.12); }
-    body.dm .page-title   { color:#111; }
-    body.dm .dim-tab      { color:rgba(0,0,0,.45); background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.1); }
-    body.dm .dim-tab.on   { background:rgba(0,0,0,.12); border-color:rgba(0,0,0,.28); color:#111; }
-    body.dm .word-card    { background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.1); }
-    body.dm .word-card:hover { background:rgba(0,0,0,.09); }
-    body.dm .word-en      { color:#111; }
-    body.dm .word-zh      { color:rgba(0,0,0,.6); }
-    body.dm .word-sentence{ color:rgba(0,0,0,.65); }
-    body.dm .word-translation { color:rgba(0,0,0,.42); }
-    body.dm .stats-bar    { color:rgba(0,0,0,.35); }
-    body.dm .stats-bar strong { color:rgba(0,0,0,.65); }
+    /* 亮色主题 */
+    body.dm .back-link{color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.12)}
+    body.dm .page-title{color:#111}
+    body.dm .dim-tab{color:rgba(0,0,0,.45);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.dm .dim-tab.on{background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.28);color:#111}
+    body.dm .search-input{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1);color:#111}
+    body.dm .word-card{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.dm .word-card:hover{background:rgba(0,0,0,.09)}
+    body.dm .word-en{color:#111}
+    body.dm .word-zh{color:rgba(0,0,0,.6)}
+    body.dm .word-sentence{color:rgba(0,0,0,.65)}
+    body.dm .word-translation{color:rgba(0,0,0,.42)}
+    body.dm .stats-bar{color:rgba(0,0,0,.35)}
+    body.dm .stats-bar strong{color:rgba(0,0,0,.65)}
+    body.dm .word-action-btn{color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.12)}
   </style>
 </head>
 <body>
@@ -152,7 +98,7 @@
 
   <div class="page-wrap">
     <div class="page-header">
-      <a href="index.html" class="back-btn">← 返回</a>
+      <a href="index.html" class="back-link">← 返回</a>
       <h1 class="page-title">单词库</h1>
     </div>
 
@@ -161,9 +107,15 @@
       <div class="dim-tab on" data-dim="all">全部</div>
     </div>
 
+    <!-- 搜索 -->
+    <div class="search-wrap">
+      <input class="search-input" id="search-input" placeholder="搜索单词或中文含义…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+    </div>
+
     <!-- 统计 -->
     <div class="stats-bar" id="stats-bar">
-      <span><strong id="stat-total">0</strong> 词</span>
+      <span><strong id="stat-shown">0</strong> 词</span>
+      <span>🟡 <strong id="stat-learning">0</strong> 学习中</span>
       <span>🟢 <strong id="stat-review">0</strong> 复习中</span>
       <span>⭐ <strong id="stat-mastered">0</strong> 已掌握</span>
     </div>
@@ -175,102 +127,160 @@
   <script type="module">
     import { startAnim } from './js/animations.js';
     import { WORDS, DIMENSIONS } from './js/wordbank.js';
-    import { loadCards } from './js/fsrs.js';
+    import { initDock } from './js/dock.js';
 
-    // ── 主题继承 ──────────────────────────────────────────
+    // ── 背景初始化 ──
+    const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
+    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
     const theme = localStorage.getItem('fg_theme') || 'ocean';
     document.body.className = `theme-${theme}`;
-    const THEME_MAP = {
-      ocean:'assets/images/ocean.jpg', fog_forest:'assets/images/fog_forest.jpg',
-      galaxy:'assets/images/galaxy.jpg', rain:'assets/images/rain.jpg',
-      aurora:'assets/images/aurora.jpg', sakura:'assets/images/sakura.jpg',
-      sunset:'assets/images/sunset.jpg', snow:'assets/images/snow.jpg',
-      forest_green:'assets/images/forest_green.jpg',
-    };
-    const ANIM_MAP = { ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest' };
-    const bgEl = document.getElementById('bg-image');
-    const cvEl = document.getElementById('bg-canvas');
-    cvEl.width = window.innerWidth; cvEl.height = window.innerHeight;
-    window.addEventListener('resize', () => { cvEl.width=window.innerWidth; cvEl.height=window.innerHeight; });
-    if (THEME_MAP[theme]) { bgEl.style.backgroundImage=`url(${THEME_MAP[theme]})`; bgEl.style.opacity='1'; }
-    else { bgEl.style.opacity='0'; document.body.style.background = theme==='white'?'#f6f5f0':'#080808'; if(theme==='white') document.body.classList.add('dm'); }
-    if (ANIM_MAP[theme]) startAnim(ANIM_MAP[theme], cvEl);
+    if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
+    else if(theme==='black'){document.body.style.background='#080808';}
+    const bgEl=document.getElementById('bg-image'), cvEl=document.getElementById('bg-canvas');
+    cvEl.width=window.innerWidth; cvEl.height=window.innerHeight;
+    window.addEventListener('resize',()=>{cvEl.width=window.innerWidth;cvEl.height=window.innerHeight;});
+    if(THEME_IMGS[theme]){bgEl.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bgEl.style.opacity='1';}
+    else{bgEl.style.opacity='0';}
+    if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme],cvEl);
 
-    // ── 渲染 ──────────────────────────────────────────────
-    const cards = loadCards();
-    let activeDim = 'all';
+    // ── dock ──
+    initDock();
+
+    // ── 数据 ──
+    const LEVEL_MAP = {1:'A1',2:'A2',3:'B1',4:'B2',5:'C1',6:'C2'};
+    const STATUS_LABEL = {new:'未学习',learning:'学习中',review:'复习中',mastered:'已掌握'};
+
+    let cards = {};
+    try { cards = JSON.parse(localStorage.getItem('fg_cards')||'{}'); } catch{}
 
     function getStatus(wordId) {
       const c = cards[wordId];
-      if (!c || c.state === 'new') return 'new';
-      if (c.state === 'learning' || c.state === 'relearn') return 'learning';
-      if (c.reps >= 5) return 'mastered';
+      if (!c || c.state==='new') return 'new';
+      if (c.state==='learning'||c.state==='relearn') return 'learning';
+      if (c.reps>=5) return 'mastered';
       return 'review';
     }
 
-    // 维度 tabs
+    function loadWrong(){ try{return JSON.parse(localStorage.getItem('fg_wrong')||'{}')}catch{return{}} }
+    function saveWrong(d){ localStorage.setItem('fg_wrong',JSON.stringify(d)); }
+
+    // ── 维度 tabs ──
     const tabWrap = document.getElementById('dim-tabs');
-    Object.entries(DIMENSIONS).forEach(([key, dim]) => {
-      const tab = document.createElement('div');
-      tab.className = 'dim-tab'; tab.dataset.dim = key;
-      tab.textContent = dim.icon + ' ' + dim.label;
-      tab.onclick = () => { activeDim = key; renderList(); updateTabs(); };
+    Object.entries(DIMENSIONS).forEach(([key,dim])=>{
+      const tab=document.createElement('div');
+      tab.className='dim-tab'; tab.dataset.dim=key;
+      tab.textContent=dim.icon+' '+dim.label;
       tabWrap.appendChild(tab);
     });
-    document.querySelector('[data-dim="all"]').onclick = () => { activeDim='all'; renderList(); updateTabs(); };
 
-    function updateTabs() {
-      document.querySelectorAll('.dim-tab').forEach(t => t.classList.toggle('on', t.dataset.dim === activeDim));
-    }
+    let activeDim='all', searchQ='';
 
-    function renderList() {
-      const list   = document.getElementById('word-list');
-      const words  = activeDim === 'all' ? WORDS : WORDS.filter(w => w.dimension === activeDim);
+    tabWrap.addEventListener('click',e=>{
+      const tab=e.target.closest('.dim-tab');
+      if(!tab)return;
+      activeDim=tab.dataset.dim;
+      document.querySelectorAll('.dim-tab').forEach(t=>t.classList.toggle('on',t.dataset.dim===activeDim));
+      renderList();
+    });
 
-      // 统计
-      let reviewCnt=0, masteredCnt=0;
-      WORDS.forEach(w => {
-        const s = getStatus(w.id);
-        if (s === 'review' || s === 'learning') reviewCnt++;
-        if (s === 'mastered') masteredCnt++;
+    document.getElementById('search-input').addEventListener('input',e=>{
+      searchQ=e.target.value.trim().toLowerCase();
+      renderList();
+    });
+
+    // ── 渲染 ──
+    function renderList(){
+      const list=document.getElementById('word-list');
+      let words = activeDim==='all' ? WORDS : WORDS.filter(w=>w.dim===activeDim);
+      if(searchQ) words=words.filter(w=>w.word.toLowerCase().includes(searchQ)||(w.zh||'').includes(searchQ));
+
+      // 统计（全库）
+      let learningCnt=0,reviewCnt=0,masteredCnt=0;
+      WORDS.forEach(w=>{
+        const s=getStatus(w.id);
+        if(s==='learning')learningCnt++;
+        if(s==='review')reviewCnt++;
+        if(s==='mastered')masteredCnt++;
       });
-      document.getElementById('stat-total').textContent   = WORDS.length;
-      document.getElementById('stat-review').textContent  = reviewCnt;
-      document.getElementById('stat-mastered').textContent= masteredCnt;
+      document.getElementById('stat-shown').textContent=words.length;
+      document.getElementById('stat-learning').textContent=learningCnt;
+      document.getElementById('stat-review').textContent=reviewCnt;
+      document.getElementById('stat-mastered').textContent=masteredCnt;
 
-      list.innerHTML = '';
-      if (words.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>暂无单词</p></div>';
+      list.innerHTML='';
+      if(!words.length){
+        list.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><p>没有找到相关单词</p></div>';
         return;
       }
 
-      words.forEach(word => {
-        const status = getStatus(word.id);
-        const dim    = DIMENSIONS[word.dimension];
-        const card   = document.createElement('div');
-        card.className = 'word-card';
-        card.innerHTML = `
+      const wrong=loadWrong();
+
+      words.forEach(word=>{
+        const status=getStatus(word.id);
+        const dim=DIMENSIONS[word.dim]||{icon:'',label:word.dim};
+        const inReview=!!wrong[word.id];
+        const levelLabel=LEVEL_MAP[word.level]||word.level;
+
+        // 高亮搜索词
+        function hl(str){
+          if(!searchQ)return str;
+          const idx=str.toLowerCase().indexOf(searchQ);
+          if(idx<0)return str;
+          return str.slice(0,idx)+`<mark style="background:rgba(255,220,0,.3);border-radius:2px">${str.slice(idx,idx+searchQ.length)}</mark>`+str.slice(idx+searchQ.length);
+        }
+
+        const card=document.createElement('div');
+        card.className='word-card';
+
+        // 例句：把单词替换成高亮
+        const exampleHl=(word.example||'').replace(
+          word.word,
+          `<span class="blank-word">${word.word}</span>`
+        );
+
+        card.innerHTML=`
           <div class="word-main">
-            <div class="word-en">
-              ${word.word}
-              <span class="word-phonetic">${word.phonetic}</span>
-            </div>
-            <div class="word-zh">${word.meaning}</div>
+            <div class="word-en">${hl(word.word)}<span class="word-phonetic">${word.phonetic||''}</span></div>
+            <div class="word-zh">${hl(word.zh||'')}</div>
             <div class="word-detail">
-              <div class="word-sentence">${word.sentence.replace('___',`<span class="blank-word">${word.word}</span>`)}</div>
-              <div class="word-translation">${word.translation}</div>
+              <div class="word-sentence">${exampleHl}</div>
+              <div class="word-translation">${word.exZh||''}</div>
               <div class="word-actions">
-                <button class="word-action-btn" onclick="event.stopPropagation();window.location.href='review.html'">加入回炉练习</button>
+                <button class="word-action-btn review-btn ${inReview?'in-review':''}" data-id="${word.id}">
+                  ${inReview?'✓ 已在回炉本':'＋ 加入回炉本'}
+                </button>
               </div>
             </div>
           </div>
           <div class="word-meta">
-            <span class="word-level">${word.level}</span>
-            <span class="word-status"><span class="status-dot ${status}"></span>${{new:'未学习',learning:'学习中',review:'复习中',mastered:'已掌握'}[status]}</span>
-            <span style="font-size:12px;opacity:.5">${dim.icon}</span>
+            <span class="word-level">${levelLabel} · ${dim.icon}</span>
+            <span class="word-status"><span class="status-dot ${status}"></span>${STATUS_LABEL[status]}</span>
           </div>
         `;
-        card.onclick = () => card.classList.toggle('expanded');
+
+        // 展开/收起
+        card.addEventListener('click',e=>{
+          if(e.target.closest('.word-action-btn'))return;
+          card.classList.toggle('expanded');
+        });
+
+        // 加入/移出回炉本
+        card.querySelector('.review-btn').addEventListener('click',e=>{
+          e.stopPropagation();
+          const btn=e.currentTarget;
+          const w=loadWrong();
+          if(w[word.id]){
+            delete w[word.id];
+            btn.textContent='＋ 加入回炉本';
+            btn.classList.remove('in-review');
+          } else {
+            w[word.id]=(w[word.id]||0)+1;
+            btn.textContent='✓ 已在回炉本';
+            btn.classList.add('in-review');
+          }
+          saveWrong(w);
+        });
+
         list.appendChild(card);
       });
     }
