@@ -228,7 +228,7 @@ async function finishSession() {
   const total     = sessionResults.length;
   const correct   = sessionResults.filter(r => r.correct).length;
   const pct       = total ? Math.round((correct / total) * 100) : 100;
-  const newStreak = markTodayDone();
+  const newStreak = await markTodayDone();
 
   try { recordStudyLog(total); } catch(e) {}
 
