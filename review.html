@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="css/learn.css" />
   <link rel="stylesheet" href="css/review.css" />
   <style>
-    /* ── 列表页布局 ── */
     #screen-list {
       justify-content: flex-start;
       padding-top: 72px;
@@ -20,312 +19,57 @@
       overflow-y: auto;
       align-items: center;
     }
-    .list-inner {
-      max-width: 580px;
-      width: 100%;
-      padding: 0 20px;
-    }
-
-    /* ── 顶部标题 ── */
-    .review-page-header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-    .review-page-header h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(36px, 6vw, 52px);
-      font-weight: 500;
-      color: #fff;
-      margin-bottom: 6px;
-      letter-spacing: -0.02em;
-    }
-    .review-page-header p {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,0.38);
-      letter-spacing: 0.1em;
-    }
-
-    /* ── 操作栏（添加 + 全部练） ── */
-    .review-toolbar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .review-toolbar-btn {
-      flex: 1;
-      padding: 11px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.7);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all .2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .review-toolbar-btn:hover {
-      background: rgba(255,255,255,.12);
-      border-color: rgba(255,255,255,.28);
-      color: #fff;
-    }
-    .review-toolbar-btn.primary {
-      background: var(--theme-color, #3b82f6);
-      border-color: transparent;
-      color: #fff;
-    }
+    .list-inner { max-width: 580px; width: 100%; padding: 0 20px; }
+    .review-page-header { text-align: center; margin-bottom: 28px; }
+    .review-page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 6vw, 52px); font-weight: 500; color: #fff; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .review-page-header p { font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.38); letter-spacing: 0.1em; }
+    .review-toolbar { display: flex; gap: 10px; margin-bottom: 14px; }
+    .review-toolbar-btn { flex: 1; padding: 11px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .review-toolbar-btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.28); color: #fff; }
+    .review-toolbar-btn.primary { background: var(--theme-color, #3b82f6); border-color: transparent; color: #fff; }
     .review-toolbar-btn.primary:hover { filter: brightness(1.1); }
-    .review-toolbar-btn:disabled {
-      opacity: .3;
-      cursor: not-allowed;
-    }
-
-    /* ── 搜索添加面板 ── */
-    .add-panel {
-      background: rgba(8,15,28,.88);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 16px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      padding: 14px;
-      margin-bottom: 12px;
-      display: none;
-    }
-    .add-panel.open {
-      display: block;
-      animation: panelIn .22s ease;
-    }
-    @keyframes panelIn {
-      from { opacity:0; transform:translateY(-8px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    .add-panel-input {
-      width: 100%;
-      padding: 10px 14px;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 10px;
-      color: #f1f5f9;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      outline: none;
-      transition: border-color .18s;
-      margin-bottom: 8px;
-    }
+    .review-toolbar-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .add-panel { background: rgba(8,15,28,.88); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 14px; margin-bottom: 12px; display: none; }
+    .add-panel.open { display: block; animation: panelIn .22s ease; }
+    @keyframes panelIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    .add-panel-input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #f1f5f9; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .18s; margin-bottom: 8px; }
     .add-panel-input:focus { border-color: rgba(255,255,255,.3); }
     .add-panel-input::placeholder { color: rgba(255,255,255,.28); }
-    .add-search-results {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 190px;
-      overflow-y: auto;
-    }
-    .add-search-empty {
-      font-size: 13px;
-      color: rgba(255,255,255,.35);
-      text-align: center;
-      padding: 16px 0;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .add-result-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: 9px;
-      cursor: pointer;
-      transition: background .15s;
-    }
+    .add-search-results { display: flex; flex-direction: column; gap: 4px; max-height: 190px; overflow-y: auto; }
+    .add-search-empty { font-size: 13px; color: rgba(255,255,255,.35); text-align: center; padding: 16px 0; font-family: 'DM Sans', sans-serif; }
+    .add-result-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; cursor: pointer; transition: background .15s; }
     .add-result-item:hover { background: rgba(255,255,255,.1); }
-    .add-result-word {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 17px;
-      color: #f1f5f9;
-      flex: 1;
-    }
-    .add-result-zh {
-      font-size: 12px;
-      color: rgba(255,255,255,.38);
-    }
-    .add-result-tag {
-      font-size: 10px;
-      font-family: 'Space Mono', monospace;
-      color: var(--theme-color, #3b82f6);
-      opacity: .7;
-    }
+    .add-result-word { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: #f1f5f9; flex: 1; }
+    .add-result-zh { font-size: 12px; color: rgba(255,255,255,.38); }
+    .add-result-tag { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--theme-color, #3b82f6); opacity: .7; }
     .add-result-item:hover .add-result-tag { opacity: 1; }
-    .add-result-item.already-added .add-result-tag {
-      color: #4ade80;
-    }
-
-    /* ── 错题列表 ── */
-    .wrong-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .wrong-item {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 14px;
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      cursor: pointer;
-      transition: all .2s;
-      animation: itemIn .28s ease backwards;
-    }
-    @keyframes itemIn {
-      from { opacity:0; transform:translateY(6px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    .wrong-item:hover {
-      background: rgba(255,255,255,.11);
-      border-color: rgba(255,255,255,.22);
-      transform: translateX(4px);
-    }
-    .wrong-badge {
-      min-width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      background: rgba(248,113,113,.18);
-      border: 1px solid rgba(248,113,113,.28);
-      color: #f87171;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
+    .add-result-item.already-added .add-result-tag { color: #4ade80; }
+    .wrong-list { display: flex; flex-direction: column; gap: 8px; }
+    .wrong-item { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all .2s; animation: itemIn .28s ease backwards; }
+    @keyframes itemIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .wrong-item:hover { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.22); transform: translateX(4px); }
+    .wrong-badge { min-width: 30px; height: 30px; border-radius: 8px; background: rgba(248,113,113,.18); border: 1px solid rgba(248,113,113,.28); color: #f87171; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .wrong-info { flex: 1; min-width: 0; }
-    .wrong-word {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 500;
-      color: #fff;
-    }
-    .wrong-zh {
-      font-size: 12px;
-      color: rgba(255,255,255,.42);
-      margin-top: 1px;
-    }
-    .wrong-dim {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      color: rgba(255,255,255,.28);
-      flex-shrink: 0;
-    }
-    .wrong-remove {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.1);
-      background: transparent;
-      color: rgba(255,255,255,.28);
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all .18s;
-      line-height: 1;
-    }
-    .wrong-remove:hover {
-      background: rgba(248,113,113,.18);
-      border-color: rgba(248,113,113,.35);
-      color: #f87171;
-    }
-
-    /* 空状态 */
-    .empty-card {
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.09);
-      border-radius: 18px;
-      padding: 48px 32px;
-      text-align: center;
-    }
+    .wrong-word { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; color: #fff; }
+    .wrong-zh { font-size: 12px; color: rgba(255,255,255,.42); margin-top: 1px; }
+    .wrong-dim { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.28); flex-shrink: 0; }
+    .wrong-remove { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1); background: transparent; color: rgba(255,255,255,.28); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .18s; line-height: 1; }
+    .wrong-remove:hover { background: rgba(248,113,113,.18); border-color: rgba(248,113,113,.35); color: #f87171; }
+    .empty-card { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: 18px; padding: 48px 32px; text-align: center; }
     .empty-icon { font-size: 46px; margin-bottom: 14px; }
-    .empty-card p {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      color: rgba(255,255,255,.45);
-      margin-bottom: 6px;
-    }
-    .empty-card small {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      color: rgba(255,255,255,.28);
-      letter-spacing: .06em;
-    }
-
-    /* ── 练习页：回翻导航 ── */
-    .rf-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      padding: 0 4px;
-    }
-    .rf-nav-btn {
-      padding: 7px 14px;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 8px;
-      color: rgba(255,255,255,.55);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all .18s;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .rf-nav-btn:hover:not(:disabled) {
-      background: rgba(255,255,255,.13);
-      color: rgba(255,255,255,.9);
-    }
+    .empty-card p { font-family: 'DM Sans', sans-serif; font-size: 15px; color: rgba(255,255,255,.45); margin-bottom: 6px; }
+    .empty-card small { font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(255,255,255,.28); letter-spacing: .06em; }
+    .rf-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px; }
+    .rf-nav-btn { padding: 7px 14px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; color: rgba(255,255,255,.55); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all .18s; display: flex; align-items: center; gap: 5px; }
+    .rf-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,.13); color: rgba(255,255,255,.9); }
     .rf-nav-btn:disabled { opacity: .22; cursor: not-allowed; }
-    .rf-nav-counter {
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      color: rgba(255,255,255,.38);
-    }
-
-    /* 回翻模式：显示之前答题状态 */
-    .rf-replay-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .06em;
-      margin-bottom: 10px;
-    }
+    .rf-nav-counter { font-family: 'Space Mono', monospace; font-size: 12px; color: rgba(255,255,255,.38); }
+    .rf-replay-badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .06em; margin-bottom: 10px; }
     .rf-replay-badge.correct { background:rgba(74,222,128,.15); color:#4ade80; }
     .rf-replay-badge.wrong   { background:rgba(248,113,113,.15); color:#f87171; }
     .rf-replay-badge.skipped { background:rgba(255,255,255,.08); color:rgba(255,255,255,.45); }
-
-    /* 练习屏幕布局微调 */
-    #screen-review-fill {
-      align-items: center;
-      padding-top: 48px;
-    }
-    .rf-wrap {
-      max-width: 560px;
-      width: 100%;
-      padding: 0 20px;
-    }
-
-    /* ── 亮色主题 ── */
+    #screen-review-fill { align-items: center; padding-top: 48px; }
+    .rf-wrap { max-width: 560px; width: 100%; padding: 0 20px; }
     body.theme-white .review-page-header h1 { color: #1e293b; }
     body.theme-white .review-page-header p  { color: rgba(30,41,59,.4); }
     body.theme-white .review-toolbar-btn    { background:rgba(30,41,59,.05); border-color:rgba(30,41,59,.12); color:rgba(30,41,59,.7); }
@@ -348,49 +92,31 @@
 
   <a href="index.html" class="back-btn">← 返回</a>
 
-  <!-- ── 列表页 ─────────────────────────────────────────── -->
   <section id="screen-list" class="screen active">
     <div class="list-inner">
-
       <div class="review-page-header">
         <h1>回炉本</h1>
         <p>RELEARN · CONQUER YOUR WEAK SPOTS</p>
       </div>
-
-      <!-- 工具栏：添加 + 全部练 -->
       <div class="review-toolbar" id="review-toolbar" style="display:none">
         <button class="review-toolbar-btn" id="btn-add-word">＋ 手动添加</button>
         <button class="review-toolbar-btn primary" id="btn-start-all">全部练一遍 →</button>
       </div>
-
-      <!-- 搜索添加面板 -->
       <div class="add-panel" id="add-panel">
-        <input class="add-panel-input" id="add-search-input"
-               placeholder="搜索单词（英文或中文）…"
-               autocomplete="off" autocorrect="off" spellcheck="false" />
+        <input class="add-panel-input" id="add-search-input" placeholder="搜索单词（英文或中文）…" autocomplete="off" autocorrect="off" spellcheck="false" />
         <div class="add-search-results" id="add-search-results">
           <p class="add-search-empty">输入关键词搜索词库</p>
         </div>
       </div>
-
-      <!-- 错题列表 -->
       <div id="wrong-list-container"></div>
-
-      <!-- 空状态时的添加按钮 -->
       <div id="empty-add-wrap" style="display:none; margin-top:16px">
-        <button class="review-toolbar-btn" id="btn-add-word-empty" style="width:100%">
-          ＋ 手动添加单词到回炉本
-        </button>
+        <button class="review-toolbar-btn" id="btn-add-word-empty" style="width:100%">＋ 手动添加单词到回炉本</button>
       </div>
-
     </div>
   </section>
 
-  <!-- ── 填空练习 ────────────────────────────────────────── -->
   <section id="screen-review-fill" class="screen">
     <div class="rf-wrap">
-
-      <!-- 进度条 -->
       <div class="progress-wrap">
         <div class="progress-meta">
           <span>回炉练习</span>
@@ -400,34 +126,25 @@
           <div class="progress-fill" id="rf-progress-bar" style="width:0%"></div>
         </div>
       </div>
-
-      <!-- 回翻导航 -->
       <div class="rf-nav">
         <button class="rf-nav-btn" id="btn-prev" disabled>← 上一题</button>
         <span class="rf-nav-counter" id="rf-nav-counter">1 / 1</span>
         <button class="rf-nav-btn" id="btn-next-nav" disabled>下一题 →</button>
       </div>
-
-      <!-- 练习卡片 -->
       <div class="learn-card" id="rf-card">
-        <!-- 回翻时显示之前答题状态 -->
         <div id="rf-replay-area"></div>
-
         <p class="fill-context">FILL IN THE BLANK</p>
         <p class="fill-meaning-hint" id="rf-meaning">含义</p>
         <div class="fill-sentence-wrap" id="rf-sentence"></div>
         <p class="fill-hint-text" id="rf-hint">提示</p>
         <div class="fill-feedback hidden" id="rf-feedback"></div>
-
         <button class="btn-primary" id="rf-confirm-btn">确认答案</button>
         <button class="btn-primary hidden" id="rf-next-btn">继续 →</button>
         <button class="btn-secondary" id="rf-skip-btn" style="margin-top:8px">跳过这题</button>
       </div>
-
     </div>
   </section>
 
-  <!-- ── 练习完成 ────────────────────────────────────────── -->
   <section id="screen-review-done" class="screen">
     <div class="learn-card" style="text-align:center">
       <p class="result-title">练完了！</p>
@@ -445,8 +162,8 @@
   <script type="module">
     import { startAnim }  from './js/animations.js';
     import { WORDS, DIMENSIONS } from './js/wordbank.js';
+    import { pushToCloud, getCurrentUser } from './js/auth.js';
 
-    // ── 背景初始化 ──────────────────────────────────────
     const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
     const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
     const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#94a3b8'};
@@ -464,7 +181,6 @@
     else{bg.style.opacity='0';}
     if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cv);
 
-    // ── 工具函数 ────────────────────────────────────────
     const $ = id => document.getElementById(id);
 
     function showScreen(id) {
@@ -477,13 +193,13 @@
     }
     function saveWrong(data) {
       localStorage.setItem('fg_wrong', JSON.stringify(data));
+      // 同步云端（fire and forget）
+      getCurrentUser().then(user => { if (user) pushToCloud(); }).catch(()=>{});
     }
 
-    // 维度标签
     const DIM_LABELS = {};
     if(DIMENSIONS) Object.entries(DIMENSIONS).forEach(([k,v]) => { DIM_LABELS[k] = v.label; });
 
-    // ── 列表渲染 ────────────────────────────────────────
     function renderList() {
       const wrong   = loadWrong();
       const entries = Object.entries(wrong).sort((a,b) => b[1]-a[1]);
@@ -527,14 +243,12 @@
           <button class="wrong-remove" data-id="${id}" title="移出回炉本">×</button>
         `;
 
-        // 点击行 → 单练这个词
         item.addEventListener('click', e => {
           if (e.target.classList.contains('wrong-remove')) return;
           reviewQueue = [id];
           startReview();
         });
 
-        // 移除按钮
         item.querySelector('.wrong-remove').addEventListener('click', e => {
           e.stopPropagation();
           const w = loadWrong();
@@ -554,7 +268,6 @@
       container.appendChild(list);
     }
 
-    // ── 搜索添加 ────────────────────────────────────────
     let addPanelOpen = false;
 
     function toggleAddPanel(forceOpen) {
@@ -606,10 +319,8 @@
             const w = loadWrong();
             w[word.id] = (w[word.id] || 0) + 1;
             saveWrong(w);
-            // 立即反馈：变成已加入状态
             item.classList.add('already-added');
             item.querySelector('.add-result-tag').textContent = '✓ 已在';
-            // 刷新列表
             renderList();
           });
         }
@@ -617,12 +328,11 @@
       });
     });
 
-    // ── 练习逻辑 ────────────────────────────────────────
-    let reviewQueue  = [];   // 当前练习的 wordId 列表
-    let reviewIdx    = 0;    // 当前题目指针
-    let reviewHistory= [];   // [{id, answer, correct, skipped}]
+    let reviewQueue  = [];
+    let reviewIdx    = 0;
+    let reviewHistory= [];
     let currentWord  = null;
-    let answered     = false; // 当前题是否已作答
+    let answered     = false;
 
     function startReview() {
       reviewIdx     = 0;
@@ -636,8 +346,6 @@
       const id = reviewQueue[reviewIdx];
       currentWord = WORDS.find(w => w.id === id);
       if (!currentWord) { reviewIdx++; showNextReview(); return; }
-
-      // 检查是否是已作答的题目（回翻后重新来到）
       const history = reviewHistory[reviewIdx];
       renderFill(currentWord, history);
     }
@@ -648,11 +356,9 @@
       $('rf-progress-bar').style.width  = `${(reviewIdx/total)*100}%`;
       $('rf-nav-counter').textContent   = `${reviewIdx+1} / ${total}`;
 
-      // 回翻导航按钮状态
       $('btn-prev').disabled     = reviewIdx === 0;
-      $('btn-next-nav').disabled = reviewIdx >= reviewHistory.length; // 只能翻到已答题
+      $('btn-next-nav').disabled = reviewIdx >= reviewHistory.length;
 
-      // 回翻标记
       const replayArea = $('rf-replay-area');
       if (history) {
         const cls = history.skipped ? 'skipped' : history.correct ? 'correct' : 'wrong';
@@ -665,14 +371,12 @@
       $('rf-meaning').textContent = word.zh;
       $('rf-hint').textContent    = `提示：${word.zh}`;
 
-      // 例句填空
       const sentEl = $('rf-sentence');
       sentEl.innerHTML = '';
       const parts = (word.example || '').split(word.word);
       if (parts.length >= 2) {
         sentEl.appendChild(document.createTextNode(parts[0]));
       } else {
-        // fallback：把整句话当背景
         sentEl.appendChild(document.createTextNode(word.example || ''));
       }
 
@@ -684,7 +388,6 @@
       input.autocomplete = 'off'; input.autocorrect = 'off'; input.spellcheck = false;
 
       if (history) {
-        // 回翻模式：显示之前的答案，禁用输入
         input.value = history.skipped ? '' : (history.answer || '');
         input.disabled = true;
         input.className += history.correct ? ' input-correct' : history.skipped ? '' : ' input-wrong';
@@ -703,7 +406,6 @@
         sentEl.appendChild(document.createTextNode(parts[1]));
       }
 
-      // 反馈区
       const fb = $('rf-feedback');
       if (history) {
         fb.classList.remove('hidden', 'correct', 'wrong');
@@ -721,7 +423,6 @@
         fb.className = 'fill-feedback hidden';
       }
 
-      // 按钮状态
       answered = !!history;
       if (history) {
         $('rf-confirm-btn').classList.add('hidden');
@@ -733,7 +434,6 @@
         $('rf-skip-btn').classList.remove('hidden');
       }
 
-      // 卡片滑入动画
       const card = $('rf-card');
       card.style.animation = 'none';
       requestAnimationFrame(() => {
@@ -752,7 +452,6 @@
       const raw    = input.value.trim();
       const answer = raw.toLowerCase();
       const target = currentWord.word.toLowerCase();
-      // 宽松匹配：完整匹配 OR 长度≥3且前缀匹配且差距≤2
       const correct = answer === target ||
         (answer.length >= 3 && target.startsWith(answer) && answer.length >= target.length - 2);
 
@@ -765,7 +464,6 @@
         fb.textContent = `✓ ${currentWord.word}`;
         fb.classList.add('correct');
         input.classList.add('input-correct');
-        // 答对 → 回炉本次数-1
         const wrong = loadWrong();
         if (wrong[currentWord.id] > 1) wrong[currentWord.id]--;
         else delete wrong[currentWord.id];
@@ -774,13 +472,11 @@
         fb.textContent = `✗ 答案是：${currentWord.word}`;
         fb.classList.add('wrong');
         input.classList.add('input-wrong');
-        // 答错 → 次数+1（不会超过已有的，防止刷分）
         const wrong = loadWrong();
         wrong[currentWord.id] = (wrong[currentWord.id] || 0) + 1;
         saveWrong(wrong);
       }
 
-      // 记录历史
       reviewHistory[reviewIdx] = {
         id: currentWord.id,
         answer: raw,
@@ -791,7 +487,6 @@
       $('rf-confirm-btn').classList.add('hidden');
       $('rf-next-btn').classList.remove('hidden');
       $('rf-skip-btn').classList.add('hidden');
-      // 回翻"下一题"按钮也激活
       $('btn-next-nav').disabled = false;
     }
 
@@ -840,7 +535,6 @@
       renderList();
     }
 
-    // ── 事件绑定 ────────────────────────────────────────
     $('btn-start-all').addEventListener('click', () => {
       reviewQueue = Object.keys(loadWrong());
       if (!reviewQueue.length) return;
@@ -853,7 +547,6 @@
 
     $('btn-prev').addEventListener('click', goBack);
     $('btn-next-nav').addEventListener('click', () => {
-      // 只能翻到已答过的题，不跳过未答
       if (reviewIdx < reviewHistory.length) {
         reviewIdx++;
         answered = false;
@@ -863,16 +556,15 @@
 
     $('btn-rv-home').addEventListener('click', () => location.href = 'index.html');
     $('btn-rv-again').addEventListener('click', () => {
-      reviewIdx = 0; reviewed = [];
+      reviewIdx = 0;
+      reviewHistory = [];
       startReview();
     });
 
-    // ── 初始化 ──────────────────────────────────────────
     renderList();
   </script>
 
   <style>
-    /* 卡片滑入动画 */
     @keyframes cardSlideIn {
       from { opacity:.6; transform:translateY(10px); }
       to   { opacity:1;  transform:translateY(0); }
