@@ -3,7 +3,7 @@ import { startAnim, stopAnim } from './animations.js';
 import { initAllButtons }       from './buttons.js';
 import { getTodayPlan }         from './fsrs.js';
 import { WORDS }                from './wordbank.js';
-import { getRecentLog }         from './study-log.js';
+import { register, login, logout, getCurrentUser, pullFromCloud, startAutoSync } from './auth.js';
 
 // ── 主题配置 ──────────────────────────────────────────────
 const THEMES = {
@@ -61,15 +61,20 @@ function previewTheme(key) {
 function restoreTheme() { applyTheme(cur, false); }
 
 // ── 今日计划统计 ──────────────────────────────────────────
-function initStats() {
-  const plan = getTodayPlan(WORDS.map(w => w.id));
-  document.getElementById('stat-new').textContent    = plan.newWords.length;
-  document.getElementById('stat-review').textContent = plan.due.length;
-  document.getElementById('stat-total').textContent  = plan.all.length;
-
-  const streak = parseInt(localStorage.getItem('fg_streak') || '0');
-  const el = document.getElementById('stat-streak');
-  if (el) el.textContent = streak;
+function updateStatMeta() {
+  try {
+    const plan = getTodayPlan(WORDS.map(w => w.id));
+    const meta  = document.getElementById('stat-meta');
+    const total = document.getElementById('stat-total');
+    const statNew    = document.getElementById('stat-new');
+    const statReview = document.getElementById('stat-review');
+    const statStreak = document.getElementById('stat-streak');
+    if (meta)        meta.textContent        = `${plan.newWords.length} NEW · ${plan.due.length} REVIEW`;
+    if (total)       total.textContent       = plan.all.length;
+    if (statNew)     statNew.textContent     = plan.newWords.length;
+    if (statReview)  statReview.textContent  = plan.due.length;
+    if (statStreak)  statStreak.textContent  = parseInt(localStorage.getItem('fg_streak') || '0');
+  } catch(e) {}
 }
 
 // ── 主题选择器 ────────────────────────────────────────────
@@ -77,7 +82,6 @@ function renderDock() {
   const dock = document.getElementById('theme-dock');
   if (!dock) return;
 
-  // 触发按钮
   const trigger = document.createElement('button');
   trigger.className = 'dock-trigger';
   trigger.setAttribute('aria-label', '切换主题');
@@ -90,7 +94,6 @@ function renderDock() {
   `;
   dock.appendChild(trigger);
 
-  // 面板
   const overlay = document.createElement('div');
   overlay.className = 'dock-overlay';
   overlay.innerHTML = `
@@ -179,25 +182,6 @@ function updateTrigger() {
   if (label) label.textContent      = t.label;
 }
 
-// ── 初始化 ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  applyTheme(cur, false);
-  initStats();
-  renderDock();
-  initAllButtons();
-});
-
-// ── 统计更新 ──────────────────────────────────────────────
-function updateStatMeta() {
-  try {
-    const plan = getTodayPlan(WORDS.map(w => w.id));
-    const meta = document.getElementById('stat-meta');
-    const total = document.getElementById('stat-total');
-    if (meta)  meta.textContent  = `${plan.newWords.length} NEW · ${plan.due.length} REVIEW`;
-    if (total) total.textContent = plan.all.length;
-  } catch(e) {}
-}
-
 // ── 登录模态框 ────────────────────────────────────────────
 function initLogin() {
   const modal  = document.getElementById('login-modal');
@@ -218,7 +202,28 @@ function initLogin() {
   }
   function closeModal() { modal.classList.remove('open'); }
 
-  btnL?.addEventListener('click', openModal);
+  // 更新登录按钮显示
+  function updateLoginBtn() {
+    const saved = localStorage.getItem('fg_user');
+    if (saved && btnL) btnL.textContent = saved;
+    else if (btnL) btnL.textContent = '登录';
+  }
+
+  btnL?.addEventListener('click', async () => {
+    // 如果已登录，点击显示登出选项
+    const user = await getCurrentUser();
+    if (user) {
+      const confirmOut = confirm(`当前用户：${localStorage.getItem('fg_user') || user.email}\n\n确定要登出吗？`);
+      if (confirmOut) {
+        await logout();
+        updateLoginBtn();
+        updateStatMeta();
+      }
+      return;
+    }
+    openModal();
+  });
+
   btnC?.addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
@@ -231,24 +236,59 @@ function initLogin() {
     });
   });
 
-  btnSub?.addEventListener('click', () => {
+  btnSub?.addEventListener('click', async () => {
     const user = document.getElementById('inp-user')?.value.trim();
     const pass = document.getElementById('inp-pass')?.value.trim();
-    if (!user || !pass) { if (msg) { msg.textContent = '请填写所有字段'; msg.className = 'mmsg err'; } return; }
-    localStorage.setItem('fg_user', user);
-    if (msg) { msg.textContent = mode === 'login' ? '登录成功！' : '注册成功！'; msg.className = 'mmsg ok'; }
-    setTimeout(closeModal, 800);
+
+    // 禁用按钮防止重复点击
+    btnSub.disabled = true;
+    btnSub.textContent = '请稍候...';
+    if (msg) { msg.textContent = ''; msg.className = 'mmsg'; }
+
+    let result;
+    if (mode === 'login') {
+      result = await login(user, pass);
+    } else {
+      result = await register(user, pass);
+    }
+
+    btnSub.disabled = false;
+    btnSub.textContent = mode === 'login' ? '登录' : '注册';
+
+    if (result.ok) {
+      if (msg) { msg.textContent = mode === 'login' ? '登录成功！' : '注册成功！'; msg.className = 'mmsg ok'; }
+      updateLoginBtn();
+      updateStatMeta();
+      setTimeout(closeModal, 800);
+    } else {
+      if (msg) { msg.textContent = result.msg; msg.className = 'mmsg err'; }
+    }
   });
 
-  // 更新登录按钮文字
-  const savedUser = localStorage.getItem('fg_user');
-  if (savedUser && btnL) btnL.textContent = savedUser;
+  // 回车提交
+  [document.getElementById('inp-user'), document.getElementById('inp-pass')].forEach(inp => {
+    inp?.addEventListener('keydown', e => { if (e.key === 'Enter') btnSub?.click(); });
+  });
+
+  updateLoginBtn();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ── 初始化 ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
   applyTheme(cur, false);
-  updateStatMeta();
   renderDock();
   initLogin();
   initAllButtons();
+
+  // 检查是否已登录，自动拉取云端数据
+  const user = await getCurrentUser();
+  if (user) {
+    await pullFromCloud();
+    // 拉取后主题可能变了
+    const cloudTheme = localStorage.getItem('fg_theme') || 'ocean';
+    if (cloudTheme !== cur) applyTheme(cloudTheme, false);
+  }
+
+  updateStatMeta();
+  startAutoSync();
 });
