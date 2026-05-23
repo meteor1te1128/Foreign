@@ -1,4 +1,4 @@
-/* quiz.css v3 — 修复 intro 标题被 nav 遮住的问题 */
+/* quiz.css v4 */
 
 .qscreen {
   position: fixed; inset: 0;
@@ -8,7 +8,6 @@
 }
 .qscreen.active { opacity:1; pointer-events:all; }
 
-/* Nav */
 .nav-progress-wrap { display:flex; align-items:center; gap:14px; }
 .nav-q-count { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:rgba(255,255,255,.45); white-space:nowrap; }
 body.dm .nav-q-count { color:rgba(0,0,0,.35); }
@@ -18,16 +17,16 @@ body.dm .nav-progress-bar { background:rgba(0,0,0,.12); }
 body.dm .nav-progress-fill { background:rgba(0,0,0,.4); }
 .logo { text-decoration:none; cursor:pointer; }
 
-/* ══ SCREEN 1 · INTRO ══════════════════════════════════════ */
+/* ══ INTRO ══ */
 #screenIntro {
-  /* 关键修复：顶部留出 nav 高度，内容往下偏移 */
   align-items: center;
-  padding-top: 72px;
-  /* 遮罩让文字可读 */
+  justify-content: center;
+  /* 用 padding-top 避开 nav，padding-bottom 平衡，视觉仍居中 */
+  padding: 64px 0 0;
   background: radial-gradient(
-    ellipse 75% 85% at 50% 58%,
-    rgba(0,0,0,.55) 0%,
-    rgba(0,0,0,.22) 55%,
+    ellipse 75% 85% at 50% 55%,
+    rgba(0,0,0,.52) 0%,
+    rgba(0,0,0,.2) 55%,
     transparent 100%
   );
 }
@@ -37,6 +36,8 @@ body.dm .nav-progress-fill { background:rgba(0,0,0,.4); }
   max-width: 560px;
   padding: 0 32px;
   animation: heroIn 1s ease both;
+  /* 往上拉回视觉中心，抵消 padding-top 的偏移 */
+  margin-top: -32px;
 }
 
 .intro-content .eyebrow {
@@ -53,8 +54,7 @@ body.dm .nav-progress-fill { background:rgba(0,0,0,.4); }
   line-height: 1.15;
   letter-spacing: -.02em;
   margin-bottom: 18px;
-  /* 双层阴影：近端清晰+远端扩散，确保任何背景上都可读 */
-  text-shadow: 0 1px 4px rgba(0,0,0,.8), 0 4px 28px rgba(0,0,0,.6);
+  text-shadow: 0 1px 4px rgba(0,0,0,.8), 0 4px 28px rgba(0,0,0,.55);
 }
 .intro-content h1 em { font-style:italic; opacity:.9; }
 
@@ -63,14 +63,13 @@ body.dm .nav-progress-fill { background:rgba(0,0,0,.4); }
   font-size: 15px; font-weight: 300;
   color: rgba(255,255,255,.78);
   line-height: 1.8; margin-bottom: 0;
-  text-shadow: 0 1px 12px rgba(0,0,0,.65);
+  text-shadow: 0 1px 12px rgba(0,0,0,.6);
 }
 
-/* meta 卡片：毛玻璃背景 */
 .intro-meta {
   display: flex; justify-content: center; gap: 32px;
-  margin: 30px 0 38px;
-  background: rgba(0,0,0,.32);
+  margin: 28px 0 36px;
+  background: rgba(0,0,0,.3);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 16px;
@@ -92,7 +91,7 @@ body.dm .meta-item { color:rgba(0,0,0,.55); }
 }
 body.dm .intro-tip { color:rgba(0,0,0,.3); }
 
-/* ══ SCREEN 2 · QUIZ CARD ══════════════════════════════════ */
+/* ══ QUIZ CARD ══ */
 .quiz-wrap { width:100%; max-width:620px; padding:0 24px; position:relative; }
 
 .q-card {
@@ -115,17 +114,12 @@ body.dm .q-card { background:rgba(250,250,248,.9); border-color:rgba(0,0,0,.08);
 }
 
 .q-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; }
-.q-category {
-  font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px;
-  text-transform:uppercase; color:rgba(255,255,255,.55);
-  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14);
-  padding:5px 12px; border-radius:6px;
-}
+.q-category { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.55); background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); padding:5px 12px; border-radius:6px; }
 body.dm .q-category { color:rgba(0,0,0,.45); background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.1); }
 .q-difficulty { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; color:rgba(255,255,255,.32); }
 body.dm .q-difficulty { color:rgba(0,0,0,.25); }
 
-.q-sentence { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; line-height:1.75; color:#f1f5f9; margin-bottom:10px; letter-spacing:.2px; }
+.q-sentence { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; line-height:1.75; color:#f1f5f9; margin-bottom:10px; }
 body.dm .q-sentence { color:#111; }
 .q-blank { display:inline-block; min-width:90px; border-bottom:2px solid rgba(255,255,255,.45); margin:0 4px; position:relative; top:2px; text-align:center; font-style:italic; color:rgba(255,255,255,.45); transition:border-color .2s; }
 body.dm .q-blank { border-bottom-color:rgba(0,0,0,.3); color:rgba(0,0,0,.3); }
@@ -134,13 +128,7 @@ body.dm .q-translation { color:rgba(0,0,0,.38); }
 
 .q-input-row { display:flex; gap:12px; align-items:flex-end; margin-bottom:16px; }
 .q-input-wrap { flex:1; position:relative; }
-.q-input {
-  width:100%; background:transparent; border:none;
-  border-bottom:1px solid rgba(255,255,255,.2);
-  padding:10px 0; font-family:'Cormorant Garamond',serif; font-size:20px;
-  font-weight:400; color:#fff; outline:none; transition:border-color .25s;
-  caret-color:rgba(255,255,255,.8);
-}
+.q-input { width:100%; background:transparent; border:none; border-bottom:1px solid rgba(255,255,255,.2); padding:10px 0; font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:400; color:#fff; outline:none; transition:border-color .25s; caret-color:rgba(255,255,255,.8); }
 body.dm .q-input { border-bottom-color:rgba(0,0,0,.15); color:#111; caret-color:#333; }
 .q-input::placeholder { color:rgba(255,255,255,.22); font-style:italic; font-size:15px; }
 body.dm .q-input::placeholder { color:rgba(0,0,0,.22); }
@@ -156,13 +144,7 @@ body.dm .q-input:focus { border-bottom-color:rgba(0,0,0,.4); }
 body.dm .btn-skip { color:rgba(0,0,0,.28); }
 body.dm .btn-skip:hover { color:rgba(0,0,0,.52); }
 
-.q-feedback {
-  position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  background:rgba(6,10,18,.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  border-radius:20px; opacity:0; pointer-events:none; transition:opacity .3s ease;
-  padding:40px; text-align:center; gap:0;
-}
+.q-feedback { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(6,10,18,.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; opacity:0; pointer-events:none; transition:opacity .3s ease; padding:40px; text-align:center; }
 body.dm .q-feedback { background:rgba(250,250,248,.94); }
 .q-feedback.visible { opacity:1; pointer-events:all; }
 .feedback-icon { font-size:44px; margin-bottom:14px; animation:pop .3s ease both; }
@@ -174,10 +156,8 @@ body.dm .feedback-word.skipped { color:rgba(0,0,0,.38); }
 .feedback-explain { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:300; color:rgba(255,255,255,.48); line-height:1.7; margin-bottom:26px; max-width:300px; white-space:pre-line; }
 body.dm .feedback-explain { color:rgba(0,0,0,.42); }
 
-/* ══ SCREEN 3 · RESULTS ════════════════════════════════════ */
-.result-wrap { width:100%; max-width:580px; padding:100px 24px 60px; display:flex; flex-direction:column; align-items:center; overflow-y:auto; max-height:100vh; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.12) transparent; }
-.result-wrap::-webkit-scrollbar { width:3px; }
-.result-wrap::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:2px; }
+/* ══ RESULTS ══ */
+.result-wrap { width:100%; max-width:580px; padding:100px 24px 60px; display:flex; flex-direction:column; align-items:center; overflow-y:auto; max-height:100vh; scrollbar-width:thin; }
 .result-header { text-align:center; margin-bottom:28px; animation:heroIn .6s ease both; }
 .result-badge { font-size:52px; display:block; margin-bottom:16px; animation:pop .5s .1s ease both; }
 .result-title-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,.32); margin-bottom:8px; }
@@ -206,7 +186,6 @@ body.dm .dim-pct { color:rgba(0,0,0,.3); }
   70%  { transform:scale(1.15); }
   100% { transform:scale(1); opacity:1; }
 }
-
 @media (max-width:600px) {
   .q-card { padding:24px 20px 20px; }
   .q-sentence { font-size:19px; }
@@ -214,5 +193,6 @@ body.dm .dim-pct { color:rgba(0,0,0,.3); }
   .intro-content h1 { font-size:clamp(30px,8vw,46px); }
   .result-wrap { padding:80px 16px 40px; }
   .nav-progress-bar { width:90px; }
-  #screenIntro { padding-top:64px; }
+  #screenIntro { padding-top:56px; }
+  .intro-content { margin-top:-24px; }
 }
