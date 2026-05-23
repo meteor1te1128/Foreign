@@ -49,6 +49,9 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
       else       { bg.style.backgroundImage='none'; bg.style.opacity='0'; }
     }
     document.body.style.background = !t.img ? (key==='white'?'#f6f5f0':'#080808') : '';
+    // 预览时切换 dm class，确保文字颜色跟着背景变
+    if (key === 'white') document.body.classList.add('dm');
+    else document.body.classList.remove('dm');
     if (cv) startAnim(t.anim, cv);
   }
 
