@@ -1,46 +1,150 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>每日学习 · Foreign</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/styles.css"/>
-  <link rel="stylesheet" href="css/theme-buttons.css"/>
-  <link rel="stylesheet" href="css/learn.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foreign · 沉浸式英语学习</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme-buttons.css" />
+  <link rel="stylesheet" href="css/dock.css" />
   <style>
-    /* ── 返回重选按钮 ── */
-    .back-to-card-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
+    /* ── 背景 ─────────────────────────────────────────── */
+    .bg-image  { position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;transition:background-image .8s ease,opacity .6s ease;animation:bgBreath 16s ease-in-out infinite alternate; }
+    .bg-canvas { position:fixed;inset:0;z-index:1;width:100%;height:100%;pointer-events:none; }
+    .bg-overlay{ position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 20%,rgba(0,0,0,.55) 100%); }
+    @keyframes bgBreath{0%{transform:scale(1)}100%{transform:scale(1.035)}}
+
+    /* ── 页面布局 ─────────────────────────────────────── */
+    .home-wrap { position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px 120px;gap:0; }
+
+    /* Logo */
+    .logo-area { text-align:center;margin-bottom:48px; }
+    .logo-word  { font-family:'Cormorant Garamond',serif;font-size:clamp(56px,10vw,96px);font-weight:600;color:#fff;letter-spacing:-.03em;line-height:1;margin-bottom:10px;text-shadow:0 2px 40px rgba(0,0,0,.3); }
+    .logo-sub   { font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.18em; }
+
+    /* 连击 */
+    .streak-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);border-radius:20px;padding:6px 14px;font-family:'Space Mono',monospace;font-size:11px;color:#fbbf24;letter-spacing:.06em;margin-bottom:36px;transition:opacity .4s; }
+    .streak-badge.hidden { opacity:0;pointer-events:none; }
+    .streak-num { font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1; }
+
+    /* ── 三大入口卡片 ─────────────────────────────────── */
+    .nav-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;max-width:560px;width:100%; }
+    .nav-card {
       background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 8px;
-      color: rgba(255,255,255,.5);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 20px;
+      padding: 28px 16px 22px;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all .22s cubic-bezier(.4,0,.2,1);
       cursor: pointer;
-      transition: all .18s;
-      margin-bottom: 12px;
-      width: fit-content;
     }
-    .back-to-card-btn:hover {
+    .nav-card:hover {
       background: rgba(255,255,255,.13);
-      border-color: rgba(255,255,255,.25);
-      color: rgba(255,255,255,.85);
+      border-color: rgba(255,255,255,.28);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.2);
     }
-    body.dm .back-to-card-btn {
-      background: rgba(0,0,0,.05);
-      border-color: rgba(0,0,0,.1);
-      color: rgba(0,0,0,.45);
+    .nav-card:active { transform:translateY(-1px); }
+    /* primary 卡片：跟随主题色 */
+    .nav-card.primary {
+      background: rgba(var(--theme-color-rgb, 59,130,246), .18);
+      border-color: rgba(var(--theme-color-rgb, 59,130,246), .4);
     }
-    body.dm .back-to-card-btn:hover {
-      background: rgba(0,0,0,.1);
-      color: rgba(0,0,0,.75);
+    .nav-card.primary:hover {
+      background: rgba(var(--theme-color-rgb, 59,130,246), .26);
+      border-color: rgba(var(--theme-color-rgb, 59,130,246), .6);
+      box-shadow: 0 12px 32px rgba(var(--theme-color-rgb, 59,130,246), .2);
+    }
+    .nav-icon  { font-size:28px;line-height:1; }
+    .nav-label { font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,.85);line-height:1.3; }
+    .nav-sub   { font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.06em; }
+    .nav-card.primary .nav-label { color:#fff; }
+    /* primary 卡片的 sub 用主题色 */
+    .nav-card.primary .nav-sub {
+      color: var(--theme-color, #3b82f6);
+      opacity: .85;
+    }
+
+    /* ── 账号 ─────────────────────────────────────────── */
+    .account-bar { position:fixed;top:18px;right:20px;z-index:100;display:flex;align-items:center;gap:10px; }
+    .account-btn {
+      font-family:'Space Mono',monospace;font-size:11px;
+      color:rgba(255,255,255,.5);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:8px;padding:7px 13px;
+      cursor:pointer;text-decoration:none;
+      transition:all .2s;letter-spacing:.05em;
+    }
+    .account-btn:hover { color:rgba(255,255,255,.9);background:rgba(255,255,255,.12); }
+
+    /* ── 词汇测试入口 ─────────────────────────────────── */
+    .quiz-fab {
+      position:fixed;bottom:28px;left:28px;z-index:100;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;padding:11px 18px;
+      font-family:'DM Sans',sans-serif;font-size:13px;
+      color:rgba(255,255,255,.6);
+      text-decoration:none;
+      transition:all .2s;
+      backdrop-filter:blur(12px);
+    }
+    .quiz-fab:hover {
+      background:rgba(255,255,255,.14);
+      color:rgba(255,255,255,.9);
+      transform:translateY(-2px);
+    }
+
+    /* ── 词汇图谱入口 ─────────────────────────────────── */
+    .vocab-fab {
+      position:fixed;bottom:28px;left:148px;z-index:100;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;padding:11px 18px;
+      font-family:'DM Sans',sans-serif;font-size:13px;
+      color:rgba(255,255,255,.6);
+      text-decoration:none;
+      transition:all .2s;
+      backdrop-filter:blur(12px);
+    }
+    .vocab-fab:hover {
+      background:rgba(255,255,255,.14);
+      color:rgba(255,255,255,.9);
+      transform:translateY(-2px);
+    }
+
+    /* ── 纯白主题适配 ─────────────────────────────────── */
+    body.dm .logo-word  { color:#111;text-shadow:none; }
+    body.dm .logo-sub   { color:rgba(0,0,0,.4); }
+    body.dm .streak-badge { background:rgba(180,130,0,.1);border-color:rgba(180,130,0,.25);color:#b27e00; }
+    body.dm .nav-card   { background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.12); }
+    body.dm .nav-card:hover { background:rgba(0,0,0,.09); }
+    body.dm .nav-card.primary { background:rgba(var(--theme-color-rgb,59,130,246),.12);border-color:rgba(var(--theme-color-rgb,59,130,246),.3); }
+    body.dm .nav-label  { color:rgba(0,0,0,.75); }
+    body.dm .nav-card.primary .nav-label { color:rgba(0,0,0,.85); }
+    body.dm .nav-sub    { color:rgba(0,0,0,.35); }
+    body.dm .account-btn{ color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1); }
+    body.dm .quiz-fab,
+    body.dm .vocab-fab  { color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.12); }
+
+    @media (max-width:480px) {
+      .nav-grid  { gap:10px; }
+      .nav-card  { padding:22px 10px 18px;border-radius:16px; }
+      .nav-icon  { font-size:22px; }
+      .nav-label { font-size:12px; }
+      .logo-word { font-size:clamp(48px,14vw,72px); }
+      .vocab-fab { left:auto;right:28px;bottom:80px; }
     }
   </style>
 </head>
@@ -50,149 +154,53 @@
   <canvas id="bg-canvas" class="bg-canvas"></canvas>
   <div class="bg-overlay"></div>
 
-  <a href="index.html" class="back-btn">← 返回</a>
+  <!-- 账号 -->
+  <div class="account-bar">
+    <span id="account-display" class="account-btn" style="display:none"></span>
+    <button class="account-btn" id="btn-login">登录</button>
+  </div>
 
-  <!-- ── 加载中 ── -->
-  <section id="screen-loading" class="screen active">
-    <div class="loading-wrap">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">加载今日单词…</p>
-    </div>
-  </section>
+  <!-- 左下角快捷入口 -->
+  <a href="quiz.html"  class="quiz-fab">词汇测试 →</a>
+  <a href="vocab.html" class="vocab-fab">词汇图谱 →</a>
 
-  <!-- ── 今日计划 ── -->
-  <section id="screen-intro" class="screen">
-    <div class="learn-card intro-card">
-      <p class="intro-date" id="intro-date-str">今日</p>
-      <h1 class="intro-title">今日学习</h1>
-      <div class="intro-stats">
-        <div class="stat-item">
-          <span class="stat-num" id="intro-new-count">0</span>
-          <span class="stat-label">新词</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-num" id="intro-review-count">0</span>
-          <span class="stat-label">复习</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-num" id="intro-total-count">0</span>
-          <span class="stat-label">合计</span>
-        </div>
-      </div>
-      <div class="intro-streak">
-        🌟 连击 <span id="intro-streak-count">0</span> 天
-      </div>
-      <button class="btn-primary" id="btn-start-learn">开始学习 →</button>
+  <div class="home-wrap">
+    <!-- Logo -->
+    <div class="logo-area">
+      <div class="logo-word">Foreign</div>
+      <div class="logo-sub">IMMERSIVE ENGLISH · 沉浸式英语</div>
     </div>
-  </section>
 
-  <!-- ── 情景卡片 ── -->
-  <section id="screen-card" class="screen">
-    <div class="progress-wrap">
-      <div class="progress-meta">
-        <span>每日学习</span>
-        <span id="card-progress-text">1 / ?</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="card-progress-bar" style="width:0%"></div>
-      </div>
+    <!-- 连击徽章 -->
+    <div class="streak-badge hidden" id="streak-badge">
+      <span>🌟 连击</span>
+      <span class="streak-num" id="streak-num">0</span>
+      <span>天</span>
     </div>
-    <div class="learn-card">
-      <div class="card-tags">
-        <span class="card-badge" id="card-type-badge">新词</span>
-        <span class="card-dim"   id="card-dim-label"></span>
-        <span class="card-level" id="card-level-label"></span>
-      </div>
-      <div class="card-word-wrap">
-        <h2 class="card-word"     id="card-word"></h2>
-        <p  class="card-phonetic" id="card-phonetic"></p>
-      </div>
-      <p class="card-meaning" id="card-meaning"></p>
-      <p class="card-sentence" id="card-sentence"></p>
-      <button class="btn-secondary" id="card-reveal-btn">查看翻译</button>
-      <p class="card-translation hidden" id="card-translation"></p>
-      <div class="card-rating-area hidden" id="card-rating-area">
-        <p class="rating-label">你记得吗？</p>
-        <div class="rating-btns">
-          <button class="rating-btn rating-again" data-rating="1">又忘了</button>
-          <button class="rating-btn rating-hard"  data-rating="2">勉强</button>
-          <button class="rating-btn rating-good"  data-rating="3">记住了</button>
-          <button class="rating-btn rating-easy"  data-rating="4">轻松</button>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ── 填空题 ── -->
-  <section id="screen-fill" class="screen">
-    <div class="progress-wrap">
-      <div class="progress-meta">
-        <span>填空练习</span>
-        <span id="fill-progress-text">1 / ?</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="fill-progress-bar" style="width:0%"></div>
-      </div>
-    </div>
-    <div class="learn-card">
-      <!-- 返回重选按钮 -->
-      <button class="back-to-card-btn" id="btn-back-to-card">
-        ← 返回重选评分
-      </button>
+    <!-- 三大入口 -->
+    <nav class="nav-grid">
+      <a href="learn.html" class="nav-card primary">
+        <span class="nav-icon">📖</span>
+        <span class="nav-label">每日学习</span>
+        <span class="nav-sub" id="learn-sub">TODAY</span>
+      </a>
+      <a href="wordbank.html" class="nav-card">
+        <span class="nav-icon">📚</span>
+        <span class="nav-label">单词库</span>
+        <span class="nav-sub" id="wordbank-sub">WORDS</span>
+      </a>
+      <a href="review.html" class="nav-card">
+        <span class="nav-icon">🔥</span>
+        <span class="nav-label">回炉本</span>
+        <span class="nav-sub" id="wrong-sub">REVIEW</span>
+      </a>
+    </nav>
+  </div>
 
-      <p class="fill-context">FILL IN THE BLANK</p>
-      <p class="fill-meaning-hint" id="fill-meaning"></p>
-      <div class="fill-sentence-wrap" id="fill-sentence"></div>
-      <p class="fill-hint-text" id="fill-hint"></p>
-      <div class="fill-feedback hidden" id="fill-feedback"></div>
-      <button class="btn-primary"   id="fill-confirm-btn">确认答案</button>
-      <button class="btn-primary hidden" id="fill-next-btn">继续 →</button>
-    </div>
-  </section>
+  <!-- 主题选择器（由 main.js 渲染） -->
+  <div id="theme-dock"></div>
 
-  <!-- ── 结算 ── -->
-  <section id="screen-result" class="screen">
-    <div class="learn-card" style="text-align:center">
-      <p class="result-title">今日完成！</p>
-      <p class="result-msg" id="result-msg">掌握得不错</p>
-      <div class="result-score">
-        <div class="result-pct" id="result-pct">—%</div>
-        <div class="result-detail">
-          答对 <span id="result-correct">0</span> /
-          <span id="result-total">0</span>
-        </div>
-      </div>
-      <div class="result-bar-wrap">
-        <div class="result-bar" id="result-bar"></div>
-      </div>
-      <div class="result-streak-wrap">
-        🌟 连击 <span id="result-streak">0</span> 天
-      </div>
-      <button class="btn-primary"   id="btn-result-home">回到首页</button>
-      <button class="btn-secondary" id="btn-result-again" style="margin-top:8px">
-        再练一遍错题
-      </button>
-    </div>
-  </section>
-
-  <script type="module">
-    import { startAnim } from './js/animations.js';
-    const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
-    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
-    const theme = localStorage.getItem('fg_theme') || 'ocean';
-    document.body.className = `theme-${theme}`;
-    if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
-    else if(theme==='black'){document.body.style.background='#080808';}
-    const bg = document.getElementById('bg-image');
-    const cv = document.getElementById('bg-canvas');
-    cv.width=window.innerWidth; cv.height=window.innerHeight;
-    window.addEventListener('resize',()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;});
-    if(THEME_IMGS[theme]){bg.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bg.style.opacity='1';}
-    else{bg.style.opacity='0';}
-    if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cv);
-  </script>
-  <script type="module" src="js/learn.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
