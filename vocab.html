@@ -1,90 +1,109 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>词汇图谱 · Foreign</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/theme-buttons.css">
+<link rel="stylesheet" href="css/dock.css">
+<link rel="stylesheet" href="css/mobile.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;min-height:100vh;color:#f1f5f9;overflow-x:hidden}
-.bg-image{position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;transition:background-image .8s,opacity .6s;animation:bgBreath 16s ease-in-out infinite alternate}
-.bg-canvas{position:fixed;inset:0;z-index:1;width:100%;height:100%;pointer-events:none}
-.bg-overlay{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 20%,rgba(0,0,0,.58) 100%)}
-@keyframes bgBreath{0%{transform:scale(1)}100%{transform:scale(1.035)}}
-.page{position:relative;z-index:3;min-height:100vh;padding:0 0 80px}
+.page{position:relative;z-index:3;min-height:100vh;padding:0 0 100px}
 
-nav{display:flex;align-items:center;justify-content:space-between;padding:28px 48px 0;margin-bottom:40px}
-.nav-back{display:flex;align-items:center;gap:8px;color:rgba(241,245,249,.7);text-decoration:none;font-size:14px;font-family:'Space Mono',monospace;letter-spacing:.02em;transition:color .2s}
-.nav-back:hover{color:#f1f5f9}
-.nav-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
-.nav-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;letter-spacing:.06em;opacity:.9}
-.nav-right{width:120px}
+/* ── Nav ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:24px 32px 0;margin-bottom:28px}
+.nav-back{display:flex;align-items:center;gap:8px;color:rgba(241,245,249,.7);text-decoration:none;font-size:13px;font-family:'Space Mono',monospace;letter-spacing:.02em;transition:color .2s;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:7px 14px}
+.nav-back:hover{color:#f1f5f9;background:rgba(255,255,255,.12)}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;letter-spacing:.04em;opacity:.9}
+.nav-right{width:80px}
 
-.main{max-width:1100px;margin:0 auto;padding:0 48px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:24px}
+/* ── 主内容：桌面双列 ── */
+.main{max-width:1000px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
 
-.card{background:rgba(15,23,42,.52);border:1px solid rgba(241,245,249,.1);border-radius:20px;padding:28px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.card-label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(241,245,249,.45);margin-bottom:18px}
+/* ── 卡片 ── */
+.card{background:rgba(15,23,42,.52);border:1px solid rgba(241,245,249,.1);border-radius:20px;padding:24px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.card-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(241,245,249,.42);margin-bottom:16px}
 
+/* 总体进度：占满第一行 */
 .card-total{grid-column:1/-1}
-.progress-row{display:flex;align-items:baseline;gap:16px;margin-bottom:20px}
-.progress-big{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:500;line-height:1;color:#f1f5f9}
-.progress-sub{font-size:15px;color:rgba(241,245,249,.55)}
-.progress-track{height:6px;background:rgba(241,245,249,.1);border-radius:99px;overflow:hidden;margin-bottom:10px}
-.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--theme-color,#3b82f6),rgba(241,245,249,.6));transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.progress-labels{display:flex;justify-content:space-between;font-size:12px;color:rgba(241,245,249,.4);font-family:'Space Mono',monospace}
-.dim-bars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
-.dim-bar-name{font-size:12px;color:rgba(241,245,249,.6);margin-bottom:6px;display:flex;justify-content:space-between}
-.dim-bar-name span{color:rgba(241,245,249,.35);font-family:'Space Mono',monospace;font-size:11px}
+.progress-row{display:flex;align-items:baseline;gap:14px;margin-bottom:16px}
+.progress-big{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:500;line-height:1;color:#f1f5f9}
+.progress-sub{font-size:14px;color:rgba(241,245,249,.52)}
+.progress-track{height:5px;background:rgba(241,245,249,.1);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--theme-color,#3b82f6),rgba(241,245,249,.5));transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.progress-labels{display:flex;justify-content:space-between;font-size:11px;color:rgba(241,245,249,.38);font-family:'Space Mono',monospace;letter-spacing:.04em}
+
+/* 维度进度条：桌面3列，手机1列 */
+.dim-bars{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.dim-bar-name{font-size:12px;color:rgba(241,245,249,.62);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
+.dim-bar-name span{color:rgba(241,245,249,.32);font-family:'Space Mono',monospace;font-size:10px}
 .dim-bar-track{height:4px;background:rgba(241,245,249,.1);border-radius:99px;overflow:hidden}
 .dim-bar-fill{height:100%;border-radius:99px;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
 
-.card-radar{grid-column:1;grid-row:2}
-#radarCanvas{display:block;margin:0 auto}
+/* 雷达图 */
+.card-radar{grid-column:1}
+#radarCanvas{display:block;width:100%;max-width:320px;margin:0 auto}
 
-.card-heat{grid-column:2;grid-row:2}
-.heat-grid{display:grid;gap:3px;margin-top:4px}
-.heat-cell{border-radius:3px;cursor:default;transition:transform .15s}
-.heat-cell:hover{transform:scale(1.3)}
-.heat-months{display:flex;font-size:10px;font-family:'Space Mono',monospace;color:rgba(241,245,249,.35);margin-top:6px;letter-spacing:.04em}
-.heat-legend{display:flex;align-items:center;gap:6px;margin-top:14px;font-size:11px;color:rgba(241,245,249,.4);font-family:'Space Mono',monospace}
-.heat-swatch{width:10px;height:10px;border-radius:2px}
+/* 热力图 */
+.card-heat{grid-column:2;overflow:hidden}
+.heat-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.heat-months{display:flex;font-size:10px;font-family:'Space Mono',monospace;color:rgba(241,245,249,.35);margin-bottom:4px;letter-spacing:.04em;position:relative;height:14px}
+.heat-legend{display:flex;align-items:center;gap:5px;margin-top:12px;font-size:10px;color:rgba(241,245,249,.38);font-family:'Space Mono',monospace}
+.heat-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .heat-tooltip{position:fixed;background:rgba(15,23,42,.95);border:1px solid rgba(241,245,249,.15);border-radius:8px;padding:6px 10px;font-size:12px;pointer-events:none;display:none;z-index:999;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.heat-empty{font-size:11px;color:rgba(241,245,249,.32);font-family:'Space Mono',monospace;margin-top:14px;line-height:1.9;letter-spacing:.04em}
 
+/* 薄弱维度：占满底部 */
 .card-weak{grid-column:1/-1}
-.weak-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
-.weak-item{background:rgba(241,245,249,.06);border:1px solid rgba(241,245,249,.1);border-radius:14px;padding:18px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
+.weak-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+.weak-item{background:rgba(241,245,249,.06);border:1px solid rgba(241,245,249,.1);border-radius:14px;padding:16px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit;display:block}
 .weak-item:hover{background:rgba(241,245,249,.1);border-color:rgba(241,245,249,.2);transform:translateY(-2px)}
-.weak-icon{font-size:22px;margin-bottom:10px}
-.weak-dim-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;margin-bottom:4px;color:#f1f5f9}
-.weak-pct{font-family:'Space Mono',monospace;font-size:12px;color:rgba(241,245,249,.45);margin-bottom:10px}
-.weak-words{display:flex;flex-wrap:wrap;gap:5px}
-.weak-word-tag{font-size:11px;background:rgba(241,245,249,.08);border-radius:6px;padding:3px 8px;color:rgba(241,245,249,.65)}
-.weak-cta{margin-top:12px;font-size:12px;color:var(--theme-color,#3b82f6);display:flex;align-items:center;gap:4px}
-.weak-cta svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.weak-icon{font-size:20px;margin-bottom:8px}
+.weak-dim-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;margin-bottom:3px;color:#f1f5f9}
+.weak-pct{font-family:'Space Mono',monospace;font-size:11px;color:rgba(241,245,249,.42);margin-bottom:10px}
+.weak-words{display:flex;flex-wrap:wrap;gap:4px}
+.weak-word-tag{font-size:10px;background:rgba(241,245,249,.08);border-radius:5px;padding:2px 7px;color:rgba(241,245,249,.62)}
+.weak-cta{margin-top:10px;font-size:11px;color:var(--theme-color,#3b82f6);font-family:'Space Mono',monospace;letter-spacing:.04em}
 
-/* 空状态 */
-.heat-empty{font-size:12px;color:rgba(241,245,249,.35);font-family:'Space Mono',monospace;margin-top:16px;line-height:1.8}
+/* ── 移动端适配 ── */
+@media(max-width:767px){
+  nav{padding:16px 16px 0;margin-bottom:20px}
+  .nav-title{font-size:16px}
+  .main{grid-template-columns:1fr;padding:0 12px;gap:14px}
+  .card-total,.card-radar,.card-heat,.card-weak{grid-column:1}
+  .dim-bars{grid-template-columns:1fr 1fr}
+  .weak-list{grid-template-columns:1fr}
+  #radarCanvas{max-width:280px}
+  .card{padding:18px 16px}
+  .progress-big{font-size:38px}
+}
 
+/* ── 亮色主题 ── */
 body.theme-white{color:#1e293b}
 body.theme-white .card{background:rgba(255,255,255,.72);border-color:rgba(30,41,59,.1)}
-body.theme-white .card-label{color:rgba(30,41,59,.45)}
-body.theme-white .progress-big,.theme-white .weak-dim-name,.theme-white .nav-title{color:#1e293b}
-body.theme-white .nav-back{color:rgba(30,41,59,.6)}
-body.theme-white .nav-back:hover{color:#1e293b}
+body.theme-white .card-label{color:rgba(30,41,59,.42)}
+body.theme-white .progress-big{color:#1e293b}
+body.theme-white .progress-sub{color:rgba(30,41,59,.52)}
 body.theme-white .progress-track,.theme-white .dim-bar-track{background:rgba(30,41,59,.1)}
-body.theme-white .progress-labels,.theme-white .progress-sub,.theme-white .dim-bar-name span{color:rgba(30,41,59,.4)}
+body.theme-white .progress-labels{color:rgba(30,41,59,.38)}
 body.theme-white .dim-bar-name{color:rgba(30,41,59,.65)}
+body.theme-white .dim-bar-name span{color:rgba(30,41,59,.38)}
+body.theme-white .nav-back{color:rgba(30,41,59,.6);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+body.theme-white .nav-title{color:#1e293b}
 body.theme-white .weak-item{background:rgba(30,41,59,.05);border-color:rgba(30,41,59,.1)}
-body.theme-white .weak-item:hover{background:rgba(30,41,59,.1);border-color:rgba(30,41,59,.2)}
-body.theme-white .weak-pct,.theme-white .heat-months,.theme-white .heat-legend{color:rgba(30,41,59,.45)}
-body.theme-white .weak-word-tag{background:rgba(30,41,59,.08);color:rgba(30,41,59,.6)}
-body.theme-white .heat-tooltip{background:rgba(255,255,255,.97);border-color:rgba(30,41,59,.15);color:#1e293b}
+body.theme-white .weak-item:hover{background:rgba(30,41,59,.1)}
+body.theme-white .weak-dim-name{color:#1e293b}
+body.theme-white .weak-pct{color:rgba(30,41,59,.42)}
+body.theme-white .weak-word-tag{background:rgba(30,41,59,.07);color:rgba(30,41,59,.6)}
+body.theme-white .heat-legend,.theme-white .heat-months{color:rgba(30,41,59,.42)}
 body.theme-white .heat-empty{color:rgba(30,41,59,.35)}
+body.theme-white .heat-tooltip{background:rgba(255,255,255,.97);border-color:rgba(30,41,59,.15);color:#1e293b}
 </style>
 </head>
 <body>
@@ -96,16 +115,14 @@ body.theme-white .heat-empty{color:rgba(30,41,59,.35)}
 
 <div class="page">
   <nav>
-    <a href="index.html" class="nav-back">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      返回
-    </a>
+    <button class="nav-back" onclick="history.length>1?history.back():location.href='index.html'">← 返回</button>
     <span class="nav-title">词汇图谱</span>
     <div class="nav-right"></div>
   </nav>
 
   <div class="main">
-    <div class="card card-total" id="cardTotal">
+    <!-- 总体进度 -->
+    <div class="card card-total">
       <div class="card-label">总体进度</div>
       <div class="progress-row">
         <div class="progress-big" id="learnedCount">0</div>
@@ -120,16 +137,19 @@ body.theme-white .heat-empty{color:rgba(30,41,59,.35)}
       <div class="dim-bars" id="dimBars"></div>
     </div>
 
+    <!-- 雷达图 -->
     <div class="card card-radar">
       <div class="card-label">六维度掌握度</div>
-      <canvas id="radarCanvas" width="320" height="300" role="img" aria-label="六维度词汇掌握度雷达图"></canvas>
+      <canvas id="radarCanvas" width="320" height="300"></canvas>
     </div>
 
+    <!-- 热力图 -->
     <div class="card card-heat">
       <div class="card-label">学习热力图</div>
-      <div id="heatmapWrap"></div>
+      <div class="heat-scroll" id="heatmapWrap"></div>
     </div>
 
+    <!-- 薄弱维度 -->
     <div class="card card-weak">
       <div class="card-label">薄弱维度 · 推荐练习</div>
       <div class="weak-list" id="weakList"></div>
@@ -140,9 +160,10 @@ body.theme-white .heat-empty{color:rgba(30,41,59,.35)}
 <script type="module">
 import { startAnim } from './js/animations.js';
 import { WORDS, DIMENSIONS, getDimStats, getWeakDimensions, getByDimension } from './js/wordbank.js';
+import { initDock } from './js/dock.js';
 
 const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
-const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
+const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
 const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#94a3b8'};
 
 const theme = localStorage.getItem('fg_theme') || 'ocean';
@@ -151,160 +172,148 @@ const themeColor = THEME_COLORS[theme] || '#3b82f6';
 document.documentElement.style.setProperty('--theme-color', themeColor);
 if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
 else if(theme==='black'){document.body.style.background='#080808';}
-const bg = document.getElementById('bg-image');
-const cv = document.getElementById('bg-canvas');
+const bg=document.getElementById('bg-image'), cv=document.getElementById('bg-canvas');
 cv.width=window.innerWidth; cv.height=window.innerHeight;
 window.addEventListener('resize',()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;});
 if(THEME_IMGS[theme]){bg.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bg.style.opacity='1';}
-else{bg.style.opacity='0';}
-if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cv);
+else bg.style.opacity='0';
+if(THEME_ANIMS[theme]&&THEME_ANIMS[theme]!=='none') startAnim(THEME_ANIMS[theme], cv);
 
-const rawCards = JSON.parse(localStorage.getItem('fg_cards') || '{}');
-const studyLog  = JSON.parse(localStorage.getItem('fg_study_log') || '{}');
+initDock('bg-image','bg-canvas');
 
-const dimStats = getDimStats(rawCards);
-const total = WORDS.length;
-const learned = Object.values(dimStats).reduce((s,d) => s+d.learned, 0);
-const pct = total ? learned/total : 0;
+// ── 数据 ──
+const rawCards  = JSON.parse(localStorage.getItem('fg_cards')||'{}');
+const studyLog  = JSON.parse(localStorage.getItem('fg_study_log')||'{}');
+const dimStats  = getDimStats(rawCards);
+const total     = WORDS.length;
+const learned   = Object.values(dimStats).reduce((s,d)=>s+d.learned,0);
+const pct       = total ? learned/total : 0;
+const isDark    = theme !== 'white';
 
+// ── 总体进度 ──
 document.getElementById('learnedCount').textContent = learned;
-document.getElementById('totalCount').textContent = total;
-document.getElementById('pctLabel').textContent = `${Math.round(pct*100)}% 已接触`;
-setTimeout(() => { document.getElementById('progressFill').style.width = `${Math.round(pct*100)}%`; }, 100);
+document.getElementById('totalCount').textContent   = total;
+document.getElementById('pctLabel').textContent     = `${Math.round(pct*100)}% 已接触`;
+setTimeout(()=>{ document.getElementById('progressFill').style.width=`${Math.round(pct*100)}%`; },100);
 
+// ── 维度进度条 ──
 const dimColors = {daily:'#3b82f6',emotion:'#f9a8d4',nature:'#86efac',abstract:'#818cf8',social:'#fb923c',academic:'#6ee7b7'};
 const dimBarsEl = document.getElementById('dimBars');
-for(const [dim, info] of Object.entries(DIMENSIONS)){
-  const st = dimStats[dim];
-  const el = document.createElement('div');
-  el.className = 'dim-bar-item';
-  el.innerHTML = `<div class="dim-bar-name">${info.icon} ${info.label}<span>${st.learned}/${st.total}</span></div><div class="dim-bar-track"><div class="dim-bar-fill" style="width:0%;background:${dimColors[dim]}"></div></div>`;
+for(const [dim,info] of Object.entries(DIMENSIONS)){
+  const st=dimStats[dim];
+  const el=document.createElement('div');
+  el.innerHTML=`
+    <div class="dim-bar-name">${info.icon} ${info.label}<span>${st.learned}/${st.total}</span></div>
+    <div class="dim-bar-track"><div class="dim-bar-fill" style="width:0%;background:${dimColors[dim]||themeColor}"></div></div>`;
   dimBarsEl.appendChild(el);
-  setTimeout(() => el.querySelector('.dim-bar-fill').style.width = `${Math.round(st.pct*100)}%`, 150);
+  setTimeout(()=>el.querySelector('.dim-bar-fill').style.width=`${Math.round(st.pct*100)}%`,200);
 }
 
-// 雷达图
+// ── 雷达图 ──
 const radarCv = document.getElementById('radarCanvas');
 const ctx = radarCv.getContext('2d');
-const dims = Object.keys(DIMENSIONS);
-const labels = dims.map(d => DIMENSIONS[d].label);
-const values = dims.map(d => dimStats[d].pct);
-const N = dims.length;
-const cx = 160, cy = 155, R = 115;
-const PI2 = Math.PI*2;
+// 响应式画布尺寸
+const isMobile = window.innerWidth < 768;
+const rSize = isMobile ? Math.min(window.innerWidth-64, 280) : 320;
+radarCv.width = rSize; radarCv.height = Math.round(rSize*0.94);
+const cx=rSize/2, cy=radarCv.height/2, R=rSize*.34;
+const dims=Object.keys(DIMENSIONS);
+const labels=dims.map(d=>DIMENSIONS[d].label);
+const values=dims.map(d=>dimStats[d].pct);
+const N=dims.length, PI2=Math.PI*2;
+const gridCol  = isDark?'rgba(241,245,249,.1)':'rgba(30,41,59,.1)';
+const labelCol = isDark?'rgba(241,245,249,.58)':'rgba(30,41,59,.58)';
 
-function polarPt(i, r){
-  const angle = (PI2*i/N) - Math.PI/2;
-  return [cx+Math.cos(angle)*r, cy+Math.sin(angle)*r];
-}
+function polarPt(i,r){ const a=(PI2*i/N)-Math.PI/2; return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]; }
 
-const isDark = theme !== 'white';
-const gridColor  = isDark ? 'rgba(241,245,249,.12)' : 'rgba(30,41,59,.12)';
-const labelColor = isDark ? 'rgba(241,245,249,.6)'  : 'rgba(30,41,59,.6)';
-const fillColor  = themeColor + '44';
-
-let prog = 0;
+let prog=0;
 function drawRadar(p){
   ctx.clearRect(0,0,radarCv.width,radarCv.height);
   [.25,.5,.75,1].forEach(r=>{
     ctx.beginPath();
     for(let i=0;i<N;i++){const[x,y]=polarPt(i,R*r);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
-    ctx.closePath();ctx.strokeStyle=gridColor;ctx.lineWidth=1;ctx.stroke();
+    ctx.closePath();ctx.strokeStyle=gridCol;ctx.lineWidth=1;ctx.stroke();
   });
   for(let i=0;i<N;i++){
     const[x,y]=polarPt(i,R);
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);
-    ctx.strokeStyle=gridColor;ctx.lineWidth=1;ctx.stroke();
-    const[lx,ly]=polarPt(i,R+22);
-    ctx.font='12px "DM Sans"';ctx.fillStyle=labelColor;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.strokeStyle=gridCol;ctx.lineWidth=1;ctx.stroke();
+    const[lx,ly]=polarPt(i,R+(isMobile?18:24));
+    ctx.font=`${isMobile?10:11}px "DM Sans"`;ctx.fillStyle=labelCol;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(labels[i],lx,ly);
-    ctx.font='10px "Space Mono"';ctx.fillStyle=themeColor+'bb';
-    ctx.fillText(Math.round(values[i]*100)+'%',lx,ly+14);
+    ctx.font=`9px "Space Mono"`;ctx.fillStyle=themeColor+'cc';
+    ctx.fillText(Math.round(values[i]*100)+'%',lx,ly+(isMobile?12:14));
   }
   ctx.beginPath();
   for(let i=0;i<N;i++){
     const v=values[i]*p;
-    const[x,y]=polarPt(i,R*Math.max(v,0.02));
+    const[x,y]=polarPt(i,R*Math.max(v,.02));
     i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   }
-  ctx.closePath();ctx.fillStyle=fillColor;ctx.fill();
-  ctx.strokeStyle=themeColor;ctx.lineWidth=2;ctx.stroke();
+  ctx.closePath();
+  ctx.fillStyle=themeColor+'44';ctx.fill();
+  ctx.strokeStyle=themeColor;ctx.lineWidth=1.5;ctx.stroke();
   for(let i=0;i<N;i++){
     const v=values[i]*p;
-    const[x,y]=polarPt(i,R*Math.max(v,0.02));
-    ctx.beginPath();ctx.arc(x,y,4,0,PI2);ctx.fillStyle=themeColor;ctx.fill();
+    const[x,y]=polarPt(i,R*Math.max(v,.02));
+    ctx.beginPath();ctx.arc(x,y,3.5,0,PI2);ctx.fillStyle=themeColor;ctx.fill();
   }
 }
-function animRadar(){
-  prog+=.035;if(prog>1)prog=1;
-  drawRadar(prog);
-  if(prog<1)requestAnimationFrame(animRadar);
-}
+function animRadar(){ prog+=.04;if(prog>1)prog=1;drawRadar(prog);if(prog<1)requestAnimationFrame(animRadar); }
 setTimeout(animRadar,200);
 
-// 热力图
+// ── 热力图 ──
 function buildHeatmap(){
-  const wrap = document.getElementById('heatmapWrap');
-  const today = new Date();
-  const WEEKS = 26, DAYS = 7;
-  const cells = WEEKS*DAYS;
-  const dates = [];
-  for(let i=cells-1;i>=0;i--){
-    const d=new Date(today);d.setDate(today.getDate()-i);
-    dates.push({key:d.toISOString().slice(0,10),d});
-  }
-
-  const hasData = Object.keys(studyLog).length > 0;
-
-  const maxCount = Math.max(1,...Object.values(studyLog));
+  const wrap=document.getElementById('heatmapWrap');
+  const today=new Date();
+  const WEEKS=isMobile?18:26, DAYS=7;
+  const cells=WEEKS*DAYS;
+  const dates=[];
+  for(let i=cells-1;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);dates.push({key:d.toISOString().slice(0,10),d});}
+  const maxCount=Math.max(1,...Object.values(studyLog));
+  const CELL=isMobile?12:13, GAP=isMobile?2:3;
+  const gridW=WEEKS*(CELL+GAP);
 
   function cellColor(count){
-    if(!count) return isDark?'rgba(241,245,249,.07)':'rgba(30,41,59,.08)';
+    if(!count)return isDark?'rgba(241,245,249,.07)':'rgba(30,41,59,.08)';
     const idx=Math.min(Math.floor(count/maxCount*5),4);
     const alpha=[.2,.4,.6,.8,1][idx];
     return themeColor+Math.round(alpha*255).toString(16).padStart(2,'0');
   }
 
   const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthPositions=[];
+  const monthRow=document.createElement('div');
+  monthRow.className='heat-months';
+  monthRow.style.cssText=`width:${gridW}px;position:relative;height:14px;margin-bottom:4px`;
   for(let w=0;w<WEEKS;w++){
     const d=dates[w*7];
     if(d&&(w===0||dates[(w-1)*7].d.getMonth()!==d.d.getMonth())){
-      monthPositions.push({w,name:monthNames[d.d.getMonth()]});
+      const span=document.createElement('span');
+      span.textContent=monthNames[d.d.getMonth()];
+      span.style.cssText=`position:absolute;left:${w*(CELL+GAP)}px;font-size:9px`;
+      monthRow.appendChild(span);
     }
   }
-
-  const CELL=13,GAP=3;
-  const gridW=WEEKS*(CELL+GAP);
-
-  const monthRow=document.createElement('div');
-  monthRow.className='heat-months';
-  monthRow.style.cssText=`width:${gridW}px;position:relative;height:16px;margin-bottom:4px`;
-  monthPositions.forEach(({w,name})=>{
-    const span=document.createElement('span');
-    span.textContent=name;
-    span.style.cssText=`position:absolute;left:${w*(CELL+GAP)}px`;
-    monthRow.appendChild(span);
-  });
   wrap.appendChild(monthRow);
 
   const grid=document.createElement('div');
-  grid.style.cssText=`display:grid;grid-template-columns:repeat(${WEEKS},${CELL}px);grid-template-rows:repeat(${DAYS},${CELL}px);gap:${GAP}px;width:fit-content`;
-
+  grid.style.cssText=`display:grid;grid-template-columns:repeat(${WEEKS},${CELL}px);grid-template-rows:repeat(${DAYS},${CELL}px);gap:${GAP}px;width:${gridW}px`;
   const tip=document.getElementById('heatTip');
+
   dates.forEach(({key,d})=>{
     const count=studyLog[key]||0;
     const cell=document.createElement('div');
-    cell.className='heat-cell';
-    cell.style.cssText=`width:${CELL}px;height:${CELL}px;background:${cellColor(count)};border-radius:2px`;
-    cell.addEventListener('mouseenter',(ev)=>{
-      const dateStr=`${d.getMonth()+1}月${d.getDate()}日`;
-      tip.textContent=count?`${dateStr} · 学了 ${count} 词`:`${dateStr} · 未学习`;
-      tip.style.display='block';
-      tip.style.left=ev.clientX+12+'px';
-      tip.style.top=ev.clientY-32+'px';
+    cell.style.cssText=`width:${CELL}px;height:${CELL}px;background:${cellColor(count)};border-radius:2px;cursor:default;transition:transform .15s`;
+    cell.addEventListener('mouseenter',ev=>{
+      tip.textContent=count?`${d.getMonth()+1}月${d.getDate()}日 · 学了 ${count} 词`:`${d.getMonth()+1}月${d.getDate()}日 · 未学习`;
+      tip.style.cssText=`display:block;left:${ev.clientX+12}px;top:${ev.clientY-32}px`;
     });
-    cell.addEventListener('mouseleave',()=>{tip.style.display='none';});
+    cell.addEventListener('mouseleave',()=>tip.style.display='none');
+    cell.addEventListener('touchstart',ev=>{
+      tip.textContent=count?`${d.getMonth()+1}月${d.getDate()}日 · 学了 ${count} 词`:`${d.getMonth()+1}月${d.getDate()}日 · 未学习`;
+      const t=ev.touches[0];
+      tip.style.cssText=`display:block;left:${t.clientX+12}px;top:${t.clientY-48}px`;
+      setTimeout(()=>tip.style.display='none',1800);
+    });
     grid.appendChild(cell);
   });
   wrap.appendChild(grid);
@@ -320,26 +329,23 @@ function buildHeatmap(){
   legend.insertAdjacentHTML('beforeend','<span>多</span>');
   wrap.appendChild(legend);
 
-  // 连击显示
   const streakDays=parseInt(localStorage.getItem('fg_streak')||'0');
   if(streakDays>0){
-    const streakEl=document.createElement('div');
-    streakEl.style.cssText=`margin-top:12px;font-size:12px;color:${themeColor};font-family:'Space Mono',monospace`;
-    streakEl.textContent=`🔥 连续学习 ${streakDays} 天`;
-    wrap.appendChild(streakEl);
+    const el=document.createElement('div');
+    el.style.cssText=`margin-top:10px;font-size:11px;color:${themeColor};font-family:'Space Mono',monospace;letter-spacing:.04em`;
+    el.textContent=`🔥 连续学习 ${streakDays} 天`;
+    wrap.appendChild(el);
   }
-
-  // 没有数据时提示
-  if(!hasData){
-    const emptyEl=document.createElement('div');
-    emptyEl.className='heat-empty';
-    emptyEl.textContent='完成每日学习后\n这里会显示你的学习记录';
-    wrap.appendChild(emptyEl);
+  if(!Object.keys(studyLog).length){
+    const el=document.createElement('div');
+    el.className='heat-empty';
+    el.textContent='完成每日学习后\n这里会显示你的学习记录';
+    wrap.appendChild(el);
   }
 }
 buildHeatmap();
 
-// 薄弱维度
+// ── 薄弱维度 ──
 function buildWeakDims(){
   const weakDims=getWeakDimensions(rawCards);
   const list=document.getElementById('weakList');
@@ -348,23 +354,20 @@ function buildWeakDims(){
     const info=DIMENSIONS[dim];
     const st=dimStats[dim];
     const words=getByDimension(dim);
-    const suggestions=words.filter(w=>!rawCards[w.id]||rawCards[w.id].stability<1).slice(0,4);
-    const shown=suggestions.length?suggestions:words.slice(0,4);
+    const shown=words.filter(w=>!rawCards[w.id]||rawCards[w.id].stability<1).slice(0,4);
     const item=document.createElement('a');
     item.className='weak-item';
-    item.href=`learn.html?dim=${dim}`;
+    item.href='learn.html';
     item.innerHTML=`
       <div class="weak-icon">${info.icon}</div>
       <div class="weak-dim-name">${info.label}</div>
       <div class="weak-pct">掌握度 ${Math.round(st.pct*100)}% · ${st.learned}/${st.total} 词</div>
       <div class="weak-words">${shown.map(w=>`<span class="weak-word-tag">${w.word}</span>`).join('')}</div>
-      <div class="weak-cta">开始练习 <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
-    `;
+      <div class="weak-cta">开始练习 →</div>`;
     list.appendChild(item);
   });
 }
 buildWeakDims();
 </script>
-
 </body>
 </html>
