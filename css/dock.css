@@ -1,0 +1,307 @@
+/* ═══════════════════════════════════════════════════════
+   Foreign · dock.css — 震撼主题选择器样式
+   加入 index.html 的 <head> 里
+═══════════════════════════════════════════════════════ */
+
+/* ── 触发按钮 ─────────────────────────────────────── */
+#theme-dock {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 9000;
+}
+
+.dock-trigger {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15,23,42,.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s;
+  box-shadow: 0 4px 24px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);
+}
+.dock-trigger:hover { transform: scale(1.12); }
+.dock-trigger.open  { transform: scale(.95); }
+
+/* 呼吸光环 */
+.dock-trigger-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  border-color: #3b82f6;
+  opacity: .5;
+  animation: ringBreath 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ringBreath {
+  0%,100% { transform: scale(1);   opacity: .5; }
+  50%      { transform: scale(1.2); opacity: .18; }
+}
+
+/* 中心圆点 */
+.dock-trigger-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  transition: background .4s, transform .2s;
+  flex-shrink: 0;
+}
+.dock-trigger.open .dock-trigger-dot {
+  transform: rotate(45deg) scale(.85);
+}
+
+/* 标签 */
+.dock-trigger-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .08em;
+  color: rgba(241,245,249,.5);
+  line-height: 1;
+}
+
+/* ── 全屏遮罩 ─────────────────────────────────────── */
+.dock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 32px 96px 32px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.dock-overlay.open {
+  pointer-events: all;
+  opacity: 1;
+}
+
+/* ── 面板 ─────────────────────────────────────────── */
+.dock-panel {
+  width: 380px;
+  background: rgba(8,15,28,.82);
+  border: 1px solid rgba(241,245,249,.12);
+  border-radius: 24px;
+  backdrop-filter: blur(32px) saturate(1.5);
+  -webkit-backdrop-filter: blur(32px) saturate(1.5);
+  box-shadow:
+    0 32px 80px rgba(0,0,0,.55),
+    0 0 0 .5px rgba(255,255,255,.06) inset,
+    0 1px 0 rgba(255,255,255,.1) inset;
+  transform: translateY(24px) scale(.97);
+  transition: transform .36s cubic-bezier(.34,1.38,.64,1), opacity .28s;
+  opacity: 0;
+  overflow: hidden;
+}
+.dock-overlay.open .dock-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* 面板顶部 */
+.dock-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 12px;
+  border-bottom: .5px solid rgba(241,245,249,.08);
+}
+.dock-panel-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: rgba(241,245,249,.85);
+  letter-spacing: .04em;
+}
+.dock-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: .5px solid rgba(241,245,249,.15);
+  background: rgba(241,245,249,.06);
+  color: rgba(241,245,249,.5);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .18s;
+}
+.dock-close:hover {
+  background: rgba(241,245,249,.14);
+  color: rgba(241,245,249,.9);
+}
+
+/* ── 主题卡片网格 ──────────────────────────────────── */
+.dock-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 14px 16px;
+}
+
+/* 单张卡片 */
+.dock-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px 10px;
+  border-radius: 14px;
+  border: .5px solid rgba(241,245,249,.08);
+  background: rgba(241,245,249,.04);
+  cursor: pointer;
+  overflow: hidden;
+  /* 入场：初始隐藏 */
+  opacity: 0;
+  transform: translateY(12px) scale(.95);
+  transition:
+    opacity .26s,
+    transform .26s cubic-bezier(.34,1.45,.64,1),
+    border-color .2s,
+    background .2s;
+}
+.dock-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.dock-card:hover,
+.dock-card.hovered {
+  background: rgba(241,245,249,.1);
+  border-color: rgba(241,245,249,.2);
+  transform: translateY(-2px) scale(1.03);
+}
+.dock-card.active {
+  border-color: rgba(241,245,249,.35);
+  background: rgba(241,245,249,.1);
+}
+.dock-card.active::after {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 10px;
+  color: rgba(241,245,249,.7);
+  font-family: 'Space Mono', monospace;
+}
+
+/* 色块 */
+.dock-card-swatch {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: block;
+}
+.dock-card-swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .3s;
+}
+.dock-card:hover .dock-card-swatch img {
+  transform: scale(1.1);
+}
+/* 色块内发光圆环（当前主题） */
+.dock-card-ring {
+  position: absolute;
+  inset: 1px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: border-color .22s;
+  pointer-events: none;
+}
+.dock-card.active .dock-card-ring {
+  border-color: rgba(255,255,255,.7);
+}
+
+/* 文字 */
+.dock-card-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(241,245,249,.8);
+  line-height: 1;
+}
+.dock-card-en {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .08em;
+  color: rgba(241,245,249,.3);
+  line-height: 1;
+}
+
+/* 选中涟漪 */
+.dock-select-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: .35;
+  animation: dockRipple .55s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes dockRipple {
+  0%   { opacity: .4; transform: scale(1);  }
+  100% { opacity: 0;  transform: scale(2.5); }
+}
+
+/* 底部 footer */
+.dock-panel-footer {
+  padding: 10px 20px 16px;
+  border-top: .5px solid rgba(241,245,249,.06);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+.dock-current-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: rgba(241,245,249,.4);
+  transition: color .2s;
+}
+
+/* ── 亮色主题适配 ──────────────────────────────────── */
+body.theme-white .dock-trigger {
+  background: rgba(255,255,255,.85);
+  box-shadow: 0 4px 24px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.07);
+}
+body.theme-white .dock-trigger-label { color: rgba(30,41,59,.4); }
+body.theme-white .dock-panel {
+  background: rgba(255,255,255,.9);
+  border-color: rgba(30,41,59,.1);
+}
+body.theme-white .dock-panel-title { color: rgba(30,41,59,.85); }
+body.theme-white .dock-close {
+  border-color: rgba(30,41,59,.12);
+  background: rgba(30,41,59,.05);
+  color: rgba(30,41,59,.45);
+}
+body.theme-white .dock-card {
+  border-color: rgba(30,41,59,.07);
+  background: rgba(30,41,59,.03);
+}
+body.theme-white .dock-card:hover {
+  background: rgba(30,41,59,.07);
+  border-color: rgba(30,41,59,.15);
+}
+body.theme-white .dock-card-name { color: rgba(30,41,59,.8); }
+body.theme-white .dock-card-en   { color: rgba(30,41,59,.35); }
+body.theme-white .dock-panel-title { color: #1e293b; }
+body.theme-white .dock-current-label { color: rgba(30,41,59,.4); }
