@@ -53,7 +53,7 @@
     </div>
   </section>
 
-  <!-- 情景卡片 -->
+  <!-- 情景卡片（直接显示全部内容+两个评分按钮） -->
   <section id="screen-card" class="screen">
     <div class="progress-wrap">
       <div class="progress-meta"><span>PROGRESS</span><span id="card-progress-text">1 / 10</span></div>
@@ -69,13 +69,16 @@
       <div class="card-phonetic" id="card-phonetic">/wɜːrd/</div>
       <div class="card-meaning" id="card-meaning">含义</div>
       <div class="card-sentence" id="card-sentence"></div>
-      <div class="card-translation hidden" id="card-translation"></div>
-      <button class="btn-reveal" id="card-reveal-btn">查看翻译 · 自我评估</button>
-      <div class="rating-area hidden" id="card-rating-area">
-        <button class="btn-rating" data-rating="1"><span class="rating-emoji">😰</span><span class="rating-label">又忘了</span></button>
-        <button class="btn-rating" data-rating="2"><span class="rating-emoji">😅</span><span class="rating-label">勉强</span></button>
-        <button class="btn-rating" data-rating="3"><span class="rating-emoji">😊</span><span class="rating-label">记住了</span></button>
-        <button class="btn-rating" data-rating="4"><span class="rating-emoji">😎</span><span class="rating-label">轻松</span></button>
+      <div class="card-translation" id="card-translation"></div>
+      <div class="rating-area" id="card-rating-area">
+        <button class="btn-rating btn-rating-bad" data-rating="1">
+          <span class="rating-emoji">😰</span>
+          <span class="rating-label">没记住</span>
+        </button>
+        <button class="btn-rating btn-rating-good" data-rating="3">
+          <span class="rating-emoji">😊</span>
+          <span class="rating-label">记住了</span>
+        </button>
       </div>
     </div>
   </section>
@@ -115,7 +118,6 @@
     </div>
   </section>
 
-  <!-- 只用一个 module 脚本做背景初始化，learn.js 单独管业务逻辑 -->
   <script type="module">
     import { startAnim } from './js/animations.js';
     const THEME_IMGS = {
