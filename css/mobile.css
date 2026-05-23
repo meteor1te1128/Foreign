@@ -1,0 +1,122 @@
+/* Foreign · mobile.css — 移动端适配补丁
+   在所有页面 <head> 末尾引入此文件 */
+
+/* ── 全局基础 ── */
+@media (max-width: 767px) {
+  html, body { overflow-x: hidden; }
+
+  /* 子页面返回按钮 */
+  .back-btn {
+    top: 16px; left: 16px;
+    font-size: 11px; padding: 6px 12px;
+  }
+
+  /* learn/review 卡片 */
+  .learn-card {
+    margin: 0 12px;
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  /* 进度条区域 */
+  .progress-wrap { padding: 0 12px; margin-bottom: 16px; }
+
+  /* 填空题输入 */
+  .fill-input { font-size: 18px; }
+
+  /* 评分按钮区 */
+  .rating-area {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* 回炉本列表 */
+  .list-inner { padding: 0 12px; }
+  .wrong-item { padding: 12px 14px; }
+  .wrong-word { font-size: 18px; }
+
+  /* ── quiz 页 ── */
+  .quiz-wrap { padding: 0 12px; }
+  .q-card { padding: 22px 18px 20px; border-radius: 16px; }
+  .q-sentence { font-size: 18px; line-height: 1.65; }
+  .q-input { font-size: 18px; }
+
+  /* quiz intro：确保居中且不溢出 */
+  #screenIntro {
+    padding: 72px 20px 20px;
+    align-items: center;
+    justify-content: center;
+  }
+  .intro-content {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin-top: -20px;
+    text-align: center;
+  }
+  .intro-content h1 {
+    font-size: clamp(28px, 7vw, 42px);
+    text-align: center;
+  }
+  .intro-content .sub { font-size: 13px; }
+  .intro-meta {
+    flex-direction: row;
+    gap: 16px;
+    padding: 14px 16px;
+    justify-content: center;
+  }
+  .meta-item { font-size: 11px; }
+  .meta-icon { font-size: 18px; }
+
+  /* ── wordbank 页 ── */
+  .page-wrap { padding: 72px 12px 100px; }
+  .dim-tabs { gap: 6px; }
+  .dim-tab { font-size: 9px; padding: 5px 10px; }
+  .word-card { padding: 14px 16px; }
+  .word-en { font-size: 18px; }
+
+  /* ── vocab 页：双列改单列 ── */
+  .vocab-dim-grid,
+  .dim-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .vocab-radar-wrap canvas,
+  #radarCanvas { width: 100% !important; height: auto !important; }
+
+  /* ── 主题选择器面板 ── */
+  .dock-overlay {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0 90px;
+  }
+  .dock-panel {
+    width: calc(100vw - 24px);
+    max-width: 400px;
+    border-radius: 20px 20px 16px 16px;
+  }
+  .dock-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .dock-card-swatch { width: 40px; height: 30px; }
+  .dock-card-name { font-size: 10px; }
+
+  /* ── 结果页 ── */
+  .result-wrap { padding: 80px 16px 40px; }
+  .dimension-bars { gap: 10px; }
+  .dim-label { font-size: 11px; width: 56px; }
+
+  /* ── 雨天主题背景优化 ── */
+  body.theme-rain #bg {
+    background-position: 30% center !important;
+  }
+}
+
+/* ── 超小屏 (< 380px) ── */
+@media (max-width: 379px) {
+  .intro-content h1 { font-size: 26px; }
+  .q-sentence { font-size: 16px; }
+  .dock-grid { grid-template-columns: repeat(3, 1fr); }
+}
