@@ -1,92 +1,286 @@
-// wordbank.js — Foreign 词库
-// 六维度：daily / spoken / workplace / academic / literary / idiom
-
-export const WORDS = [
-  // ── 日常词汇 daily ──────────────────────────────────────────
-  { id:'d001', word:'cozy',     phonetic:'/ˈkoʊzi/',    meaning:'舒适的，温馨的',           dimension:'daily',     level:'A2', sentence:'She curled up in a ___ corner of the café with her book.',        translation:'她蜷缩在咖啡馆一个温馨的角落里看书。',      hint:'c___y' },
-  { id:'d002', word:'damp',     phonetic:'/dæmp/',      meaning:'潮湿的，微湿的',           dimension:'daily',     level:'A2', sentence:'The towel was still ___ after hanging overnight.',                 translation:'毛巾挂了一夜还是潮的。',                     hint:'d___p' },
-  { id:'d003', word:'clutter',  phonetic:'/ˈklʌtər/',   meaning:'杂乱，乱堆',               dimension:'daily',     level:'B1', sentence:'I need to ___ my desk before I can focus.',                      translation:'我需要清理桌子上的杂物才能集中注意力。',    hint:'cl____r' },
-  { id:'d004', word:'simmer',   phonetic:'/ˈsɪmər/',    meaning:'小火慢炖，慢慢煨',         dimension:'daily',     level:'B1', sentence:'Let the soup ___ for twenty minutes before serving.',             translation:'汤上桌前小火煨二十分钟。',                   hint:'s_____r' },
-  { id:'d005', word:'mundane',  phonetic:'/mʌnˈdeɪn/',  meaning:'平凡的，日常的',           dimension:'daily',     level:'B2', sentence:'Even the most ___ tasks can feel meaningful with the right mindset.', translation:'只要心态对，即使最平凡的事也充满意义。',   hint:'m_____e' },
-  { id:'d006', word:'errand',   phonetic:'/ˈerənd/',    meaning:'差事，跑腿',               dimension:'daily',     level:'A2', sentence:'I have a few ___s to run before the weekend.',                   translation:'周末前我还有几件事要跑腿处理。',             hint:'e____d' },
-  { id:'d007', word:'linger',   phonetic:'/ˈlɪŋɡər/',   meaning:'逗留，久久不散',           dimension:'daily',     level:'B1', sentence:'The smell of coffee ___ed in the kitchen all morning.',           translation:'咖啡的香气整个早晨都久久不散。',             hint:'l_____r' },
-  { id:'d008', word:'stumble',  phonetic:'/ˈstʌmbəl/',  meaning:'绊倒，偶然发现',           dimension:'daily',     level:'B1', sentence:'I ___d upon a beautiful old bookstore while walking.',             translation:'我散步时偶然发现了一家漂亮的旧书店。',      hint:'s_____e' },
-  { id:'d009', word:'glimpse',  phonetic:'/ɡlɪmps/',    meaning:'瞥见，一瞥',               dimension:'daily',     level:'B1', sentence:'She caught a ___ of the sunset through the trees.',               translation:'她透过树丛瞥见了夕阳。',                     hint:'g_____e' },
-  { id:'d010', word:'pristine', phonetic:'/ˈprɪstiːn/', meaning:'一尘不染的，崭新的',       dimension:'daily',     level:'B2', sentence:'The kitchen was in ___ condition after the cleaning.',             translation:'打扫过后，厨房一尘不染。',                   hint:'p_____e' },
-
-  // ── 口语表达 spoken ─────────────────────────────────────────
-  { id:'s001', word:'vibe',      phonetic:'/vaɪb/',         meaning:'氛围，感觉',             dimension:'spoken', level:'A2', sentence:'This place has such a great ___ — I love coming here.',           translation:'这个地方氛围很棒，我喜欢来这里。',          hint:'v__e' },
-  { id:'s002', word:'bail',      phonetic:'/beɪl/',         meaning:'临时放鸽子，退出',       dimension:'spoken', level:'B1', sentence:'Sorry, I have to ___ on tonight — something came up.',            translation:'抱歉，今晚我去不了了，临时有事。',          hint:'b__l' },
-  { id:'s003', word:'vague',     phonetic:'/veɪɡ/',         meaning:'模糊的，不清楚的',       dimension:'spoken', level:'B1', sentence:'His answer was really ___ — I still don't know what he meant.',   translation:'他的回答很模糊，我还是不明白他的意思。',    hint:'v___e' },
-  { id:'s004', word:'rant',      phonetic:'/rænt/',         meaning:'大发牢骚，抱怨连篇',     dimension:'spoken', level:'B1', sentence:'She went on a ___ about her commute for ten minutes.',            translation:'她抱怨了十分钟的通勤。',                     hint:'r__t' },
-  { id:'s005', word:'awkward',   phonetic:'/ˈɔːkwərd/',    meaning:'尴尬的，别扭的',         dimension:'spoken', level:'A2', sentence:'There was an ___ silence after his joke.',                        translation:'他讲完笑话之后出现了一阵尴尬的沉默。',      hint:'a_____d' },
-  { id:'s006', word:'binge',     phonetic:'/bɪndʒ/',       meaning:'狂看，大量消费',         dimension:'spoken', level:'B1', sentence:'I ___d three seasons of that show over the weekend.',             translation:'我周末一口气看完了那部剧的三季。',           hint:'b____e' },
-  { id:'s007', word:'cringe',    phonetic:'/krɪndʒ/',      meaning:'尴尬得想缩起来',         dimension:'spoken', level:'B1', sentence:'I ___ every time I think about what I said.',                     translation:'每次想起我说的话我就尴尬得想钻地缝。',      hint:'c____e' },
-  { id:'s008', word:'knack',     phonetic:'/næk/',         meaning:'窍门，天赋',             dimension:'spoken', level:'B2', sentence:'She has a real ___ for making people feel at ease.',              translation:'她很有让人放松的天赋。',                     hint:'k___k' },
-  { id:'s009', word:'venting',   phonetic:'/ˈventɪŋ/',    meaning:'倾诉，发泄情绪',         dimension:'spoken', level:'B1', sentence:'Thanks for listening — I just needed to do some ___.',             translation:'谢谢你听我说，我只是需要发泄一下。',        hint:'v_____g' },
-  { id:'s010', word:'sarcastic', phonetic:'/sɑːrˈkæstɪk/',meaning:'讽刺的，挖苦的',         dimension:'spoken', level:'B2', sentence:'"Oh great, another meeting," he said in a ___ tone.',              translation:'"哦太好了，又开会，"他用讽刺的语气说道。',hint:'s_______c' },
-
-  // ── 职场词汇 workplace ──────────────────────────────────────
-  { id:'w001', word:'delegate',    phonetic:'/ˈdelɪɡeɪt/',  meaning:'授权，委派任务',         dimension:'workplace', level:'B2', sentence:'A good manager knows when to ___ and when to step in.',         translation:'好的管理者知道何时授权，何时亲自介入。',    hint:'d_____e' },
-  { id:'w002', word:'leverage',    phonetic:'/ˈlevərɪdʒ/',  meaning:'利用，发挥优势',         dimension:'workplace', level:'B2', sentence:'We can ___ our existing relationships to win this deal.',        translation:'我们可以利用现有的关系来拿下这个合同。',    hint:'l_____e' },
-  { id:'w003', word:'bottleneck',  phonetic:'/ˈbɒtlnek/',   meaning:'瓶颈，障碍',             dimension:'workplace', level:'B2', sentence:'The approval process is a ___ that slows everything down.',      translation:'审批流程是一个让一切都变慢的瓶颈。',        hint:'b________k' },
-  { id:'w004', word:'bandwidth',   phonetic:'/ˈbændwɪdθ/', meaning:'精力/时间余量（职场）',  dimension:'workplace', level:'B2', sentence:'I don\'t have the ___ to take on another project right now.',    translation:'我现在没有精力再接一个项目了。',             hint:'b_______h' },
-  { id:'w005', word:'synergy',     phonetic:'/ˈsɪnərdʒi/', meaning:'协同效应，合力',         dimension:'workplace', level:'C1', sentence:'The merger created real ___ between the two teams.',             translation:'这次合并在两个团队之间产生了真正的协同效应。',hint:'s_____y' },
-  { id:'w006', word:'proactive',   phonetic:'/proʊˈæktɪv/',meaning:'主动的，积极预防的',     dimension:'workplace', level:'B2', sentence:'Be ___ — don\'t wait for problems to find you.',               translation:'要主动出击，不要等问题找上门。',             hint:'p_______e' },
-  { id:'w007', word:'escalate',    phonetic:'/ˈeskəleɪt/', meaning:'升级，上报',             dimension:'workplace', level:'B2', sentence:'If you can\'t resolve it, ___ to your manager.',               translation:'如果你解决不了，就上报给你的经理。',        hint:'e_____e' },
-  { id:'w008', word:'stakeholder', phonetic:'/ˈsteɪkhoʊldər/',meaning:'利益相关方',          dimension:'workplace', level:'C1', sentence:'We need to align all ___s before making a final decision.',      translation:'在做最终决定之前，我们需要让所有利益相关方达成一致。',hint:'s_________r' },
-  { id:'w009', word:'iterate',     phonetic:'/ˈɪtəreɪt/',  meaning:'迭代，反复改进',         dimension:'workplace', level:'B2', sentence:'We\'ll ___ on the design based on user feedback.',              translation:'我们会根据用户反馈对设计进行迭代。',        hint:'i_____e' },
-  { id:'w010', word:'pivot',       phonetic:'/ˈpɪvət/',    meaning:'转型，转变方向',         dimension:'workplace', level:'B2', sentence:'After the market shifted, we had to ___ our strategy.',          translation:'市场转变之后，我们不得不调整策略方向。',    hint:'p___t' },
-
-  // ── 学术词汇 academic ───────────────────────────────────────
-  { id:'a001', word:'empirical',  phonetic:'/ɪmˈpɪrɪkəl/', meaning:'以实证为基础的',        dimension:'academic', level:'C1', sentence:'The study provides ___ evidence that sleep affects memory.',       translation:'该研究提供了睡眠影响记忆的实证证据。',      hint:'e_______l' },
-  { id:'a002', word:'subsequent', phonetic:'/ˈsʌbsɪkwənt/',meaning:'随后的，后续的',         dimension:'academic', level:'C1', sentence:'___ studies confirmed the initial findings.',                      translation:'后续的研究证实了最初的发现。',               hint:'s________t' },
-  { id:'a003', word:'ambiguous',  phonetic:'/æmˈbɪɡjuəs/', meaning:'模棱两可的，歧义的',    dimension:'academic', level:'B2', sentence:'The data remains ___ and open to interpretation.',                translation:'数据仍然模棱两可，有多种解读空间。',         hint:'a_______s' },
-  { id:'a004', word:'correlate',  phonetic:'/ˈkɒrəleɪt/',  meaning:'相关联，有关联',         dimension:'academic', level:'B2', sentence:'Higher income does not always ___ with happiness.',               translation:'更高的收入并不总是与幸福感相关。',           hint:'c_______e' },
-  { id:'a005', word:'paradigm',   phonetic:'/ˈpærədaɪm/',  meaning:'范式，思维框架',         dimension:'academic', level:'C1', sentence:'This discovery challenges the dominant ___ in the field.',         translation:'这一发现挑战了该领域的主流范式。',           hint:'p______m' },
-  { id:'a006', word:'hypothesis', phonetic:'/haɪˈpɒθəsɪs/',meaning:'假设，假说',             dimension:'academic', level:'B2', sentence:'The experiment was designed to test the central ___.',             translation:'这个实验是为了验证核心假说而设计的。',      hint:'h________s' },
-  { id:'a007', word:'nuance',     phonetic:'/ˈnjuːɑːns/',  meaning:'细微差别，微妙之处',    dimension:'academic', level:'C1', sentence:'The ___ of her argument was lost in translation.',                 translation:'她论点中的微妙之处在翻译中丢失了。',        hint:'n_____e' },
-  { id:'a008', word:'coherent',   phonetic:'/koʊˈhɪərənt/',meaning:'连贯的，有逻辑的',       dimension:'academic', level:'C1', sentence:'A good essay needs a ___ argument from start to finish.',          translation:'一篇好文章需要从头到尾有连贯的论点。',      hint:'c_____t' },
-  { id:'a009', word:'inherent',   phonetic:'/ɪnˈhɪərənt/', meaning:'内在的，固有的',         dimension:'academic', level:'C1', sentence:'There is an ___ tension between freedom and security.',            translation:'自由与安全之间存在内在的张力。',             hint:'i______t' },
-  { id:'a010', word:'synthesis',  phonetic:'/ˈsɪnθəsɪs/',  meaning:'综合，合成',             dimension:'academic', level:'C1', sentence:'The conclusion offers a ___ of all the key arguments.',            translation:'结论对所有核心论点进行了综合梳理。',        hint:'s_______s' },
-
-  // ── 文学词汇 literary ───────────────────────────────────────
-  { id:'l001', word:'melancholy', phonetic:'/ˈmelənkɒli/', meaning:'忧郁，惆怅',              dimension:'literary', level:'C1', sentence:'A deep ___ settled over him as autumn arrived.',                  translation:'秋天到来时，一种深深的忧郁笼罩了他。',     hint:'m________y' },
-  { id:'l002', word:'ethereal',   phonetic:'/ɪˈθɪəriəl/',  meaning:'空灵的，轻盈飘渺的',    dimension:'literary', level:'C1', sentence:'The morning mist gave the valley an ___ quality.',                translation:'晨雾赋予山谷一种空灵的气质。',              hint:'e______l' },
-  { id:'l003', word:'solitude',   phonetic:'/ˈsɒlɪtjuːd/', meaning:'独处，孤独（非贬义）',  dimension:'literary', level:'B2', sentence:'She sought ___ in the mountains to clear her mind.',               translation:'她独自去山中寻找宁静，让思绪沉淀。',        hint:'s_______e' },
-  { id:'l004', word:'ephemeral',  phonetic:'/ɪˈfemərəl/',  meaning:'短暂的，转瞬即逝的',    dimension:'literary', level:'C1', sentence:'Beauty is ___ — that\'s what makes it precious.',                  translation:'美是短暂的，这正是它珍贵的原因。',          hint:'e______l' },
-  { id:'l005', word:'wistful',    phonetic:'/ˈwɪstfəl/',   meaning:'惆怅的，带着忧伤的渴望',dimension:'literary', level:'C1', sentence:'She gave a ___ smile, remembering better days.',                   translation:'她带着一丝惆怅微笑，想起了往昔更好的时光。',hint:'w_____l' },
-  { id:'l006', word:'resilience', phonetic:'/rɪˈzɪliəns/', meaning:'韧性，恢复力',           dimension:'literary', level:'B2', sentence:'The character\'s ___ in the face of loss is inspiring.',           translation:'主人公面对失去时所展现的韧性令人动容。',    hint:'r________e' },
-  { id:'l007', word:'luminous',   phonetic:'/ˈluːmɪnəs/',  meaning:'发光的，光辉的',         dimension:'literary', level:'C1', sentence:'Her ___ prose made even sadness feel beautiful.',                  translation:'她光辉的文笔让即使是悲伤也变得美丽。',     hint:'l______s' },
-  { id:'l008', word:'foreboding', phonetic:'/fɔːrˈboʊdɪŋ/',meaning:'不祥的预感',             dimension:'literary', level:'C1', sentence:'A sense of ___ hung over the village before the storm.',           translation:'暴风雨来临前，一种不祥的预感笼罩着村庄。', hint:'f________g' },
-  { id:'l009', word:'reverie',    phonetic:'/ˈrevəri/',    meaning:'白日梦，遐想',           dimension:'literary', level:'C1', sentence:'He lost himself in a pleasant ___ about the future.',               translation:'他陷入了对未来的美好遐想中，迷失其中。',    hint:'r_____e' },
-  { id:'l010', word:'catharsis',  phonetic:'/kəˈθɑːrsɪs/', meaning:'净化，情感宣泄',         dimension:'literary', level:'C1', sentence:'Crying at films can provide a kind of emotional ___.',              translation:'看电影时哭泣可以带来一种情感上的净化。',    hint:'c_______s' },
-
-  // ── 习语表达 idiom ──────────────────────────────────────────
-  { id:'i001', word:'on the fence',                   phonetic:'/ɒn ðə fens/',        meaning:'举棋不定，摇摆不定',     dimension:'idiom', level:'B1', sentence:'I\'m still ___ about whether to take the job.',                  translation:'我还在犹豫要不要接受这份工作。',            hint:'on the f___e' },
-  { id:'i002', word:'burn bridges',                   phonetic:'/bɜːrn ˈbrɪdʒɪz/',   meaning:'断绝关系，自断退路',     dimension:'idiom', level:'B2', sentence:'Don\'t ___ — you might need their help someday.',                 translation:'不要自断退路，你有朝一日可能还需要他们。', hint:'burn b_____s' },
-  { id:'i003', word:'hit the nail on the head',       phonetic:'/hɪt ðə neɪl/',       meaning:'说得完全正确，一针见血', dimension:'idiom', level:'B2', sentence:'You really ___ with that observation.',                          translation:'你那个观察真的说得一针见血。',              hint:'hit the n___' },
-  { id:'i004', word:'silver lining',                  phonetic:'/ˈsɪlvər ˈlaɪnɪŋ/', meaning:'黑暗中的一线希望',       dimension:'idiom', level:'B1', sentence:'Every cloud has a ___ — look for the good in this.',              translation:'黑暗中总有一线希望，试着找找好的一面。',    hint:'silver l_____g' },
-  { id:'i005', word:'bite the bullet',                phonetic:'/baɪt ðə ˈbʊlɪt/',   meaning:'咬牙撑过，强忍着做',     dimension:'idiom', level:'B2', sentence:'I hate the dentist, but I\'ll have to ___ and go.',               translation:'我讨厌看牙医，但我不得不咬牙去一次。',      hint:'bite the b_____' },
-  { id:'i006', word:'under the weather',              phonetic:'/ˈʌndər ðə ˈweðər/',meaning:'身体不舒服，有点不对劲', dimension:'idiom', level:'B1', sentence:'I\'m feeling a bit ___ today — I might skip the gym.',            translation:'我今天有点不舒服，可能不去健身房了。',      hint:'under the w_____r' },
-  { id:'i007', word:'read between the lines',         phonetic:'/riːd bɪˌtwiːn ðə laɪnz/',meaning:'读出言外之意，看出潜台词',dimension:'idiom',level:'B2',sentence:'You have to ___ — she didn\'t say it directly.',              translation:'你得读出她的言外之意，她没有直接说。',      hint:'read between the l___s' },
-  { id:'i008', word:'bite off more than you can chew',phonetic:'/baɪt ɒf mɔːr/',     meaning:'贪多嚼不烂',             dimension:'idiom', level:'B2', sentence:'I think I ___ taking on three projects at once.',                 translation:'我觉得我同时接三个项目是贪多嚼不烂了。',    hint:'bite off more than you can c___' },
-  { id:'i009', word:'get cold feet',                  phonetic:'/ɡet koʊld fiːt/',   meaning:'临阵退缩，突然怯场',     dimension:'idiom', level:'B1', sentence:'He ___ right before the presentation and almost left.',             translation:'他在演讲前突然怯场，差点就走了。',          hint:'get cold f__t' },
-  { id:'i010', word:'the tip of the iceberg',         phonetic:'/ðə tɪp əv ðə ˈaɪsbɜːrɡ/',meaning:'冰山一角',         dimension:'idiom', level:'B2', sentence:'These complaints are just ___; the real issues run deeper.',        translation:'这些投诉不过是冰山一角，真正的问题更深。',  hint:'the tip of the i_____g' },
-];
+// wordbank.js — Foreign词库 v2
+// 六维度 × ~33词 ≈ 200词，按难度A1→C2分层
+// 维度: daily | emotion | nature | abstract | social | academic
 
 export const DIMENSIONS = {
-  daily:     { label:'日常词汇', color:'#7ec8e3', icon:'☀️' },
-  spoken:    { label:'口语表达', color:'#f4a261', icon:'💬' },
-  workplace: { label:'职场词汇', color:'#a8dadc', icon:'💼' },
-  academic:  { label:'学术词汇', color:'#c77dff', icon:'📚' },
-  literary:  { label:'文学词汇', color:'#ffb4a2', icon:'✒️' },
-  idiom:     { label:'习语表达', color:'#b7e4c7', icon:'🌿' },
+  daily:    { label: '日常生活', color: '#3b82f6', icon: '☕' },
+  emotion:  { label: '情感心理', color: '#f9a8d4', icon: '💭' },
+  nature:   { label: '自然世界', color: '#86efac', icon: '🌿' },
+  abstract: { label: '抽象概念', color: '#818cf8', icon: '✦' },
+  social:   { label: '社交场景', color: '#fb923c', icon: '🗣' },
+  academic: { label: '学术书面', color: '#6ee7b7', icon: '📖' },
 };
 
-export const LEVEL_VOCAB = {
-  A1:500, A2:1500, B1:3500, B2:6000, C1:10000, C2:16000,
-};
+// 难度等级: 1=A1, 2=A2, 3=B1, 4=B2, 5=C1, 6=C2
+export const WORDS = [
 
-export function getWordsByDimension(dim) { return WORDS.filter(w => w.dimension === dim); }
-export function getWordById(id) { return WORDS.find(w => w.id === id); }
+  // ── DAILY 日常生活 ──────────────────────────────────────────────
+  { id:'d001', dim:'daily', level:1, word:'breakfast', phonetic:'/ˈbrekfəst/', zh:'早餐',
+    example:'I have breakfast at seven every morning.', exZh:'我每天七点吃早餐。' },
+  { id:'d002', dim:'daily', level:1, word:'commute', phonetic:'/kəˈmjuːt/', zh:'通勤',
+    example:'The commute to work takes about forty minutes.', exZh:'上班通勤大约需要四十分钟。' },
+  { id:'d003', dim:'daily', level:1, word:'groceries', phonetic:'/ˈɡroʊsəriz/', zh:'杂货/食材',
+    example:'She picks up groceries on the way home.', exZh:'她在回家路上买了食材。' },
+  { id:'d004', dim:'daily', level:1, word:'laundry', phonetic:'/ˈlɔːndri/', zh:'洗衣',
+    example:'I do laundry every Sunday afternoon.', exZh:'我每周日下午洗衣服。' },
+  { id:'d005', dim:'daily', level:1, word:'errand', phonetic:'/ˈɛrənd/', zh:'差事/跑腿',
+    example:'I need to run a few errands before noon.', exZh:'我中午之前要跑几个差事。' },
+  { id:'d006', dim:'daily', level:2, word:'clutter', phonetic:'/ˈklʌtər/', zh:'杂乱堆积',
+    example:'The desk was covered in clutter.', exZh:'桌子上堆满了杂物。' },
+  { id:'d007', dim:'daily', level:2, word:'appliance', phonetic:'/əˈplaɪəns/', zh:'家电',
+    example:'The kitchen appliances need replacing.', exZh:'厨房家电需要更换了。' },
+  { id:'d008', dim:'daily', level:2, word:'budget', phonetic:'/ˈbʌdʒɪt/', zh:'预算',
+    example:'We need to stick to our monthly budget.', exZh:'我们需要坚守月度预算。' },
+  { id:'d009', dim:'daily', level:2, word:'routine', phonetic:'/ruːˈtiːn/', zh:'日常惯例',
+    example:'A morning routine helps you start the day well.', exZh:'晨间惯例能让你更好地开始一天。' },
+  { id:'d010', dim:'daily', level:3, word:'renovate', phonetic:'/ˈrɛnəveɪt/', zh:'翻新装修',
+    example:'They plan to renovate the kitchen next year.', exZh:'他们计划明年翻新厨房。' },
+  { id:'d011', dim:'daily', level:3, word:'overdue', phonetic:'/ˌoʊvərˈdjuː/', zh:'逾期的/迟该做的',
+    example:'This dentist visit is long overdue.', exZh:'这次看牙拖了太久了。' },
+  { id:'d012', dim:'daily', level:3, word:'hassle', phonetic:'/ˈhæsəl/', zh:'麻烦事',
+    example:'Parking downtown is such a hassle.', exZh:'在市中心停车真是麻烦。' },
+  { id:'d013', dim:'daily', level:3, word:'utilities', phonetic:'/juːˈtɪlɪtiz/', zh:'水电煤账单',
+    example:'Utilities include electricity, gas, and water.', exZh:'水电费包括电、气和水费。' },
+  { id:'d014', dim:'daily', level:4, word:'declutter', phonetic:'/diːˈklʌtər/', zh:'整理清空',
+    example:'She spent the weekend decluttering her wardrobe.', exZh:'她花了整个周末整理衣橱。' },
+  { id:'d015', dim:'daily', level:4, word:'insomnia', phonetic:'/ɪnˈsɒmniə/', zh:'失眠',
+    example:'Stress at work triggered his insomnia.', exZh:'工作压力引发了他的失眠。' },
+  { id:'d016', dim:'daily', level:4, word:'sedentary', phonetic:'/ˈsɛdənteri/', zh:'久坐不动的',
+    example:'A sedentary lifestyle increases health risks.', exZh:'久坐不动的生活方式会增加健康风险。' },
+  { id:'d017', dim:'daily', level:5, word:'meticulous', phonetic:'/mɪˈtɪkjʊləs/', zh:'一丝不苟的',
+    example:'He is meticulous about keeping records.', exZh:'他在记录方面一丝不苟。' },
+  { id:'d018', dim:'daily', level:5, word:'frugal', phonetic:'/ˈfruːɡəl/', zh:'节俭的',
+    example:'Living frugally allowed her to retire early.', exZh:'节俭生活让她得以提前退休。' },
+  { id:'d019', dim:'daily', level:5, word:'procrastinate', phonetic:'/prəˈkræstɪneɪt/', zh:'拖延',
+    example:'Stop procrastinating and just start.', exZh:'别再拖延了，直接开始吧。' },
+  { id:'d020', dim:'daily', level:6, word:'quotidian', phonetic:'/kwəˈtɪdiən/', zh:'日常平凡的(书面)',
+    example:'She found beauty in the quotidian moments of life.', exZh:'她在生活的日常琐事中发现了美。' },
+
+  // ── EMOTION 情感心理 ────────────────────────────────────────────
+  { id:'e001', dim:'emotion', level:1, word:'nervous', phonetic:'/ˈnɜːrvəs/', zh:'紧张的',
+    example:'I was nervous before the presentation.', exZh:'演讲前我很紧张。' },
+  { id:'e002', dim:'emotion', level:1, word:'relieved', phonetic:'/rɪˈliːvd/', zh:'如释重负的',
+    example:'She felt relieved after hearing the good news.', exZh:'听到好消息后她如释重负。' },
+  { id:'e003', dim:'emotion', level:1, word:'frustrated', phonetic:'/ˈfrʌstreɪtɪd/', zh:'沮丧的',
+    example:'He felt frustrated when the plan failed.', exZh:'计划失败时他感到沮丧。' },
+  { id:'e004', dim:'emotion', level:2, word:'overwhelmed', phonetic:'/ˌoʊvərˈwɛlmd/', zh:'不堪重负的',
+    example:'She felt overwhelmed by all the deadlines.', exZh:'她被一堆截止日期压得喘不过气。' },
+  { id:'e005', dim:'emotion', level:2, word:'nostalgic', phonetic:'/nɒˈstælʤɪk/', zh:'怀旧的',
+    example:'Old songs always make me nostalgic.', exZh:'老歌总让我怀旧。' },
+  { id:'e006', dim:'emotion', level:2, word:'envious', phonetic:'/ˈɛnviəs/', zh:'羡慕的',
+    example:'I am envious of her confidence.', exZh:'我很羡慕她的自信。' },
+  { id:'e007', dim:'emotion', level:3, word:'apprehensive', phonetic:'/ˌæprɪˈhɛnsɪv/', zh:'忧虑的',
+    example:'She was apprehensive about moving abroad.', exZh:'她对出国移居感到忧虑。' },
+  { id:'e008', dim:'emotion', level:3, word:'elated', phonetic:'/ɪˈleɪtɪd/', zh:'欣喜若狂的',
+    example:'The team was elated after winning.', exZh:'获胜后团队欣喜若狂。' },
+  { id:'e009', dim:'emotion', level:3, word:'resentful', phonetic:'/rɪˈzɛntfʊl/', zh:'愤愤不平的',
+    example:'He felt resentful about being overlooked.', exZh:'被忽视让他感到愤愤不平。' },
+  { id:'e010', dim:'emotion', level:3, word:'vulnerable', phonetic:'/ˈvʌlnərəbəl/', zh:'脆弱的',
+    example:'Sharing feelings can feel vulnerable.', exZh:'分享感受有时会让人感到脆弱。' },
+  { id:'e011', dim:'emotion', level:4, word:'ambivalent', phonetic:'/æmˈbɪvələnt/', zh:'矛盾的/态度两可',
+    example:'I feel ambivalent about leaving this job.', exZh:'对于离职，我心情很矛盾。' },
+  { id:'e012', dim:'emotion', level:4, word:'despondent', phonetic:'/dɪˈspɒndənt/', zh:'沮丧绝望的',
+    example:'After weeks of rejection, he grew despondent.', exZh:'几周被拒后他越来越绝望。' },
+  { id:'e013', dim:'emotion', level:4, word:'exasperated', phonetic:'/ɪɡˈzæspəreɪtɪd/', zh:'极度恼怒的',
+    example:'She was exasperated by the repeated delays.', exZh:'一再拖延让她极为恼火。' },
+  { id:'e014', dim:'emotion', level:5, word:'disillusionment', phonetic:'/ˌdɪsɪˈluːʒənmənt/', zh:'幻灭感',
+    example:'His disillusionment with politics grew over time.', exZh:'他对政治的幻灭感与日俱增。' },
+  { id:'e015', dim:'emotion', level:5, word:'equanimity', phonetic:'/ˌɛkwəˈnɪmɪti/', zh:'内心平静',
+    example:'She faced the crisis with remarkable equanimity.', exZh:'她以惊人的内心平静面对危机。' },
+  { id:'e016', dim:'emotion', level:5, word:'cathartic', phonetic:'/kəˈθɑːrtɪk/', zh:'宣泄的/净化心灵的',
+    example:'Crying during a film can be cathartic.', exZh:'在电影中哭泣有时能宣泄情绪。' },
+  { id:'e017', dim:'emotion', level:6, word:'melancholy', phonetic:'/ˈmɛlənkɒli/', zh:'忧郁',
+    example:'A gentle melancholy settled over the empty house.', exZh:'一种淡淡的忧郁笼罩着空荡的房子。' },
+  { id:'e018', dim:'emotion', level:6, word:'ineffable', phonetic:'/ɪnˈɛfəbəl/', zh:'难以言喻的',
+    example:'The view was filled with ineffable sadness.', exZh:'那景色充满了难以言喻的悲伤。' },
+
+  // ── NATURE 自然世界 ─────────────────────────────────────────────
+  { id:'n001', dim:'nature', level:1, word:'breeze', phonetic:'/briːz/', zh:'微风',
+    example:'A cool breeze came through the window.', exZh:'一阵凉风从窗户吹进来。' },
+  { id:'n002', dim:'nature', level:1, word:'horizon', phonetic:'/həˈraɪzən/', zh:'地平线',
+    example:'The sun sank below the horizon.', exZh:'太阳沉到了地平线以下。' },
+  { id:'n003', dim:'nature', level:1, word:'meadow', phonetic:'/ˈmɛdoʊ/', zh:'草地',
+    example:'Children played in the wide meadow.', exZh:'孩子们在宽阔的草地上玩耍。' },
+  { id:'n004', dim:'nature', level:2, word:'canopy', phonetic:'/ˈkænəpi/', zh:'(树)冠层',
+    example:'Sunlight filtered through the forest canopy.', exZh:'阳光透过林冠层洒落下来。' },
+  { id:'n005', dim:'nature', level:2, word:'glacier', phonetic:'/ˈɡleɪʃər/', zh:'冰川',
+    example:'The glacier has retreated significantly.', exZh:'冰川已经大幅退缩了。' },
+  { id:'n006', dim:'nature', level:2, word:'dusk', phonetic:'/dʌsk/', zh:'黄昏',
+    example:'The sky turned orange at dusk.', exZh:'黄昏时天空变成了橙色。' },
+  { id:'n007', dim:'nature', level:2, word:'estuary', phonetic:'/ˈɛstʃueri/', zh:'河口',
+    example:'Migratory birds flock to the estuary.', exZh:'候鸟成群来到河口。' },
+  { id:'n008', dim:'nature', level:3, word:'drought', phonetic:'/draʊt/', zh:'干旱',
+    example:'The drought lasted three months.', exZh:'干旱持续了三个月。' },
+  { id:'n009', dim:'nature', level:3, word:'sediment', phonetic:'/ˈsɛdɪmənt/', zh:'沉积物',
+    example:'Sediment collected at the bottom of the river.', exZh:'沉积物在河底堆积。' },
+  { id:'n010', dim:'nature', level:3, word:'bioluminescence', phonetic:'/ˌbaɪoʊˌluːmɪˈnɛsəns/', zh:'生物发光',
+    example:'The bioluminescence lit up the night sea.', exZh:'生物发光照亮了夜晚的海面。' },
+  { id:'n011', dim:'nature', level:3, word:'solstice', phonetic:'/ˈsɒlstɪs/', zh:'至日(夏至/冬至)',
+    example:'The summer solstice is the longest day.', exZh:'夏至是一年中最长的一天。' },
+  { id:'n012', dim:'nature', level:4, word:'permafrost', phonetic:'/ˈpɜːrməfrɒst/', zh:'永冻土',
+    example:'Permafrost is thawing due to climate change.', exZh:'由于气候变化，永冻土正在融化。' },
+  { id:'n013', dim:'nature', level:4, word:'tundra', phonetic:'/ˈtʌndrə/', zh:'苔原/冻原',
+    example:'Few trees grow on the Arctic tundra.', exZh:'北极苔原上几乎没有树木生长。' },
+  { id:'n014', dim:'nature', level:4, word:'equinox', phonetic:'/ˈiːkwɪnɒks/', zh:'春分/秋分',
+    example:'Day and night are equal at the equinox.', exZh:'春分和秋分时昼夜等长。' },
+  { id:'n015', dim:'nature', level:5, word:'ephemeral', phonetic:'/ɪˈfɛmərəl/', zh:'短暂的(自然界常用)',
+    example:'Cherry blossoms are ephemeral and precious.', exZh:'樱花短暂而珍贵。' },
+  { id:'n016', dim:'nature', level:5, word:'phosphorescent', phonetic:'/ˌfɒsfəˈrɛsənt/', zh:'磷光的',
+    example:'The phosphorescent waves glowed in the dark.', exZh:'磷光海浪在黑暗中发光。' },
+  { id:'n017', dim:'nature', level:6, word:'petrichor', phonetic:'/ˈpɛtrɪkɔːr/', zh:'雨后泥土的气息',
+    example:'The petrichor after the storm was calming.', exZh:'暴雨后泥土的气息令人平静。' },
+  { id:'n018', dim:'nature', level:6, word:'syzygy', phonetic:'/ˈsɪzɪdʒi/', zh:'朔望(日月地三点一线)',
+    example:'A syzygy occurs during a solar eclipse.', exZh:'日食发生时，日月地三点一线。' },
+
+  // ── ABSTRACT 抽象概念 ───────────────────────────────────────────
+  { id:'a001', dim:'abstract', level:1, word:'progress', phonetic:'/ˈprɒɡrɛs/', zh:'进步',
+    example:'We made good progress today.', exZh:'我们今天取得了很大进步。' },
+  { id:'a002', dim:'abstract', level:1, word:'freedom', phonetic:'/ˈfriːdəm/', zh:'自由',
+    example:'Freedom means different things to different people.', exZh:'自由对不同的人意味着不同的东西。' },
+  { id:'a003', dim:'abstract', level:2, word:'integrity', phonetic:'/ɪnˈtɛɡrɪti/', zh:'诚信/正直',
+    example:'She acted with integrity under pressure.', exZh:'她在压力下仍保持诚信。' },
+  { id:'a004', dim:'abstract', level:2, word:'ambiguity', phonetic:'/ˌæmbɪˈɡjuːɪti/', zh:'模糊性/歧义',
+    example:'The contract had too much ambiguity.', exZh:'合同存在太多歧义。' },
+  { id:'a005', dim:'abstract', level:2, word:'consensus', phonetic:'/kənˈsɛnsəs/', zh:'共识',
+    example:'The team reached a consensus quickly.', exZh:'团队迅速达成了共识。' },
+  { id:'a006', dim:'abstract', level:3, word:'paradigm', phonetic:'/ˈpærədaɪm/', zh:'范式/思维模式',
+    example:'This discovery shifted the scientific paradigm.', exZh:'这一发现改变了科学范式。' },
+  { id:'a007', dim:'abstract', level:3, word:'resilience', phonetic:'/rɪˈzɪliəns/', zh:'韧性/恢复力',
+    example:'Resilience is the ability to bounce back from failure.', exZh:'韧性是从失败中恢复的能力。' },
+  { id:'a008', dim:'abstract', level:3, word:'nuance', phonetic:'/ˈnjuːɑːns/', zh:'细微差别',
+    example:'The nuance of the argument was lost in translation.', exZh:'论点的细微差别在翻译中丢失了。' },
+  { id:'a009', dim:'abstract', level:3, word:'mortality', phonetic:'/mɔːˈtælɪti/', zh:'必死性/死亡率',
+    example:'Facing illness made him aware of his mortality.', exZh:'面对疾病让他意识到自己终有一死。' },
+  { id:'a010', dim:'abstract', level:4, word:'subjectivity', phonetic:'/ˌsʌbdʒɛkˈtɪvɪti/', zh:'主观性',
+    example:'Art is defined by its subjectivity.', exZh:'艺术以其主观性为特征。' },
+  { id:'a011', dim:'abstract', level:4, word:'dichotomy', phonetic:'/daɪˈkɒtəmi/', zh:'二元对立',
+    example:'The false dichotomy of work and life.', exZh:'工作与生活的虚假二元对立。' },
+  { id:'a012', dim:'abstract', level:4, word:'abstraction', phonetic:'/æbˈstrækʃən/', zh:'抽象化',
+    example:'Math relies heavily on abstraction.', exZh:'数学在很大程度上依赖于抽象化。' },
+  { id:'a013', dim:'abstract', level:5, word:'ontology', phonetic:'/ɒnˈtɒlədʒi/', zh:'本体论(存在之学)',
+    example:'Ontology asks what truly exists.', exZh:'本体论研究什么真正存在。' },
+  { id:'a014', dim:'abstract', level:5, word:'hegemony', phonetic:'/hɪˈdʒɛməni/', zh:'霸权',
+    example:'Cultural hegemony shapes what we see as normal.', exZh:'文化霸权塑造了我们对"正常"的认知。' },
+  { id:'a015', dim:'abstract', level:5, word:'liminal', phonetic:'/ˈlɪmɪnəl/', zh:'临界的/过渡期的',
+    example:'Graduation is a liminal moment between two lives.', exZh:'毕业是两段人生之间的临界时刻。' },
+  { id:'a016', dim:'abstract', level:6, word:'aporia', phonetic:'/əˈpɔːriə/', zh:'无从解决的困境(哲学)',
+    example:'The philosopher was stuck in an aporia.', exZh:'哲学家陷入了无从解决的困境。' },
+  { id:'a017', dim:'abstract', level:6, word:'teleology', phonetic:'/ˌtɛliˈɒlədʒi/', zh:'目的论',
+    example:'Teleology explains events by their purpose.', exZh:'目的论通过事物的目的来解释事件。' },
+
+  // ── SOCIAL 社交场景 ─────────────────────────────────────────────
+  { id:'s001', dim:'social', level:1, word:'introduce', phonetic:'/ˌɪntrəˈdjuːs/', zh:'介绍',
+    example:'Let me introduce you to my friend.', exZh:'让我介绍你认识我的朋友。' },
+  { id:'s002', dim:'social', level:1, word:'invitation', phonetic:'/ˌɪnvɪˈteɪʃən/', zh:'邀请',
+    example:'I received an invitation to the party.', exZh:'我收到了派对邀请。' },
+  { id:'s003', dim:'social', level:2, word:'acquaintance', phonetic:'/əˈkweɪntəns/', zh:'熟人',
+    example:'He is an acquaintance, not a close friend.', exZh:'他是个熟人，不是亲密朋友。' },
+  { id:'s004', dim:'social', level:2, word:'awkward', phonetic:'/ˈɔːkwərd/', zh:'尴尬的',
+    example:'There was an awkward silence at dinner.', exZh:'晚餐时有一段尴尬的沉默。' },
+  { id:'s005', dim:'social', level:2, word:'gossip', phonetic:'/ˈɡɒsɪp/', zh:'八卦/闲话',
+    example:'Office gossip can damage trust.', exZh:'办公室八卦会损害信任。' },
+  { id:'s006', dim:'social', level:3, word:'mediate', phonetic:'/ˈmiːdieɪt/', zh:'调解',
+    example:'She agreed to mediate between the two sides.', exZh:'她同意在双方之间进行调解。' },
+  { id:'s007', dim:'social', level:3, word:'reciprocate', phonetic:'/rɪˈsɪprəkeɪt/', zh:'回报/互惠',
+    example:'He helped me, and I wanted to reciprocate.', exZh:'他帮了我，我也想回报他。' },
+  { id:'s008', dim:'social', level:3, word:'confrontation', phonetic:'/ˌkɒnfrʌnˈteɪʃən/', zh:'对峙/冲突',
+    example:'She avoided any confrontation with her boss.', exZh:'她避免与老板发生任何冲突。' },
+  { id:'s009', dim:'social', level:3, word:'empathy', phonetic:'/ˈɛmpəθi/', zh:'共情/同理心',
+    example:'Good leaders show empathy for their teams.', exZh:'好的领导者会对团队展现同理心。' },
+  { id:'s010', dim:'social', level:4, word:'condescending', phonetic:'/ˌkɒndɪˈsɛndɪŋ/', zh:'居高临下的',
+    example:'His tone came across as condescending.', exZh:'他的语气显得居高临下。' },
+  { id:'s011', dim:'social', level:4, word:'aloof', phonetic:'/əˈluːf/', zh:'冷漠疏远的',
+    example:'She seemed aloof at first but was warm later.', exZh:'她一开始显得冷漠，后来却很热情。' },
+  { id:'s012', dim:'social', level:4, word:'persuasion', phonetic:'/pərˈsweɪʒən/', zh:'说服',
+    example:'Gentle persuasion worked better than pressure.', exZh:'温和的说服比施压更有效。' },
+  { id:'s013', dim:'social', level:4, word:'ostracize', phonetic:'/ˈɒstrəsaɪz/', zh:'排斥/排挤',
+    example:'They ostracized him after the scandal.', exZh:'丑闻之后他被大家排挤。' },
+  { id:'s014', dim:'social', level:5, word:'charisma', phonetic:'/kəˈrɪzmə/', zh:'个人魅力',
+    example:'Her charisma drew people to her instantly.', exZh:'她的个人魅力让人对她一见如故。' },
+  { id:'s015', dim:'social', level:5, word:'sycophant', phonetic:'/ˈsɪkəfænt/', zh:'马屁精',
+    example:'Surrounded by sycophants, he lost touch with reality.', exZh:'被马屁精包围，他脱离了现实。' },
+  { id:'s016', dim:'social', level:5, word:'deference', phonetic:'/ˈdɛfərəns/', zh:'顺从/尊重权威',
+    example:'She showed deference to her elders.', exZh:'她对长辈表示尊重顺从。' },
+  { id:'s017', dim:'social', level:6, word:'machination', phonetic:'/ˌmækɪˈneɪʃən/', zh:'阴谋诡计',
+    example:'The coup was the result of years of machination.', exZh:'这场政变是多年阴谋诡计的结果。' },
+  { id:'s018', dim:'social', level:6, word:'obsequious', phonetic:'/əbˈsiːkwiəs/', zh:'卑躬屈膝的',
+    example:'His obsequious manner irritated everyone.', exZh:'他卑躬屈膝的态度让所有人反感。' },
+
+  // ── ACADEMIC 学术书面 ───────────────────────────────────────────
+  { id:'ac001', dim:'academic', level:2, word:'hypothesis', phonetic:'/haɪˈpɒθɪsɪs/', zh:'假设',
+    example:'The researchers tested their hypothesis.', exZh:'研究人员检验了他们的假设。' },
+  { id:'ac002', dim:'academic', level:2, word:'methodology', phonetic:'/ˌmɛθəˈdɒlədʒi/', zh:'方法论',
+    example:'The methodology was clearly explained.', exZh:'方法论被清晰地阐明了。' },
+  { id:'ac003', dim:'academic', level:2, word:'correlation', phonetic:'/ˌkɒrəˈleɪʃən/', zh:'相关性',
+    example:'Correlation does not imply causation.', exZh:'相关性不等于因果关系。' },
+  { id:'ac004', dim:'academic', level:3, word:'empirical', phonetic:'/ɪmˈpɪrɪkəl/', zh:'实证的/经验的',
+    example:'The study provides empirical evidence.', exZh:'该研究提供了实证证据。' },
+  { id:'ac005', dim:'academic', level:3, word:'inference', phonetic:'/ˈɪnfərəns/', zh:'推断',
+    example:'The detective drew a quick inference.', exZh:'侦探迅速作出推断。' },
+  { id:'ac006', dim:'academic', level:3, word:'synthesis', phonetic:'/ˈsɪnθɪsɪs/', zh:'综合/合成',
+    example:'Good writing requires synthesis of ideas.', exZh:'好的写作需要综合各种观点。' },
+  { id:'ac007', dim:'academic', level:3, word:'abstract', phonetic:'/ˈæbstrækt/', zh:'摘要',
+    example:'Read the abstract before the full paper.', exZh:'读正文前先看摘要。' },
+  { id:'ac008', dim:'academic', level:4, word:'epistemology', phonetic:'/ɪˌpɪstɪˈmɒlədʒi/', zh:'认识论',
+    example:'Epistemology studies the nature of knowledge.', exZh:'认识论研究知识的本质。' },
+  { id:'ac009', dim:'academic', level:4, word:'rhetoric', phonetic:'/ˈrɛtərɪk/', zh:'修辞(学)',
+    example:'His speech was full of political rhetoric.', exZh:'他的演讲充满了政治修辞。' },
+  { id:'ac010', dim:'academic', level:4, word:'dissertation', phonetic:'/ˌdɪsəˈteɪʃən/', zh:'论文(博士)',
+    example:'She spent three years on her dissertation.', exZh:'她花了三年写博士论文。' },
+  { id:'ac011', dim:'academic', level:4, word:'critique', phonetic:'/krɪˈtiːk/', zh:'评论/批判',
+    example:'The critique raised important questions.', exZh:'该评论提出了重要问题。' },
+  { id:'ac012', dim:'academic', level:5, word:'hermeneutics', phonetic:'/ˌhɜːrməˈnjuːtɪks/', zh:'解释学/诠释学',
+    example:'Hermeneutics focuses on text interpretation.', exZh:'解释学专注于文本诠释。' },
+  { id:'ac013', dim:'academic', level:5, word:'dialectic', phonetic:'/ˌdaɪəˈlɛktɪk/', zh:'辩证法',
+    example:'Hegel developed a famous dialectic framework.', exZh:'黑格尔发展出著名的辩证法框架。' },
+  { id:'ac014', dim:'academic', level:5, word:'positivism', phonetic:'/ˈpɒzɪtɪvɪzəm/', zh:'实证主义',
+    example:'Positivism relies on observable facts.', exZh:'实证主义依赖可观察的事实。' },
+  { id:'ac015', dim:'academic', level:6, word:'episteme', phonetic:'/ˈɛpɪstiːm/', zh:'知识型(福柯)',
+    example:'Foucault used the concept of episteme.', exZh:'福柯使用了知识型这一概念。' },
+  { id:'ac016', dim:'academic', level:6, word:'exegesis', phonetic:'/ˌɛksɪˈdʒiːsɪs/', zh:'经文注疏/详细解读',
+    example:'The scholar produced a careful exegesis.', exZh:'学者进行了细致的经文注疏。' },
+];
+
+// 按维度分组
+export function getByDimension(dim) {
+  return WORDS.filter(w => w.dim === dim);
+}
+
+// 按难度等级获取
+export function getByLevel(level) {
+  return WORDS.filter(w => w.level === level);
+}
+
+// 获取维度统计（用于雷达图）
+export function getDimStats(cards = {}) {
+  const stats = {};
+  for (const dim of Object.keys(DIMENSIONS)) {
+    const words = getByDimension(dim);
+    const total = words.length;
+    let learned = 0, mastered = 0;
+    for (const w of words) {
+      const card = cards[w.id];
+      if (!card) continue;
+      if (card.stability >= 1) learned++;
+      if (card.stability >= 21) mastered++;
+    }
+    stats[dim] = { total, learned, mastered, pct: total ? learned / total : 0 };
+  }
+  return stats;
+}
+
+// 获取薄弱维度（学习率最低的）
+export function getWeakDimensions(cards = {}) {
+  const stats = getDimStats(cards);
+  return Object.entries(stats)
+    .sort((a, b) => a[1].pct - b[1].pct)
+    .slice(0, 3)
+    .map(([dim]) => dim);
+}
+
+// 按id查找
+export function getWordById(id) {
+  return WORDS.find(w => w.id === id);
+}
+
+export const TOTAL = WORDS.length;
