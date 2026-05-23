@@ -57,42 +57,55 @@ function applyTheme(key, isPreview = false) {
   });
 }
 
+/* 预览某主题（hover时）：换背景图+动画，但不写 localStorage 不改 body class */
 function previewTheme(key) {
   if (!THEMES[key]) return;
   const t = THEMES[key];
+
   if (bg) {
     if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
     else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
   }
-  // 纯白/纯黑预览时正确设置 body 背景色
-  document.body.style.background = !t.img
-    ? (key === 'white' ? '#f6f5f0' : '#080808')
-    : '';
+
+  // 纯白/纯黑预览时也换 body 背景色
+  if (!t.img) {
+    document.body.style.background = key === 'white' ? '#f6f5f0' : '#080808';
+  } else {
+    document.body.style.background = '';
+  }
+
   if (cv) startAnim(t.anim, cv);
 }
 
+/* 恢复当前真实主题 */
 function restoreTheme() {
   applyTheme(cur);
 }
 
 window.setTheme = applyTheme;
 
-/* ── 震撼主题选择器 ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   震撼主题选择器
+═══════════════════════════════════════════════════════ */
 function renderDock() {
   const dock = document.getElementById('theme-dock');
   if (!dock) return;
   dock.innerHTML = '';
 
+  // ── 触发按钮 ──
   const trigger = document.createElement('button');
   trigger.className = 'dock-trigger';
   trigger.setAttribute('aria-label', '切换主题');
+  trigger.style.position = 'relative';
   trigger.innerHTML = `
     <span class="dock-trigger-ring"></span>
     <span class="dock-trigger-dot"></span>
-    <span class="dock-trigger-label">主题</span>
+    <span class="dock-trigger-label">${THEMES[cur]?.label||'主题'}</span>
+    <span class="dock-trigger-icon">🎨</span>
   `;
   dock.appendChild(trigger);
 
+  // ── 遮罩 + 面板 ──
   const overlay = document.createElement('div');
   overlay.className = 'dock-overlay';
   overlay.innerHTML = `
@@ -109,9 +122,11 @@ function renderDock() {
   `;
   dock.appendChild(overlay);
 
+  // ── 主题卡片 ──
   const grid = overlay.querySelector('#dockGrid');
+
+  // hover 防抖：快速划过时不频繁重启动画
   let hoverTimer = null;
-  let panelClosing = false; // 防止面板关闭后 timer 触发
 
   Object.keys(THEMES).forEach(key => {
     const t = THEMES[key];
@@ -122,7 +137,7 @@ function renderDock() {
 
     card.innerHTML = `
       <span class="dock-card-swatch" style="background:${t.color}">
-        ${t.img ? `<img src="${t.img}" alt="" aria-hidden="true" loading="lazy" draggable="false">` : ''}
+        ${t.img ? `<img src="${t.img}" alt="" aria-hidden="true" loading="lazy">` : ''}
         <span class="dock-card-ring" style="border-color:${t.color}"></span>
       </span>
       <span class="dock-card-name">${t.label}</span>
@@ -133,45 +148,49 @@ function renderDock() {
       card.classList.add('hovered');
       const label = overlay.querySelector('#dockCurrentLabel');
       if (label) label.textContent = `${t.label} · ${t.label_en}`;
+
+      // 防抖 80ms，避免快速扫过时动画疯狂切换
       clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => {
-        if (!panelClosing) previewTheme(key);
-      }, 80);
+      hoverTimer = setTimeout(() => previewTheme(key), 80);
     });
 
     card.addEventListener('mouseleave', () => {
       card.classList.remove('hovered');
       const label = overlay.querySelector('#dockCurrentLabel');
       if (label) label.textContent = '';
+
       clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => {
-        if (!panelClosing) restoreTheme();
-      }, 120);
+      // 离开后短暂延迟再恢复，防止快速移到下一个卡片时闪烁
+      hoverTimer = setTimeout(() => restoreTheme(), 120);
     });
 
     card.addEventListener('click', () => {
       clearTimeout(hoverTimer);
+
       const ripple = document.createElement('span');
       ripple.className = 'dock-select-ripple';
       ripple.style.background = t.color;
       card.appendChild(ripple);
       setTimeout(() => ripple.remove(), 600);
+
       applyTheme(key);
       closePanel();
+
       grid.querySelectorAll('.dock-card').forEach(c => {
         c.classList.toggle('active', c.dataset.t === key);
       });
+
       updateTriggerColor();
     });
 
     grid.appendChild(card);
   });
 
+  // ── 开关逻辑 ──
   let isOpen = false;
 
   function openPanel() {
     isOpen = true;
-    panelClosing = false;
     overlay.classList.add('open');
     trigger.classList.add('open');
     grid.querySelectorAll('.dock-card').forEach(c => {
@@ -185,7 +204,6 @@ function renderDock() {
 
   function closePanel() {
     isOpen = false;
-    panelClosing = true; // 标记面板正在关闭，阻止 timer 里的 restoreTheme
     clearTimeout(hoverTimer);
     overlay.classList.remove('open');
     trigger.classList.remove('open');
@@ -194,8 +212,6 @@ function renderDock() {
       c.classList.remove('visible', 'hovered');
     });
     restoreTheme();
-    // 面板动画结束后解除锁定
-    setTimeout(() => { panelClosing = false; }, 400);
   }
 
   trigger.addEventListener('click', () => isOpen ? closePanel() : openPanel());
@@ -205,16 +221,19 @@ function renderDock() {
 
   function updateTriggerColor() {
     const t = THEMES[cur];
-    const dot  = trigger.querySelector('.dock-trigger-dot');
-    const ring = trigger.querySelector('.dock-trigger-ring');
-    if (dot)  dot.style.background   = t.color;
-    if (ring) ring.style.borderColor = t.color;
+    const dot   = trigger.querySelector('.dock-trigger-dot');
+    const ring  = trigger.querySelector('.dock-trigger-ring');
+    const label = trigger.querySelector('.dock-trigger-label');
+    if (dot)   dot.style.background   = t.color;
+    if (ring)  ring.style.borderColor = t.color;
+    if (label) label.textContent      = t.label;
   }
   updateTriggerColor();
 }
 
 /* ── 首页动态内容 ──────────────────────────────────── */
 async function initHomeContent() {
+  // 连击
   try {
     const streak = getStreak();
     if (streak.count > 0) {
@@ -224,6 +243,7 @@ async function initHomeContent() {
     }
   } catch(e) {}
 
+  // 今日学习
   const learnSub = document.getElementById('learn-sub');
   if (learnSub) {
     try {
@@ -239,12 +259,14 @@ async function initHomeContent() {
     } catch(e) { learnSub.textContent = 'TODAY'; }
   }
 
+  // 单词库词数
   try {
     const { TOTAL } = await import('./wordbank.js');
     const el = document.getElementById('wordbank-sub');
     if (el && TOTAL) el.textContent = TOTAL + ' WORDS';
   } catch(e) {}
 
+  // 回炉本
   try {
     const cnt = Object.keys(JSON.parse(localStorage.getItem('fg_wrong') || '{}')).length;
     const el  = document.getElementById('wrong-sub');
@@ -254,6 +276,7 @@ async function initHomeContent() {
     }
   } catch(e) {}
 
+  // 账号
   const user    = localStorage.getItem('fg_user');
   const display = document.getElementById('account-display');
   const btn     = document.getElementById('btn-login');
