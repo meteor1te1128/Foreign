@@ -6,11 +6,11 @@
    捕获自己的 tk，每帧 raf(draw, tk) 检查 _token === tk，
    不一致立即退出。彻底解决布尔值竞态问题。               */
 
-let _token = 0;    /* 全局 token，每次 startAnim 自增 */
-let _ivs   = [];   /* 托管的 setInterval id */
+let _token = 0;
+let _ivs   = [];
 
 export function stopAnim() {
-  _token++;        /* token 变化 → 所有持旧 token 的 draw 自动退出 */
+  _token++;
   _ivs.forEach(clearInterval);
   _ivs = [];
 }
@@ -19,8 +19,8 @@ export function startAnim(type, canvas) {
   stopAnim();
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!type || type === 'none') return;   /* 纯白/纯黑：清空即止 */
-  const tk = _token;                      /* 捕获本次启动的 token */
+  if (!type || type === 'none') return;
+  const tk = _token;
   const W = canvas.width, H = canvas.height;
   const fn = { ocean:_ocean, mist:_mist, stars:_stars, rain:_rain,
                 aurora:_aurora, sakura:_sakura, clouds:_clouds,
@@ -28,22 +28,16 @@ export function startAnim(type, canvas) {
   if (fn) fn(ctx, W, H, tk);
 }
 
-/* ── 托管 interval ── */
 function iv(fn, ms) { const id = setInterval(fn, ms); _ivs.push(id); return id; }
-
-/* ── Token 守卫的 raf：token 不匹配则静默退出，彻底杀死旧循环 ── */
 function raf(fn, tk) { if (_token === tk) requestAnimationFrame(fn); }
 
-/* ── 工具 ──────────────────────────────────────────────── */
-function noise(x,y,t){return Math.sin(x*.9+t*.8)*.38+Math.sin(x*1.7-y*.5+t*.6)*.24+Math.sin(y*1.2+t*.9)*.22+Math.sin(x*.4+y*.8+t*.35)*.16;}
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function rnd(a, b) { return a + Math.random()*(b-a); }
 const PI2 = Math.PI * 2;
 
 /* ═══════════════════════════════════════════════════════
-   🌊 深海 — 仰视，光从水面中央向下辐射
-   透明度大幅提高，特效要明显可见
+   🌊 深海
 ═══════════════════════════════════════════════════════ */
 function _ocean(ctx, W, H, tk) {
   const caust = Array.from({length:22}, () => ({
@@ -53,14 +47,12 @@ function _ocean(ctx, W, H, tk) {
     a:rnd(.06,.14), spd:rnd(-.22,.22),
     ph:rnd(0,PI2), phs:rnd(.01,.022),
   }));
-
   const motes = Array.from({length:180}, () => ({
     x:rnd(0,W), y:rnd(0,H),
     r:rnd(.3,1.2), vy:-rnd(.05,.22),
     vx:rnd(-.05,.05),
     a:rnd(.08,.28), ph:rnd(0,PI2),
   }));
-
   const rayCount = 10;
   const rays = Array.from({length:rayCount}, (_, i) => {
     const u = (i/(rayCount-1))*2-1;
@@ -73,7 +65,6 @@ function _ocean(ctx, W, H, tk) {
       skew: u * rnd(18,44),
     };
   });
-
   let t = 0;
   function draw() {
     ctx.clearRect(0,0,W,H); t+=.005;
@@ -127,45 +118,59 @@ function _ocean(ctx, W, H, tk) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌲 雾林 — 俯视松林，横向雾带
-   透明度大幅提高，冷灰白色调
+   🌲 雾林 — 修正缩放幅度
+   心理学依据：
+   · Weber-Fechner定律：人眼运动感知阈值约1%
+   · NASA人因研究：呼吸动画最舒适幅度2-4%
+   · 原版 H*0.007 (0.4%) 低于感知阈值，几乎看不出动
+   · 新版垂直漂移 H*0.022 (2.2%)，透明度脉冲±15%
 ═══════════════════════════════════════════════════════ */
 function _mist(ctx, W, H, tk) {
   const FOG_BANDS = [
-    { yFrac:.16, thickness:.07, speed:.048, density:1.0 },
-    { yFrac:.30, thickness:.09, speed:.038, density:1.1 },
-    { yFrac:.45, thickness:.08, speed:.062, density:0.95 },
-    { yFrac:.58, thickness:.06, speed:.035, density:0.88 },
+    { yFrac:.16, thickness:.08, speed:.052, density:1.0 },
+    { yFrac:.31, thickness:.10, speed:.041, density:1.15 },
+    { yFrac:.47, thickness:.09, speed:.066, density:1.0 },
+    { yFrac:.61, thickness:.07, speed:.038, density:0.9 },
   ];
   const fogClouds = [];
   FOG_BANDS.forEach(band => {
-    const count = 9 + Math.floor(Math.random()*4);
+    const count = 10 + Math.floor(Math.random()*4);
     for(let i=0;i<count;i++){
       fogClouds.push({
         band,
         x: rnd(-W*.3, W*1.3),
         y: H*band.yFrac + rnd(-H*band.thickness*.4, H*band.thickness*.4),
-        rx: rnd(W*.14, W*.35),
-        ry: rnd(H*band.thickness*.55, H*band.thickness*1.2),
-        a: rnd(.14,.24)*band.density,
+        rx: rnd(W*.15, W*.38),
+        ry: rnd(H*band.thickness*.6, H*band.thickness*1.3),
+        a: rnd(.15,.26)*band.density,
         spd: band.speed * rnd(.6,1.4) * (Math.random()>.5?1:-1),
-        ph: rnd(0,PI2), phs: rnd(.001,.003),
+        ph:  rnd(0,PI2),
+        phsV: rnd(.011,.018),   // 垂直呼吸速度
+        phsH: rnd(.0008,.0018), // 水平摇曳速度
+        phH: rnd(0,PI2),
       });
     }
   });
-  let t=0;
   function draw(){
-    ctx.clearRect(0,0,W,H); t++;
+    ctx.clearRect(0,0,W,H);
     fogClouds.forEach(f=>{
-      f.x+=f.spd; f.ph+=f.phs;
+      f.x   += f.spd;
+      f.ph  += f.phsV;
+      f.phH += f.phsH;
       if(f.x<-f.rx*1.8)f.x=W+f.rx;
       if(f.x>W+f.rx*1.8)f.x=-f.rx;
-      const jy=Math.sin(f.ph)*H*.007;
-      ctx.save(); ctx.translate(f.x, f.y+jy);
+      // 垂直漂移 2.2%（刚好在感知阈值上方，舒适但明显）
+      const jy = Math.sin(f.ph) * H * .022;
+      // 水平额外摇曳
+      const jx = Math.sin(f.phH) * W * .008;
+      // 透明度脉冲 ±15%
+      const alphaPulse = 1 + Math.sin(f.ph * .7 + 1.2) * .15;
+      ctx.save();
+      ctx.translate(f.x + jx, f.y + jy);
       const g=ctx.createRadialGradient(0,0,0,0,0,f.rx);
-      g.addColorStop(0,  `rgba(218,222,225,${f.a})`);
-      g.addColorStop(.38,`rgba(210,216,220,${f.a*.58})`);
-      g.addColorStop(.72,`rgba(202,209,214,${f.a*.22})`);
+      g.addColorStop(0,  `rgba(218,222,225,${f.a * alphaPulse})`);
+      g.addColorStop(.38,`rgba(210,216,220,${f.a * alphaPulse * .58})`);
+      g.addColorStop(.72,`rgba(202,209,214,${f.a * alphaPulse * .22})`);
       g.addColorStop(1,  'rgba(195,204,210,0)');
       ctx.scale(1, f.ry/f.rx);
       ctx.beginPath();ctx.arc(0,0,f.rx,0,PI2);
@@ -176,7 +181,7 @@ function _mist(ctx, W, H, tk) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌌 星空 — 银河斜向，透明度提高
+   🌌 星空
 ═══════════════════════════════════════════════════════ */
 function _stars(ctx, W, H, tk) {
   const MW_X1=W*.85, MW_Y1=H*.82, MW_X2=W*.08, MW_Y2=H*.05;
@@ -282,22 +287,13 @@ function _stars(ctx, W, H, tk) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌸 樱花 — 河边樱花道
-   照片特征：两侧樱花树，花瓣从左右上方飘入中央
-   大量花瓣散落在地面/水面，薄雾弥漫
-   花瓣密度高，以中下区域为主
+   🌸 樱花
 ═══════════════════════════════════════════════════════ */
 function _sakura(ctx, W, H, tk) {
-  /* 风场：微风，偶尔阵风 */
   let wx=.2, wt=.2;
   iv(() => { wt=rnd(-.1,.6); }, 3500);
-
-  /* 花瓣：分两类
-     空中飘落：从顶部和两侧入场
-     水面/地面漂浮：下半部，极缓慢 */
   function mkPetal(airborne) {
     if(airborne){
-      /* 从左右两侧上方飘入 */
       const fromLeft = Math.random()>.5;
       return {
         x: fromLeft ? rnd(-20,W*.3) : rnd(W*.7,W+20),
@@ -313,7 +309,6 @@ function _sakura(ctx, W, H, tk) {
         type: 'air',
       };
     } else {
-      /* 地面/水面：底部区域静止漂浮 */
       return {
         x: rnd(0,W),
         y: rnd(H*.55,H+10),
@@ -329,19 +324,14 @@ function _sakura(ctx, W, H, tk) {
       };
     }
   }
-
-  /* 70朵空中 + 50朵地面 */
   const airPetals    = Array.from({length:70}, () => mkPetal(true));
   const groundPetals = Array.from({length:50}, () => mkPetal(false));
-
-  /* 薄雾：集中在远景中央 */
   const mist = Array.from({length:6}, (_, i) => ({
     x: W*(.2+i*.14), y: rnd(H*.3,H*.6),
     rx: rnd(W*.12,W*.28), ry: rnd(H*.04,H*.1),
     a: rnd(.04,.08),
     ph: rnd(0,PI2), phs: rnd(.001,.003),
   }));
-
   function drawPetal(p) {
     const s=p.sz;
     const flip=Math.cos(p.fa), back=flip<0;
@@ -370,12 +360,9 @@ function _sakura(ctx, W, H, tk) {
     ctx.strokeStyle=`rgba(210,142,176,${p.vi})`; ctx.lineWidth=.5; ctx.stroke();
     ctx.restore(); ctx.globalAlpha=1;
   }
-
   function draw() {
     ctx.clearRect(0,0,W,H);
     wx += (wt-wx)*.006;
-
-    /* 远景薄雾 */
     mist.forEach(m=>{
       m.ph+=m.phs;
       ctx.save(); ctx.translate(m.x,m.y);
@@ -386,8 +373,6 @@ function _sakura(ctx, W, H, tk) {
       ctx.beginPath();ctx.arc(0,0,m.rx,0,PI2);
       ctx.fillStyle=g;ctx.fill();ctx.restore();
     });
-
-    /* 地面花瓣（先画，在下层） */
     groundPetals.forEach(p=>{
       p.sw+=p.sws; p.rot+=p.rv; p.fa+=p.fs;
       p.x+=p.vx+Math.sin(p.sw)*.15+wx*.2;
@@ -396,8 +381,6 @@ function _sakura(ctx, W, H, tk) {
       if(p.x<-15)p.x=W+15; if(p.x>W+15)p.x=-15;
       drawPetal(p);
     });
-
-    /* 空中花瓣 */
     airPetals.forEach(p=>{
       p.sw+=p.sws; p.rot+=p.rv; p.fa+=p.fs;
       p.x+=p.vx+wx+Math.sin(p.sw)*.55;
@@ -408,30 +391,21 @@ function _sakura(ctx, W, H, tk) {
       if(p.x<-25)p.x=W+25; if(p.x>W+25)p.x=-25;
       drawPetal(p);
     });
-
     raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌅 火烧云 — 海平线日落
-   照片特征：太阳刚沉入海平线，中央偏左
-   海面有橙金色波光倒影（横向波纹）
-   云层从地平线向上扩散，橙→红→紫→蓝
-   不需要丁达尔光束，重点是海面波光和云层脉动
+   🌅 火烧云
 ═══════════════════════════════════════════════════════ */
 function _clouds(ctx, W, H, tk) {
-  const HORIZON = H * .58;   /* 海平线位置 */
-  const SUN_X   = W * .48;   /* 太阳X位置（中央偏左） */
-
-  /* 太阳余晖光晕（地平线处） */
+  const HORIZON = H * .58;
+  const SUN_X   = W * .48;
   const sunGlow = ctx.createRadialGradient(SUN_X,HORIZON,0, SUN_X,HORIZON,W*.35);
   sunGlow.addColorStop(0,   'rgba(255,235,140,.22)');
   sunGlow.addColorStop(.15, 'rgba(255,185,60,.14)');
   sunGlow.addColorStop(.45, 'rgba(255,120,20,.06)');
   sunGlow.addColorStop(1,   'rgba(220,60,0,0)');
-
-  /* 海面波光：横向椭圆，从太阳位置向两侧扩散 */
   const waveGlints = Array.from({length:35}, () => ({
     x: SUN_X + rnd(-W*.45,W*.45),
     y: rnd(HORIZON+H*.02, H*.98),
@@ -441,8 +415,6 @@ function _clouds(ctx, W, H, tk) {
     ph: rnd(0,PI2), phs: rnd(.02,.06),
     spd: rnd(-.15,.15),
   }));
-
-  /* 云层高光：上半部，横向扩散 */
   const cloudGlows = Array.from({length:16}, () => ({
     x: rnd(-W*.1,W*1.1),
     y: rnd(0, HORIZON*.95),
@@ -451,22 +423,15 @@ function _clouds(ctx, W, H, tk) {
     a: rnd(.04,.1),
     spd: rnd(-.05,.05),
     ph: rnd(0,PI2), phs: rnd(.001,.003),
-    /* 高度决定颜色：越高越蓝紫 */
-    hue: 0, /* 在draw里计算 */
+    hue: 0,
   }));
-
   let t=0;
   function draw(){
     ctx.clearRect(0,0,W,H); t+=.004;
-
-    /* 太阳余晖 */
     ctx.fillStyle=sunGlow; ctx.fillRect(0,0,W,H);
-
-    /* 云层高光 */
     cloudGlows.forEach(c=>{
       c.x+=c.spd; c.ph+=c.phs;
       if(c.x<-c.rx*2)c.x=W+c.rx; if(c.x>W+c.rx*2)c.x=-c.rx;
-      /* 位置越高越蓝紫，靠近地平线越橙红 */
       const yFrac=c.y/HORIZON;
       const r=Math.round(lerp(255,180,yFrac));
       const g2=Math.round(lerp(200,120,yFrac));
@@ -481,12 +446,9 @@ function _clouds(ctx, W, H, tk) {
       ctx.beginPath();ctx.arc(0,0,c.rx,0,PI2);
       ctx.fillStyle=g;ctx.fill();ctx.restore();
     });
-
-    /* 海面波光 */
     waveGlints.forEach(w=>{
       w.ph+=w.phs; w.x+=w.spd;
       if(w.x<-w.rx*2)w.x=W+w.rx; if(w.x>W+w.rx*2)w.x=-w.rx;
-      /* 越靠近太阳正下方越亮 */
       const distSun=Math.abs(w.x-SUN_X)/(W*.5);
       const brightness=w.a*(1-distSun*.55)*(.6+.4*Math.abs(Math.sin(w.ph)));
       if(brightness<.01) return;
@@ -499,13 +461,12 @@ function _clouds(ctx, W, H, tk) {
       ctx.beginPath();ctx.arc(0,0,w.rx,0,PI2);
       ctx.fillStyle=g;ctx.fill();ctx.restore();
     });
-
     raf(draw,tk);
   }draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌿 雨林 — 溪流森林，透明度提高
+   🌿 雨林
 ═══════════════════════════════════════════════════════ */
 function _forest(ctx, W, H, tk) {
   const rays=Array.from({length:7},(_,i)=>{
@@ -591,53 +552,37 @@ function _forest(ctx, W, H, tk) {
   }draw();
 }
 
-
+/* ═══════════════════════════════════════════════════════
+   🌧 雨天
+═══════════════════════════════════════════════════════ */
 function _rain(ctx, W, H, tk) {
-
-  /* ── 附着水珠 ─────────────────────────────────────── */
   function mkDot(init) {
     return {
       x: rnd(0, W),
       y: init ? rnd(0, H) : rnd(0, H * .35),
-      r: rnd(1.5, 5.5),           /* 当前半径 */
-      maxR: rnd(5, 14),           /* 开始流动的阈值 */
-      growSpd: rnd(.008, .022),   /* 积水速度 */
+      r: rnd(1.5, 5.5),
+      maxR: rnd(5, 14),
+      growSpd: rnd(.008, .022),
       a: rnd(.38, .62),
       flowing: false,
-      /* 流动状态 */
       vy: 0, vx: 0,
-      path: [],                   /* 流过的路径点 */
+      path: [],
       pathMaxLen: 120,
-      wobble: rnd(-.012, .012),   /* 左右摆动倾向 */
+      wobble: rnd(-.012, .012),
       wobblePh: rnd(0, Math.PI*2),
       dead: false,
     };
   }
-
   const dots = Array.from({length: 55}, () => mkDot(true));
-
-  /* 每隔一段时间补充新水珠 */
   iv(() => {
     const deadIdx = dots.findIndex(d => d.dead);
-    if (deadIdx >= 0) {
-      dots[deadIdx] = mkDot(false);
-    } else if (dots.length < 75) {
-      dots.push(mkDot(false));
-    }
+    if (deadIdx >= 0) dots[deadIdx] = mkDot(false);
+    else if (dots.length < 75) dots.push(mkDot(false));
   }, 280);
-
-  /* ── 绘制单个水珠 ─────────────────────────────────── */
   function drawDrop(x, y, r, a, stretch) {
     const sy = stretch || 1;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(1, sy);
-
-    /* 主体：径向渐变模拟折射 */
-    const g = ctx.createRadialGradient(
-      -r*.3, -r*.35, r*.04,
-       r*.1,  r*.1,  r
-    );
+    ctx.save(); ctx.translate(x, y); ctx.scale(1, sy);
+    const g = ctx.createRadialGradient(-r*.3,-r*.35,r*.04, r*.1,r*.1,r);
     g.addColorStop(0,   `rgba(255,255,255,${a*.92})`);
     g.addColorStop(.22, `rgba(230,242,255,${a*.72})`);
     g.addColorStop(.55, `rgba(185,215,245,${a*.35})`);
@@ -645,314 +590,206 @@ function _rain(ctx, W, H, tk) {
     g.addColorStop(1,   `rgba(130,180,225,${a*.04})`);
     ctx.beginPath(); ctx.arc(0, 0, r, 0, PI2);
     ctx.fillStyle = g; ctx.fill();
-
-    /* 边缘细环：表面张力感 */
-    ctx.strokeStyle = `rgba(180,215,248,${a*.22})`;
-    ctx.lineWidth = .6; ctx.stroke();
-
-    /* 左上高光（主光源） */
-    const hg = ctx.createRadialGradient(-r*.32,-r*.38, 0, -r*.28,-r*.32, r*.38);
+    ctx.strokeStyle = `rgba(180,215,248,${a*.22})`; ctx.lineWidth = .6; ctx.stroke();
+    const hg = ctx.createRadialGradient(-r*.32,-r*.38,0, -r*.28,-r*.32,r*.38);
     hg.addColorStop(0, `rgba(255,255,255,${a*.88})`);
     hg.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.beginPath(); ctx.arc(0, 0, r, 0, PI2);
     ctx.fillStyle = hg; ctx.fill();
-
-    /* 右下暗面折射 */
-    ctx.beginPath();
-    ctx.arc(r*.22, r*.28, r*.28, 0, PI2);
+    ctx.beginPath(); ctx.arc(r*.22,r*.28,r*.28,0,PI2);
     ctx.fillStyle = `rgba(140,185,230,${a*.14})`; ctx.fill();
-
     ctx.restore();
   }
-
-  /* ── 绘制流痕 ─────────────────────────────────────── */
   function drawTrail(path, r, a) {
     if (path.length < 3) return;
     const w = clamp(r * .55, .8, 3.5);
-
-    /* 流痕主体：细，半透明 */
-    ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
+    ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) {
-      /* 用二次贝塞尔让路径有自然弯曲 */
-      const mx = (path[i-1].x + path[i].x) * .5;
-      const my = (path[i-1].y + path[i].y) * .5;
-      ctx.quadraticCurveTo(path[i-1].x, path[i-1].y, mx, my);
+      const mx=(path[i-1].x+path[i].x)*.5, my=(path[i-1].y+path[i].y)*.5;
+      ctx.quadraticCurveTo(path[i-1].x,path[i-1].y,mx,my);
     }
-    ctx.strokeStyle = `rgba(200,228,252,${a * .28})`;
-    ctx.lineWidth = w;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-
-    /* 流痕高光边：更细更亮 */
-    ctx.beginPath();
-    ctx.moveTo(path[0].x - w*.3, path[0].y);
-    for (let i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i].x - w*.3, path[i].y);
-    }
-    ctx.strokeStyle = `rgba(255,255,255,${a * .18})`;
-    ctx.lineWidth = w * .35;
-    ctx.stroke();
+    ctx.strokeStyle=`rgba(200,228,252,${a*.28})`; ctx.lineWidth=w;
+    ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(path[0].x-w*.3,path[0].y);
+    for (let i=1;i<path.length;i++) ctx.lineTo(path[i].x-w*.3,path[i].y);
+    ctx.strokeStyle=`rgba(255,255,255,${a*.18})`; ctx.lineWidth=w*.35; ctx.stroke();
   }
-
   let t = 0;
   function draw() {
-    ctx.clearRect(0, 0, W, H);
-    t++;
-
-    dots.forEach((d, i) => {
+    ctx.clearRect(0, 0, W, H); t++;
+    dots.forEach((d) => {
       if (d.dead) return;
-
       if (!d.flowing) {
-        /* 积水阶段：缓慢变大 */
         d.r += d.growSpd;
-
-        /* 稍微抖动，模拟玻璃振动 */
-        const jx = Math.sin(t * .04 + d.wobblePh) * .15;
-        const jy = Math.cos(t * .03 + d.wobblePh) * .08;
-
-        drawDrop(d.x + jx, d.y + jy, d.r, d.a, 1);
-
-        /* 达到阈值，开始流动 */
+        const jx=Math.sin(t*.04+d.wobblePh)*.15, jy=Math.cos(t*.03+d.wobblePh)*.08;
+        drawDrop(d.x+jx, d.y+jy, d.r, d.a, 1);
         if (d.r >= d.maxR) {
-          d.flowing = true;
-          d.vy = rnd(.4, 1.2);
-          d.vx = d.wobble * d.r * 2;
-          d.path.push({x: d.x, y: d.y});
+          d.flowing=true; d.vy=rnd(.4,1.2); d.vx=d.wobble*d.r*2;
+          d.path.push({x:d.x,y:d.y});
         }
-
       } else {
-        /* 流动阶段 */
-        d.vy = Math.min(d.vy + rnd(.018, .032), 3.8);
-        /* 流痕会左右轻微摆动 */
-        d.wobblePh += .045;
-        d.vx += Math.sin(d.wobblePh) * .04 + d.wobble * .15;
-        d.vx *= .88;  /* 横向阻尼 */
-
-        d.x += d.vx;
-        d.y += d.vy;
-
-        /* 流动时水珠拉长 */
-        const stretch = clamp(1 + d.vy * .055, 1, 1.65);
-
-        d.path.push({x: d.x, y: d.y});
-        if (d.path.length > d.pathMaxLen) d.path.shift();
-
-        /* 先画流痕，再画水珠（水珠在最上面） */
-        drawTrail(d.path, d.r, d.a);
-        drawDrop(d.x, d.y, d.r * .85, d.a, stretch);
-
-        /* 偶尔留下残余小水珠 */
-        if (Math.random() < .012 && d.r > 5) {
-          dots.push({
-            ...mkDot(false),
-            x: d.x + rnd(-4, 4),
-            y: d.y - rnd(5, 20),
-            r: rnd(1, 3),
-            maxR: 999,   /* 不再流动 */
-            growSpd: 0,
-            flowing: false,
-            a: rnd(.2, .4),
-          });
+        d.vy=Math.min(d.vy+rnd(.018,.032),3.8);
+        d.wobblePh+=.045;
+        d.vx+=Math.sin(d.wobblePh)*.04+d.wobble*.15; d.vx*=.88;
+        d.x+=d.vx; d.y+=d.vy;
+        const stretch=clamp(1+d.vy*.055,1,1.65);
+        d.path.push({x:d.x,y:d.y});
+        if(d.path.length>d.pathMaxLen) d.path.shift();
+        drawTrail(d.path,d.r,d.a);
+        drawDrop(d.x,d.y,d.r*.85,d.a,stretch);
+        if(Math.random()<.012&&d.r>5){
+          dots.push({...mkDot(false),x:d.x+rnd(-4,4),y:d.y-rnd(5,20),
+            r:rnd(1,3),maxR:999,growSpd:0,flowing:false,a:rnd(.2,.4)});
         }
-
-        /* 流出屏幕或合并（简化：流出屏幕则标记死亡） */
-        if (d.y > H + 20 || d.x < -10 || d.x > W + 10) {
-          d.dead = true;
-        }
+        if(d.y>H+20||d.x<-10||d.x>W+10) d.dead=true;
       }
     });
-
-    /* 清理死亡粒子，保留流痕继续显示一段时间 */
-    for (let i = dots.length - 1; i >= 0; i--) {
-      if (dots[i].dead && dots[i].path.length === 0) {
-        dots.splice(i, 1);
-      } else if (dots[i].dead) {
-        /* 流痕逐渐消失 */
-        dots[i].a -= .004;
-        if (dots[i].a > .05) drawTrail(dots[i].path, dots[i].r, dots[i].a);
-        else dots.splice(i, 1);
+    for(let i=dots.length-1;i>=0;i--){
+      if(dots[i].dead&&dots[i].path.length===0) dots.splice(i,1);
+      else if(dots[i].dead){
+        dots[i].a-=.004;
+        if(dots[i].a>.05) drawTrail(dots[i].path,dots[i].r,dots[i].a);
+        else dots.splice(i,1);
       }
     }
-
     raf(draw, tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-   🌠 极光 — 完全重写，贴合照片
-   照片特征：
-   · 竖向光柱从地平线（H*0.62）向上辐射，不是横帘
-   · 绿色主导，紫色穿插，顶部有弧形卷曲
-   · 光柱有竖向条纹感，亮度不均匀
-   · 冰面/雪地有极光倒影（绿色反光）
-
-   · 背景布满星点
+   🌠 极光 — 重写 v2
+   从"细光柱"改成"宽光幕"(curtain)
+   · 每条幕用多列采样 + 余弦窗包络
+   · 底部白绿发光边缘（真实极光特征）
+   · 顶部旗帜飘动效果
+   · 绿色主幕 + 紫色副幕 + 冰面倒影
 ═══════════════════════════════════════════════════════ */
 function _aurora(ctx, W, H, tk) {
+  const HORIZON = H * .62;
 
-  const HORIZON = H * .64;   /* 地平线位置，光柱从这里升起 */
-
-  /* ── 星星（背景，上半天空） ─────────────────────────── */
-  const stars = Array.from({length:220}, () => ({
-    x: rnd(0, W), y: rnd(0, HORIZON * 1.1),
-    r: rnd(.15, 1.2), a: rnd(.2, .85),
-    da: rnd(-.008, .008), tw: Math.random() > .45,
+  const stars = Array.from({length:200}, () => ({
+    x:rnd(0,W), y:rnd(0,HORIZON*1.05),
+    r:rnd(.12,1.1), a:rnd(.18,.9),
+    da:rnd(-.007,.007), tw:Math.random()>.4,
   }));
 
-  /* ── 极光光柱组 ─────────────────────────────────────── */
-  /* 每组光柱：从地平线某点向上展开，有扇形张角 */
-  const GROUPS = [
-    /* 绿色主群：画面中偏左，最亮 */
-    { cx:W*.38, spread:W*.28, count:9,
-      hue0:145, hue1:162, bright:1.0,
-      ph:0, phspd:.0042, swayAm:.018 },
-    /* 绿色右群 */
-    { cx:W*.62, spread:W*.22, count:7,
-      hue0:148, hue1:168, bright:.85,
-      ph:Math.PI*.7, phspd:.0038, swayAm:.015 },
-    /* 紫色群：画面中偏右上 */
-    { cx:W*.55, spread:W*.35, count:8,
-      hue0:275, hue1:295, bright:.72,
-      ph:Math.PI*1.2, phspd:.005, swayAm:.022 },
-    /* 绿色左侧细束 */
-    { cx:W*.18, spread:W*.14, count:5,
-      hue0:150, hue1:165, bright:.6,
-      ph:Math.PI*.4, phspd:.0035, swayAm:.012 },
+  const CURTAINS = [
+    { xCenter:W*.5,  xSpread:W*.82, yTop:H*.06, yBot:HORIZON,
+      hue:150, hue2:162, bright:1.0,
+      wavePh:0,       waveSpd:.0055, waveAm:H*.028,
+      topWavePh:.8,   topWaveSpd:.0038, topWaveAm:H*.055, cols:38 },
+    { xCenter:W*.72, xSpread:W*.45, yTop:H*.14, yBot:HORIZON,
+      hue:145, hue2:158, bright:.65,
+      wavePh:2.1,     waveSpd:.0042, waveAm:H*.022,
+      topWavePh:1.5,  topWaveSpd:.003,  topWaveAm:H*.04,  cols:22 },
+    { xCenter:W*.6,  xSpread:W*.55, yTop:H*.02, yBot:H*.35,
+      hue:280, hue2:298, bright:.5,
+      wavePh:3.8,     waveSpd:.006,  waveAm:H*.018,
+      topWavePh:2.2,  topWaveSpd:.0045, topWaveAm:H*.038, cols:20 },
+    { xCenter:W*.22, xSpread:W*.38, yTop:H*.1,  yBot:HORIZON,
+      hue:148, hue2:165, bright:.52,
+      wavePh:5.2,     waveSpd:.0048, waveAm:H*.02,
+      topWavePh:3.1,  topWaveSpd:.0035, topWaveAm:H*.042, cols:16 },
   ];
 
-  /* 预生成每根光柱的固定属性 */
-  const beams = [];
-  GROUPS.forEach(g => {
-    for (let i = 0; i < g.count; i++) {
-      const frac = (i / (g.count-1)) - .5;   /* -0.5 ~ 0.5 */
-      beams.push({
-        /* 底部起点：沿地平线分布在扇形内 */
-        bx0: g.cx + frac * g.spread * rnd(.7, 1.0),
-        /* 顶部终点：向上辐射，有随机偏移 */
-        tx0: g.cx + frac * g.spread * rnd(.3, .6) + rnd(-W*.04, W*.04),
-        ty0: rnd(H*.02, H*.28),
-        /* 宽度：底宽顶窄 */
-        wBot: rnd(W*.008, W*.025),
-        wTop: rnd(W*.001, W*.006),
-        /* 颜色 */
-        hue: rnd(g.hue0, g.hue1),
-        /* 亮度 & 相位 */
-        a: rnd(.08, .22) * g.bright,
-        ph: g.ph + rnd(0, PI2),
-        phspd: g.phspd * rnd(.7, 1.3),
-        swayAm: g.swayAm,
-        /* 顶部卷曲：随噪声偏移 */
-        curlPh: rnd(0, PI2),
-        curlSpd: rnd(.003, .007),
-        g,
-      });
-    }
-  });
-
-  /* ── 冰面倒影光斑（地平线以下） ────────────────────── */
-  const reflections = Array.from({length:8}, () => ({
-    x: rnd(W*.15, W*.85),
-    y: rnd(HORIZON + H*.04, H*.92),
-    rx: rnd(W*.04, W*.12),
-    ry: rnd(H*.008, H*.022),
-    hue: Math.random() > .3 ? rnd(148,165) : rnd(275,295),
-    a: rnd(.04, .1),
-    ph: rnd(0, PI2), phspd: rnd(.003, .008),
+  const reflections = Array.from({length:10}, () => ({
+    x:rnd(W*.08,W*.92), y:rnd(HORIZON+H*.03,H*.9),
+    rx:rnd(W*.05,W*.14), ry:rnd(H*.008,H*.02),
+    hue:Math.random()>.3?rnd(148,162):rnd(278,295),
+    a:rnd(.05,.12), ph:rnd(0,PI2), phspd:rnd(.003,.009),
   }));
 
-  let t = 0;
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    t += .005;
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H); t+=.005;
 
-    /* ── 星星 ── */
-    stars.forEach(s => {
-      if (s.tw) { s.a += s.da; if (s.a < .08 || s.a > .88) s.da *= -1; }
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, PI2);
-      ctx.fillStyle = `rgba(210,222,255,${s.a})`; ctx.fill();
+    stars.forEach(s=>{
+      if(s.tw){s.a+=s.da; if(s.a<.06||s.a>.92)s.da*=-1;}
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,PI2);
+      ctx.fillStyle=`rgba(208,220,255,${s.a})`; ctx.fill();
     });
 
-    /* ── 光柱 ── */
-    beams.forEach(b => {
-      b.ph += b.phspd;
-      b.curlPh += b.curlSpd;
+    CURTAINS.forEach(c=>{
+      c.wavePh    += c.waveSpd;
+      c.topWavePh += c.topWaveSpd;
+      const cols=c.cols, colW=c.xSpread/cols;
+      const xLeft=c.xCenter-c.xSpread*.5;
 
-      /* 随时间摇摆：顶部偏移更大（旗帜效果） */
-      const sway = Math.sin(b.ph) * b.swayAm;
-      const curlX = Math.sin(b.curlPh) * W * .04;
-      const curlY = Math.cos(b.curlPh * .7) * H * .025;
+      for(let i=0;i<cols;i++){
+        const frac=i/(cols-1);
+        // 余弦窗包络：两端淡出
+        const envelope=Math.sin(frac*Math.PI);
+        if(envelope<.02) continue;
 
-      const bx = b.bx0 + Math.sin(b.ph * .6) * W * .008;
-      const tx = b.tx0 + curlX + sway * W * .5;
-      const ty = b.ty0 + curlY;
+        const botWave=Math.sin(c.wavePh+frac*PI2*.9)*c.waveAm*.4;
+        const topWave=Math.sin(c.topWavePh+frac*PI2*1.4)*c.topWaveAm
+                     +Math.sin(c.topWavePh*.6+frac*PI2*.5)*c.topWaveAm*.4;
 
-      /* 脉冲亮度 */
-      const pulse = .72 + .28 * Math.sin(b.ph * 1.8);
-      const alpha = b.a * pulse;
+        const cx=xLeft+frac*c.xSpread;
+        const x0=cx+botWave;
+        const x1=cx+topWave+(frac-.5)*W*.04;
+        const y0=c.yBot;
+        const y1=c.yTop+Math.sin(c.topWavePh*.8+frac*4.2)*H*.025;
 
-      /* 光柱形状：梯形，底宽顶窄 */
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(bx - b.wBot, HORIZON);
-      ctx.lineTo(bx + b.wBot, HORIZON);
-      ctx.lineTo(tx + b.wTop, ty);
-      ctx.lineTo(tx - b.wTop, ty);
-      ctx.closePath();
+        // 列间亮度噪声（条纹感）
+        const stripeBright=.6+.4*Math.abs(Math.sin(frac*PI2*3.5+c.wavePh*2.2));
+        const pulse=.75+.25*Math.sin(c.wavePh*1.6+frac*1.8);
+        const alpha=clamp(c.bright*envelope*stripeBright*pulse, 0, 1);
+        const halfW=clamp(colW*.7*(1+envelope*.3), 1, colW*1.4);
 
-      /* 竖向渐变：底部亮→顶部消失 */
-      const gv = ctx.createLinearGradient(0, HORIZON, 0, ty);
-      gv.addColorStop(0,   `hsla(${b.hue},95%,62%,0)`);
-      gv.addColorStop(.08, `hsla(${b.hue},95%,68%,${alpha*.9})`);
-      gv.addColorStop(.35, `hsla(${b.hue},90%,65%,${alpha})`);
-      gv.addColorStop(.72, `hsla(${b.hue},85%,58%,${alpha*.55})`);
-      gv.addColorStop(1,   `hsla(${b.hue},80%,52%,0)`);
-      ctx.fillStyle = gv; ctx.fill();
+        const gv=ctx.createLinearGradient(0,y0,0,y1);
+        // 底部白绿边缘是真实极光最标志性的特征
+        gv.addColorStop(0,   `hsla(${c.hue},100%,88%,0)`);
+        gv.addColorStop(.04, `hsla(${c.hue},100%,92%,${alpha*.7})`);
+        gv.addColorStop(.12, `hsla(${c.hue},96%,72%,${alpha*.95})`);
+        gv.addColorStop(.35, `hsla(${lerp(c.hue,c.hue2,frac)|0},92%,62%,${alpha})`);
+        gv.addColorStop(.68, `hsla(${c.hue2},88%,55%,${alpha*.6})`);
+        gv.addColorStop(.88, `hsla(${c.hue2},82%,48%,${alpha*.2})`);
+        gv.addColorStop(1,   `hsla(${c.hue2},78%,42%,0)`);
 
-      /* 光柱中轴亮线：模拟竖向条纹中最亮的一根 */
-      ctx.beginPath();
-      ctx.moveTo(bx, HORIZON);
-      ctx.lineTo(tx, ty);
-      const gl = ctx.createLinearGradient(0, HORIZON, 0, ty);
-      gl.addColorStop(0,   `hsla(${b.hue},100%,82%,0)`);
-      gl.addColorStop(.12, `hsla(${b.hue},100%,88%,${alpha*.7})`);
-      gl.addColorStop(.5,  `hsla(${b.hue},100%,85%,${alpha*.45})`);
-      gl.addColorStop(1,   `hsla(${b.hue},100%,80%,0)`);
-      ctx.strokeStyle = gl;
-      ctx.lineWidth = clamp(b.wBot * .18, .5, 2.5);
-      ctx.stroke();
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x0-halfW,y0); ctx.lineTo(x0+halfW,y0);
+        ctx.lineTo(x1+halfW*.4,y1); ctx.lineTo(x1-halfW*.4,y1);
+        ctx.closePath(); ctx.fillStyle=gv; ctx.fill();
+        ctx.restore();
+      }
 
-      ctx.restore();
+      // 地平线处光晕（光幕扎根感）
+      const glowX=c.xCenter+Math.sin(c.wavePh*.7)*W*.02;
+      const glowW=c.xSpread*.5;
+      const gg=ctx.createRadialGradient(glowX,HORIZON,0,glowX,HORIZON,glowW);
+      gg.addColorStop(0,  `hsla(${c.hue},90%,78%,${.12*c.bright})`);
+      gg.addColorStop(.35,`hsla(${c.hue},85%,62%,${.06*c.bright})`);
+      gg.addColorStop(1,  `hsla(${c.hue},80%,50%,0)`);
+      ctx.save(); ctx.scale(1,.4);
+      ctx.beginPath(); ctx.arc(glowX,HORIZON/.4,glowW,0,PI2);
+      ctx.fillStyle=gg; ctx.fill(); ctx.restore();
     });
 
-    /* ── 冰面倒影 ── */
-    reflections.forEach(r => {
-      r.ph += r.phspd;
-      const pulse = .7 + .3 * Math.sin(r.ph);
-      ctx.save(); ctx.translate(r.x, r.y);
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r.rx);
-      g.addColorStop(0,   `hsla(${r.hue},90%,60%,${r.a * pulse})`);
-      g.addColorStop(.5,  `hsla(${r.hue},85%,52%,${r.a * pulse * .4})`);
-      g.addColorStop(1,   `hsla(${r.hue},80%,45%,0)`);
-      ctx.scale(1, r.ry / r.rx);
-      ctx.beginPath(); ctx.arc(0, 0, r.rx, 0, PI2);
-      ctx.fillStyle = g; ctx.fill();
-      ctx.restore();
+    reflections.forEach(r=>{
+      r.ph+=r.phspd;
+      const pulse=.68+.32*Math.sin(r.ph);
+      ctx.save(); ctx.translate(r.x,r.y);
+      const g=ctx.createRadialGradient(0,0,0,0,0,r.rx);
+      g.addColorStop(0,  `hsla(${r.hue},90%,65%,${r.a*pulse})`);
+      g.addColorStop(.5, `hsla(${r.hue},85%,55%,${r.a*pulse*.35})`);
+      g.addColorStop(1,  `hsla(${r.hue},80%,45%,0)`);
+      ctx.scale(1,r.ry/r.rx);
+      ctx.beginPath(); ctx.arc(0,0,r.rx,0,PI2);
+      ctx.fillStyle=g; ctx.fill(); ctx.restore();
     });
 
-    raf(draw, tk);
+    raf(draw,tk);
   } draw();
 }
 
 /* ═══════════════════════════════════════════════════════
-
-   🏔️ 雪山 — 六角雪花 + 3景深 + 风场 + 地面积雪
+   🏔️ 雪山
 ═══════════════════════════════════════════════════════ */
 function _snow(ctx, W, H, tk) {
   let wx=.18, wt=.18;
   iv(() => { wt=rnd(-.9,1.9); }, 5000);
-
   function flake(ctx, r) {
     for (let i=0; i<6; i++) {
       const a=i*Math.PI/3, mx=Math.cos(a)*r*.55, my=Math.sin(a)*r*.55, sa=a+Math.PI/2;
@@ -961,7 +798,6 @@ function _snow(ctx, W, H, tk) {
       ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx-Math.cos(sa)*r*.27,my-Math.sin(sa)*r*.27); ctx.stroke();
     }
   }
-
   const layers = [
     Array.from({length:62},()=>({d:.2, x:rnd(0,W),y:rnd(0,H),r:rnd(.3,.75), sp:rnd(.14,.28),sw:rnd(0,PI2),sws:rnd(.003,.007),a:rnd(.07,.24)})),
     Array.from({length:48},()=>({d:.58,x:rnd(0,W),y:rnd(0,H),r:rnd(.72,1.6),sp:rnd(.3,.56), sw:rnd(0,PI2),sws:rnd(.005,.009),a:rnd(.16,.42)})),
@@ -970,26 +806,21 @@ function _snow(ctx, W, H, tk) {
   const piles = Array.from({length:8}, (_,i) => ({
     x:W*(i/7), h:rnd(H*.03,H*.072), w:rnd(W*.16,W*.26)
   }));
-
   function draw() {
     ctx.clearRect(0,0,W,H);
     wx += (wt-wx)*.005;
-
-    /* 地面积雪 */
     piles.forEach(p => {
-      const g = ctx.createRadialGradient(p.x,H,0, p.x,H-p.h*.5,p.w*.55);
-      g.addColorStop(0, 'rgba(238,246,255,.2)'); g.addColorStop(1,'rgba(218,232,255,0)');
+      const g=ctx.createRadialGradient(p.x,H,0,p.x,H-p.h*.5,p.w*.55);
+      g.addColorStop(0,'rgba(238,246,255,.2)'); g.addColorStop(1,'rgba(218,232,255,0)');
       ctx.beginPath(); ctx.ellipse(p.x,H,p.w*.5,p.h,0,Math.PI,0);
       ctx.fillStyle=g; ctx.fill();
     });
-
     layers.forEach(lr => lr.forEach(f => {
       f.sw+=f.sws; f.y+=f.sp; f.x+=wx*f.d+Math.sin(f.sw)*f.d*.42;
-      if (f.y>H+8) { f.y=-8; f.x=rnd(0,W); }
-      if (f.x<-18) f.x=W+18; else if (f.x>W+18) f.x=-18;
-
+      if(f.y>H+8){f.y=-8;f.x=rnd(0,W);}
+      if(f.x<-18)f.x=W+18; else if(f.x>W+18)f.x=-18;
       ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.sw*.44); ctx.globalAlpha=f.a;
-      if (f.r>1.85) {
+      if(f.r>1.85){
         ctx.strokeStyle=`rgba(244,252,255,${f.a})`; ctx.lineWidth=.55; flake(ctx,f.r);
         ctx.beginPath(); ctx.arc(0,0,f.r*.16,0,PI2);
         ctx.fillStyle='rgba(255,255,255,.92)'; ctx.fill();
