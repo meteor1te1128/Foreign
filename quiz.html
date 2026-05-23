@@ -9,6 +9,42 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/quiz.css">
   <link rel="stylesheet" href="css/dock.css">
+  <style>
+  /* 回炉本按钮 */
+  .feedback-add-btn {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.7);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .feedback-add-btn:hover {
+    background: rgba(255,255,255,.16);
+    color: #fff;
+    border-color: rgba(255,255,255,.3);
+  }
+  /* 薄弱场景推荐 */
+  .weak-reco { margin:24px 0; padding:0 4px; }
+  .weak-reco .eyebrow { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.12em; color:rgba(255,255,255,.38); text-transform:uppercase; margin-bottom:12px; text-align:center; }
+  .weak-reco-list { display:flex; flex-direction:column; gap:8px; }
+  .weak-reco-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:12px 16px; text-decoration:none; transition:all .2s; }
+  .weak-reco-item:hover { background:rgba(255,255,255,.11); border-color:rgba(255,255,255,.2); transform:translateX(4px); }
+  .weak-reco-icon { font-size:20px; flex-shrink:0; }
+  .weak-reco-info { flex:1; }
+  .weak-reco-name { font-family:'Cormorant Garamond',serif; font-size:16px; color:#fff; margin-bottom:2px; }
+  .weak-reco-score { font-family:'Space Mono',monospace; font-size:10px; color:rgba(255,255,255,.38); }
+  .weak-reco-bar-wrap { width:80px; height:4px; background:rgba(255,255,255,.1); border-radius:99px; overflow:hidden; flex-shrink:0; }
+  .weak-reco-bar { height:100%; border-radius:99px; background:#f87171; transition:width 1s cubic-bezier(.4,0,.2,1); }
+  </style>
 </head>
 <body>
 
@@ -35,7 +71,7 @@
       <p class="sub">20道填空题 · 约5分钟<br/>测完即刻生成你的专属词汇雷达图</p>
       <div class="intro-meta">
         <div class="meta-item"><span class="meta-icon">🎯</span><span>难度自动调节</span></div>
-        <div class="meta-item"><span class="meta-icon">📊</span><span>六维度分析</span></div>
+        <div class="meta-item"><span class="meta-icon">📊</span><span>六场景分析</span></div>
         <div class="meta-item"><span class="meta-icon">🚀</span><span>个性化推荐</span></div>
       </div>
       <div class="cta"><button class="btn-primary" id="btnStart">开始测试</button></div>
@@ -48,7 +84,7 @@
     <div class="quiz-wrap">
       <div class="q-card" id="qCard">
         <div class="q-header">
-          <span class="q-category" id="qCategory">日常词汇</span>
+          <span class="q-category" id="qCategory">日常生活</span>
           <span class="q-difficulty" id="qDifficulty">●●○○○</span>
         </div>
         <div class="q-sentence-wrap">
@@ -69,7 +105,9 @@
           <div class="feedback-icon" id="feedbackIcon"></div>
           <div class="feedback-word" id="feedbackWord"></div>
           <div class="feedback-explain" id="feedbackExplain"></div>
-          <button class="btn-nav-ghost btn-next" id="btnNext">继续 →</button>
+          <!-- 答对时显示，可手动加入回炉本 -->
+          <button class="feedback-add-btn">＋ 加入回炉本</button>
+          <button class="btn-nav-ghost btn-next" id="btnNext" style="margin-top:12px">继续 →</button>
         </div>
       </div>
     </div>
@@ -84,22 +122,17 @@
         <p class="result-level" id="resultLevel">B2 · 中高级</p>
         <p class="result-vocab" id="resultVocab">预计掌握词汇量约 <strong>5,500</strong> 个</p>
       </div>
-
       <div class="radar-wrap">
         <canvas id="radarCanvas" width="340" height="300"></canvas>
       </div>
-
       <div class="dimension-bars" id="dimensionBars"></div>
-
-      <!-- 薄弱维度推荐（新增） -->
       <div class="weak-reco" id="weakReco" style="display:none">
-        <p class="eyebrow">薄弱维度 · 优先攻克</p>
+        <p class="eyebrow">薄弱场景 · 优先攻克</p>
         <div class="weak-reco-list" id="weakRecoList"></div>
       </div>
-
       <div class="result-cta">
         <p class="eyebrow" id="resultPathTitle">推荐学习路径</p>
-        <p class="sub" style="margin-bottom:24px" id="resultPathDesc">每日15分钟，专攻你的薄弱维度</p>
+        <p class="sub" style="margin-bottom:24px" id="resultPathDesc">每日15分钟，专攻你的薄弱场景</p>
         <div class="cta" style="flex-direction:column;gap:10px">
           <button class="btn-primary" id="btnStartLearn">开始我的学习计划</button>
           <button class="btn-secondary" id="btnRetake">重新测试</button>
@@ -108,90 +141,22 @@
     </div>
   </section>
 
-  <style>
-  /* 薄弱维度推荐卡片 */
-  .weak-reco {
-    margin: 24px 0;
-    padding: 0 4px;
-  }
-  .weak-reco .eyebrow {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: .12em;
-    color: rgba(255,255,255,.38);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    text-align: center;
-  }
-  .weak-reco-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .weak-reco-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 12px;
-    padding: 12px 16px;
-    text-decoration: none;
-    transition: all .2s;
-  }
-  .weak-reco-item:hover {
-    background: rgba(255,255,255,.11);
-    border-color: rgba(255,255,255,.2);
-    transform: translateX(4px);
-  }
-  .weak-reco-icon { font-size: 20px; flex-shrink: 0; }
-  .weak-reco-info { flex: 1; }
-  .weak-reco-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    color: #fff;
-    margin-bottom: 2px;
-  }
-  .weak-reco-score {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: rgba(255,255,255,.38);
-  }
-  .weak-reco-bar-wrap {
-    width: 80px;
-    height: 4px;
-    background: rgba(255,255,255,.1);
-    border-radius: 99px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .weak-reco-bar {
-    height: 100%;
-    border-radius: 99px;
-    background: #f87171;
-    transition: width 1s cubic-bezier(.4,0,.2,1);
-  }
-  </style>
-
   <script type="module" src="js/quiz.js"></script>
   <script type="module">
     import { initDock } from './js/dock.js';
-    initDock('bg', 'cv');
-
-    // 结果页薄弱维度渲染（在 quiz.js 的 showResults 之后调用）
-    window.renderWeakReco = function(dimPcts, DIMENSIONS) {
-      const sorted = Object.entries(dimPcts).sort((a,b)=>a[1]-b[1]).slice(0,3);
-      const wrap = document.getElementById('weakReco');
-      const list = document.getElementById('weakRecoList');
-      if (!wrap || !list) return;
-      list.innerHTML = '';
-      sorted.forEach(([dim, pct]) => {
-        const info = DIMENSIONS.find(d=>d.key===dim)||{label:dim,color:'#94a3b8',icon:'✦'};
-        const item = document.createElement('a');
-        item.className = 'weak-reco-item';
-        item.href = 'learn.html';
-        item.innerHTML = `
-          <span class="weak-reco-icon">${info.icon||'✦'}</span>
+    initDock('bg','cv');
+    window.renderWeakReco = function(scenePcts, SCENES) {
+      const sorted=Object.entries(scenePcts).sort((a,b)=>a[1]-b[1]).slice(0,3);
+      const wrap=document.getElementById('weakReco');
+      const list=document.getElementById('weakRecoList');
+      if(!wrap||!list)return;
+      list.innerHTML='';
+      sorted.forEach(([key,pct])=>{
+        const info=SCENES.find(s=>s.key===key)||{label:key,icon:'✦'};
+        const item=document.createElement('a');
+        item.className='weak-reco-item'; item.href='learn.html';
+        item.innerHTML=`
+          <span class="weak-reco-icon">${info.icon}</span>
           <div class="weak-reco-info">
             <div class="weak-reco-name">${info.label}</div>
             <div class="weak-reco-score">本次得分 ${pct}%</div>
@@ -200,11 +165,9 @@
             <div class="weak-reco-bar" style="width:0%" data-pct="${pct}"></div>
           </div>`;
         list.appendChild(item);
-        setTimeout(()=>{
-          item.querySelector('.weak-reco-bar').style.width=pct+'%';
-        }, 300);
+        setTimeout(()=>{ item.querySelector('.weak-reco-bar').style.width=pct+'%'; },300);
       });
-      wrap.style.display = 'block';
+      wrap.style.display='block';
     };
   </script>
 </body>
