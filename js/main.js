@@ -8,7 +8,7 @@ const THEMES = {
   fog_forest:   { img:'assets/images/fog_forest.jpg',   anim:'mist',   label:'雾林',   label_en:'FOG FOREST', color:'#6ee7b7', rgb:'110,231,183'  },
   galaxy:       { img:'assets/images/galaxy.jpg',       anim:'stars',  label:'星空',   label_en:'GALAXY',     color:'#818cf8', rgb:'129,140,248'  },
   rain:         { img:'assets/images/rain.jpg',         anim:'rain',   label:'雨天',   label_en:'RAIN',       color:'#93c5fd', rgb:'147,197,253'  },
-  aurora:       { img:'assets/images/aurora.jpg',       anim:'aurora', label:'极光',   label_en:'AURORA',     color:'#34d399', rgb:'52,211,153'   },
+  aurora:       { img:'assets/images/aurora.jpg',       anim:'none',   label:'极光',   label_en:'AURORA',     color:'#34d399', rgb:'52,211,153'   },
   sakura:       { img:'assets/images/sakura.jpg',       anim:'sakura', label:'樱花',   label_en:'SAKURA',     color:'#f9a8d4', rgb:'249,168,212'  },
   sunset:       { img:'assets/images/sunset.jpg',       anim:'clouds', label:'火烧云', label_en:'SUNSET',     color:'#fb923c', rgb:'251,146,60'   },
   snow:         { img:'assets/images/snow.jpg',         anim:'snow',   label:'雪山',   label_en:'SNOW',       color:'#bae6fd', rgb:'186,230,253'  },
