@@ -173,3 +173,15 @@ body.dm .btn-nav-solid { color:#111; border-color:rgba(0,0,0,.18); background:rg
 .tb.on { border-color:rgba(255,255,255,.85); background:rgba(255,255,255,.18); box-shadow:0 0 14px rgba(255,255,255,.14); }
 .tb .em { font-size:17px; line-height:1; }
 .tb .nm { font-size:10px; color:rgba(255,255,255,.62); letter-spacing:.2px; white-space:nowrap; }
+
+/* ── 补丁：纯白/纯黑主题取消暗色遮罩 ── 加到 styles.css 末尾 */
+
+/* 纯白：遮罩完全透明，保持干净白底 */
+body.theme-white .bg-overlay {
+  background: none !important;
+}
+
+/* 纯黑：遮罩也不需要，黑底已经够深 */
+body.theme-black .bg-overlay {
+  background: none !important;
+}
