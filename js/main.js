@@ -40,7 +40,6 @@ function applyTheme(key, isPreview = false) {
     if (t.dm) document.body.classList.add('dm');
     document.body.style.background =
       key === 'white' ? '#f6f5f0' : key === 'black' ? '#080808' : '';
-    // 主题色 CSS 变量（按钮颜色跟随）
     document.documentElement.style.setProperty('--theme-color', t.color);
     document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
     localStorage.setItem('fg_theme', key);
@@ -51,13 +50,34 @@ function applyTheme(key, isPreview = false) {
     else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
   }
 
-  if (!isPreview && cv) startAnim(t.anim, cv);
+  if (cv) startAnim(t.anim, cv);
 
   document.querySelectorAll('.theme-dot').forEach(d => {
     d.classList.toggle('on', d.dataset.t === key);
   });
 }
 
+/* 预览某主题（hover时）：换背景图+动画，但不写 localStorage 不改 body class */
+function previewTheme(key) {
+  if (!THEMES[key]) return;
+  const t = THEMES[key];
+
+  if (bg) {
+    if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
+    else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
+  }
+
+  // 纯白/纯黑预览时也换 body 背景色
+  if (!t.img) {
+    document.body.style.background = key === 'white' ? '#f6f5f0' : '#080808';
+  } else {
+    document.body.style.background = '';
+  }
+
+  if (cv) startAnim(t.anim, cv);
+}
+
+/* 恢复当前真实主题 */
 function restoreTheme() {
   applyTheme(cur);
 }
@@ -83,7 +103,7 @@ function renderDock() {
   `;
   dock.appendChild(trigger);
 
-  // ── 全屏遮罩 + 面板 ──
+  // ── 遮罩 + 面板 ──
   const overlay = document.createElement('div');
   overlay.className = 'dock-overlay';
   overlay.innerHTML = `
@@ -103,6 +123,9 @@ function renderDock() {
   // ── 主题卡片 ──
   const grid = overlay.querySelector('#dockGrid');
 
+  // hover 防抖：快速划过时不频繁重启动画
+  let hoverTimer = null;
+
   Object.keys(THEMES).forEach(key => {
     const t = THEMES[key];
     const card = document.createElement('button');
@@ -119,25 +142,29 @@ function renderDock() {
       <span class="dock-card-en">${t.label_en}</span>
     `;
 
-    // Hover → 背景预览
     card.addEventListener('mouseenter', () => {
-      if (bg) {
-        if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
-        else        { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
-      }
+      card.classList.add('hovered');
       const label = overlay.querySelector('#dockCurrentLabel');
       if (label) label.textContent = `${t.label} · ${t.label_en}`;
-      card.classList.add('hovered');
+
+      // 防抖 80ms，避免快速扫过时动画疯狂切换
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => previewTheme(key), 80);
     });
+
     card.addEventListener('mouseleave', () => {
-      restoreTheme();
       card.classList.remove('hovered');
       const label = overlay.querySelector('#dockCurrentLabel');
       if (label) label.textContent = '';
+
+      clearTimeout(hoverTimer);
+      // 离开后短暂延迟再恢复，防止快速移到下一个卡片时闪烁
+      hoverTimer = setTimeout(() => restoreTheme(), 120);
     });
 
-    // 点击选中
     card.addEventListener('click', () => {
+      clearTimeout(hoverTimer);
+
       const ripple = document.createElement('span');
       ripple.className = 'dock-select-ripple';
       ripple.style.background = t.color;
@@ -151,7 +178,6 @@ function renderDock() {
         c.classList.toggle('active', c.dataset.t === key);
       });
 
-      // 更新触发按钮颜色
       updateTriggerColor();
     });
 
@@ -176,11 +202,12 @@ function renderDock() {
 
   function closePanel() {
     isOpen = false;
+    clearTimeout(hoverTimer);
     overlay.classList.remove('open');
     trigger.classList.remove('open');
     grid.querySelectorAll('.dock-card').forEach(c => {
       c.style.transitionDelay = '0ms';
-      c.classList.remove('visible');
+      c.classList.remove('visible', 'hovered');
     });
     restoreTheme();
   }
@@ -194,8 +221,8 @@ function renderDock() {
     const t = THEMES[cur];
     const dot  = trigger.querySelector('.dock-trigger-dot');
     const ring = trigger.querySelector('.dock-trigger-ring');
-    if (dot)  dot.style.background    = t.color;
-    if (ring) ring.style.borderColor  = t.color;
+    if (dot)  dot.style.background   = t.color;
+    if (ring) ring.style.borderColor = t.color;
   }
   updateTriggerColor();
 }
