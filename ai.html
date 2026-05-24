@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI对话 · Foreign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme-buttons.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { min-height: 100vh; font-family: 'DM Sans', sans-serif; }
+
+    .page {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
+
+    /* ── 顶部栏 ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      flex-shrink: 0;
+    }
+    .back-btn-ai {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,.6);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 8px;
+      padding: 7px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .back-btn-ai:hover { color: #fff; background: rgba(255,255,255,.15); }
+    .top-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 500;
+      color: #fff;
+      flex: 1;
+      text-align: center;
+    }
+    .top-right { width: 70px; flex-shrink: 0; }
+
+    /* ── 场景选择页 ── */
+    .scene-page {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .scene-intro {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .scene-intro h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .scene-intro p {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: .1em;
+    }
+
+    .scene-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 20px;
+    }
+    .scene-card {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: all .22s cubic-bezier(.34,1.2,.64,1);
+      text-align: center;
+    }
+    .scene-card:hover {
+      background: rgba(255,255,255,.15);
+      border-color: rgba(255,255,255,.3);
+      transform: translateY(-2px);
+    }
+    .scene-card.active {
+      background: rgba(255,255,255,.18);
+      border-color: var(--theme-color, #3b82f6);
+    }
+    .scene-icon { font-size: 32px; margin-bottom: 8px; }
+    .scene-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .scene-desc {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: rgba(255,255,255,.38);
+      letter-spacing: .06em;
+    }
+
+    /* 自定义场景输入 */
+    .custom-scene-wrap {
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 20px;
+    }
+    .custom-scene-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: .1em;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .custom-scene-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+      color: #f1f5f9;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .18s;
+    }
+    .custom-scene-input:focus { border-color: var(--theme-color, #3b82f6); }
+    .custom-scene-input::placeholder { color: rgba(255,255,255,.28); }
+
+    .btn-start-chat {
+      width: 100%;
+      max-width: 560px;
+      padding: 14px;
+      background: var(--theme-color, #3b82f6);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-start-chat:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-start-chat:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    /* ── 对话页 ── */
+    .chat-page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 场景标签 */
+    .chat-scene-tag {
+      text-align: center;
+      padding: 6px 0 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: .1em;
+      flex-shrink: 0;
+    }
+
+    /* 消息列表 */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 0; }
+
+    .msg-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .msg-wrap.user { align-items: flex-end; }
+    .msg-wrap.ai   { align-items: flex-start; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.55;
+      animation: bubbleIn .25s ease;
+    }
+    @keyframes bubbleIn {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .bubble.user {
+      background: var(--theme-color, #3b82f6);
+      color: #fff;
+      border-bottom-right-radius: 6px;
+    }
+    .bubble.ai-chat {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
+      color: #f1f5f9;
+      border-bottom-left-radius: 6px;
+      backdrop-filter: blur(12px);
+    }
+    .bubble.ai-correction {
+      background: rgba(251,191,36,.1);
+      border: 1px solid rgba(251,191,36,.25);
+      color: #fde68a;
+      border-bottom-left-radius: 6px;
+      font-size: 13px;
+      backdrop-filter: blur(12px);
+    }
+    .bubble.ai-correction::before {
+      content: '💡 ';
+    }
+
+    /* 词汇高亮 */
+    .word-highlight {
+      background: rgba(255,255,255,.2);
+      border-radius: 4px;
+      padding: 0 3px;
+      font-weight: 500;
+    }
+
+    /* 打字中 */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      border-bottom-left-radius: 6px;
+      width: fit-content;
+      backdrop-filter: blur(12px);
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.5);
+      animation: typingDot 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: .2s; }
+    .typing-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes typingDot {
+      0%,60%,100% { transform: translateY(0); opacity:.4; }
+      30% { transform: translateY(-6px); opacity:1; }
+    }
+
+    /* 输入区 */
+    .chat-input-wrap {
+      padding: 12px 16px 24px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.15));
+    }
+    .chat-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px;
+      color: #f1f5f9;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      resize: none;
+      min-height: 48px;
+      max-height: 120px;
+      transition: border-color .18s;
+      backdrop-filter: blur(12px);
+    }
+    .chat-input:focus { border-color: var(--theme-color, #3b82f6); }
+    .chat-input::placeholder { color: rgba(255,255,255,.3); }
+
+    .btn-send {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--theme-color, #3b82f6);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    .btn-send:hover { filter: brightness(1.1); }
+    .btn-send:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* 结束对话按钮 */
+    .btn-end-chat {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,.35);
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .btn-end-chat:hover { color: rgba(255,255,255,.7); border-color: rgba(255,255,255,.25); }
+
+    /* 结算页 */
+    .result-page {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .result-card {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 560px;
+      backdrop-filter: blur(16px);
+    }
+    .result-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .result-score-big {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 64px;
+      font-weight: 600;
+      color: var(--theme-color, #3b82f6);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .result-score-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: .1em;
+      margin-bottom: 20px;
+    }
+    .result-feedback {
+      font-size: 14px;
+      color: rgba(255,255,255,.7);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .words-used {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .word-tag {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,.7);
+    }
+    .word-tag.used {
+      background: rgba(74,222,128,.12);
+      border-color: rgba(74,222,128,.3);
+      color: #4ade80;
+    }
+    .btn-restart {
+      width: 100%;
+      max-width: 560px;
+      padding: 14px;
+      background: var(--theme-color, #3b82f6);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-restart:hover { filter: brightness(1.1); }
+
+    /* 隐藏/显示 */
+    .hidden { display: none !important; }
+
+    /* dm 模式 */
+    body.dm .bubble.ai-chat { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.1); color: #1e293b; }
+    body.dm .chat-input { background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.12); color: #1e293b; }
+    body.dm .scene-card { background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
+    body.dm .scene-name { color: #1e293b; }
+    body.dm .top-title { color: #1e293b; }
+    body.dm .back-btn-ai { color: rgba(0,0,0,.5); background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
+  </style>
+</head>
+<body>
+
+  <div id="bg-image" class="bg-image"></div>
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+  <div class="bg-overlay"></div>
+
+  <div class="page">
+
+    <!-- 顶部栏 -->
+    <div class="top-bar">
+      <a href="index.html" class="back-btn-ai">← 返回</a>
+      <div class="top-title">AI 对话</div>
+      <div class="top-right"></div>
+    </div>
+
+    <!-- ── 场景选择页 ── -->
+    <div class="scene-page" id="page-scene">
+      <div class="scene-intro">
+        <h2>选个场景，开始聊</h2>
+        <p>AI 会在对话中带入你今天学的词汇</p>
+      </div>
+
+      <div class="scene-grid">
+        <div class="scene-card" data-scene="cafe" data-desc="在咖啡馆点单闲聊">
+          <div class="scene-icon">☕</div>
+          <div class="scene-name">咖啡馆</div>
+          <div class="scene-desc">CAFÉ CHAT</div>
+        </div>
+        <div class="scene-card" data-scene="interview" data-desc="模拟英语工作面试">
+          <div class="scene-icon">💼</div>
+          <div class="scene-name">面试</div>
+          <div class="scene-desc">JOB INTERVIEW</div>
+        </div>
+        <div class="scene-card" data-scene="travel" data-desc="在国外旅行问路购物">
+          <div class="scene-icon">✈️</div>
+          <div class="scene-name">旅行</div>
+          <div class="scene-desc">TRAVEL</div>
+        </div>
+        <div class="scene-card" data-scene="friend" data-desc="和外国朋友日常闲聊">
+          <div class="scene-icon">😊</div>
+          <div class="scene-name">朋友闲聊</div>
+          <div class="scene-desc">CASUAL CHAT</div>
+        </div>
+        <div class="scene-card" data-scene="shopping" data-desc="在商场或网上购物">
+          <div class="scene-icon">🛍️</div>
+          <div class="scene-name">购物</div>
+          <div class="scene-desc">SHOPPING</div>
+        </div>
+        <div class="scene-card" data-scene="doctor" data-desc="去医院看病描述症状">
+          <div class="scene-icon">🏥</div>
+          <div class="scene-name">看医生</div>
+          <div class="scene-desc">AT THE DOCTOR</div>
+        </div>
+      </div>
+
+      <div class="custom-scene-wrap">
+        <span class="custom-scene-label">或者自己设计场景</span>
+        <input class="custom-scene-input" id="custom-scene-input"
+          placeholder="例如：在图书馆认识了一个留学生…" />
+      </div>
+
+      <button class="btn-start-chat" id="btn-start-chat" disabled>选择场景后开始对话</button>
+    </div>
+
+    <!-- ── 对话页 ── -->
+    <div class="chat-page hidden" id="page-chat">
+      <div class="chat-scene-tag" id="chat-scene-tag">☕ 咖啡馆</div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-wrap">
+        <textarea class="chat-input" id="chat-input"
+          placeholder="用英语回复…" rows="1"></textarea>
+        <button class="btn-end-chat" id="btn-end-chat">结束</button>
+        <button class="btn-send" id="btn-send">↑</button>
+      </div>
+    </div>
+
+    <!-- ── 结算页 ── -->
+    <div class="result-page hidden" id="page-result">
+      <div class="result-card">
+        <h3>对话结束 🎉</h3>
+        <div class="result-score-big" id="result-score">—</div>
+        <div class="result-score-label">综合评分</div>
+        <div class="result-feedback" id="result-feedback">正在生成评价…</div>
+      </div>
+      <div class="result-card">
+        <h3>今日词汇使用情况</h3>
+        <div class="words-used" id="words-used"></div>
+      </div>
+      <button class="btn-restart" id="btn-restart">再来一场</button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { startAnim } from './js/animations.js';
+    import { WORDS } from './js/wordbank.js';
+    import { getTodayPlan } from './js/fsrs.js';
+
+    // ── 主题初始化 ────────────────────────────────────────
+    const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
+    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
+    const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#94a3b8'};
+    const theme = localStorage.getItem('fg_theme') || 'ocean';
+    document.body.className = `theme-${theme}`;
+    document.documentElement.style.setProperty('--theme-color', THEME_COLORS[theme] || '#3b82f6');
+    if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
+    else if(theme==='black'){document.body.style.background='#080808';}
+    const bgEl = document.getElementById('bg-image');
+    const cvEl = document.getElementById('bg-canvas');
+    cvEl.width=window.innerWidth; cvEl.height=window.innerHeight;
+    window.addEventListener('resize',()=>{cvEl.width=window.innerWidth;cvEl.height=window.innerHeight;});
+    if(THEME_IMGS[theme]){bgEl.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bgEl.style.opacity='1';}
+    else{bgEl.style.opacity='0';}
+    if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cvEl);
+
+    // ── Worker 地址 ──────────────────────────────────────
+    const WORKER = 'https://foreign.kevin68654926.workers.dev';
+
+    // ── 今日词汇 ─────────────────────────────────────────
+    const allIds = WORDS.map(w => w.id);
+    const plan   = getTodayPlan(allIds);
+    const todayWords = [...plan.due, ...plan.newWords]
+      .map(id => WORDS.find(w => w.id === id))
+      .filter(Boolean)
+      .slice(0, 15);
+
+    // ── 场景选择 ─────────────────────────────────────────
+    const SCENES = {
+      cafe:      { icon:'☕', label:'咖啡馆', desc:'在咖啡馆点单闲聊' },
+      interview: { icon:'💼', label:'面试',   desc:'模拟英语工作面试' },
+      travel:    { icon:'✈️', label:'旅行',   desc:'在国外旅行问路购物' },
+      friend:    { icon:'😊', label:'朋友闲聊', desc:'和外国朋友日常闲聊' },
+      shopping:  { icon:'🛍️', label:'购物',   desc:'在商场或网上购物' },
+      doctor:    { icon:'🏥', label:'看医生', desc:'去医院看病描述症状' },
+    };
+
+    let selectedScene = null;
+    let customScene   = '';
+    let chatHistory   = []; // DeepSeek messages
+    let userMessages  = []; // 用户发的所有消息文本
+
+    const btnStart  = document.getElementById('btn-start-chat');
+    const customInp = document.getElementById('custom-scene-input');
+
+    document.querySelectorAll('.scene-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.scene-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        selectedScene = card.dataset.scene;
+        customInp.value = '';
+        customScene = '';
+        updateStartBtn();
+      });
+    });
+
+    customInp.addEventListener('input', () => {
+      customScene = customInp.value.trim();
+      if (customScene) {
+        document.querySelectorAll('.scene-card').forEach(c => c.classList.remove('active'));
+        selectedScene = 'custom';
+      }
+      updateStartBtn();
+    });
+
+    function updateStartBtn() {
+      const ok = selectedScene !== null;
+      btnStart.disabled = !ok;
+      btnStart.textContent = ok ? '开始对话 →' : '选择场景后开始对话';
+    }
+
+    btnStart.addEventListener('click', startChat);
+
+    // ── 开始对话 ─────────────────────────────────────────
+    async function startChat() {
+      const sceneKey  = selectedScene;
+      const sceneInfo = sceneKey === 'custom'
+        ? { icon:'✨', label: customScene }
+        : SCENES[sceneKey];
+
+      // 切换页面
+      document.getElementById('page-scene').classList.add('hidden');
+      document.getElementById('page-chat').classList.remove('hidden');
+      document.getElementById('chat-scene-tag').textContent =
+        `${sceneInfo.icon} ${sceneInfo.label}`;
+
+      chatHistory  = [];
+      userMessages = [];
+
+      // 构建系统 prompt
+      const wordList = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
+      const sceneDesc = sceneKey === 'custom' ? customScene : sceneInfo.desc;
+
+      const systemPrompt = `You are a friendly English conversation partner helping a Chinese learner practice English.
+
+Scene: ${sceneDesc}
+
+Today's vocabulary the user is learning: ${wordList || 'general vocabulary'}
+
+Your rules:
+1. Always reply in English, keep sentences natural and not too complex (B1-B2 level).
+2. Naturally weave in the today's vocabulary words when appropriate.
+3. If the user makes a grammar or vocabulary mistake, FIRST output a correction line starting with [CORRECTION]: briefly explain the error in Chinese, then on a new line output [REPLY]: your natural conversation reply.
+4. If no mistake, just output [REPLY]: your reply.
+5. Keep replies concise (2-4 sentences).
+6. Be warm, encouraging and engaging.
+
+Start the conversation by setting the scene in 1-2 sentences.`;
+
+      const initMsg = { role: 'user', content: 'Start the conversation.' };
+      chatHistory = [initMsg];
+
+      showTyping();
+      const reply = await callDeepSeek(systemPrompt, chatHistory);
+      hideTyping();
+
+      chatHistory.push({ role: 'assistant', content: reply });
+      renderAIMessage(reply);
+    }
+
+    // ── 发送消息 ─────────────────────────────────────────
+    const chatInput = document.getElementById('chat-input');
+    const btnSend   = document.getElementById('btn-send');
+
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    });
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+    btnSend.addEventListener('click', sendMessage);
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text || btnSend.disabled) return;
+
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      btnSend.disabled = true;
+
+      userMessages.push(text);
+      addBubble('user', text);
+
+      chatHistory.push({ role: 'user', content: text });
+
+      const systemPrompt = buildSystemPrompt();
+      showTyping();
+      const reply = await callDeepSeek(systemPrompt, chatHistory);
+      hideTyping();
+
+      chatHistory.push({ role: 'assistant', content: reply });
+      renderAIMessage(reply);
+      btnSend.disabled = false;
+      chatInput.focus();
+    }
+
+    function buildSystemPrompt() {
+      const wordList = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
+      const sceneKey  = selectedScene;
+      const sceneDesc = sceneKey === 'custom' ? customScene : (SCENES[sceneKey]?.desc || '');
+      return `You are a friendly English conversation partner helping a Chinese learner practice English.
+Scene: ${sceneDesc}
+Today's vocabulary: ${wordList || 'general vocabulary'}
+Rules:
+1. Reply in English, B1-B2 level.
+2. Weave in today's vocabulary naturally.
+3. If user makes a mistake, output [CORRECTION]: brief Chinese explanation, then [REPLY]: your reply.
+4. If no mistake, just [REPLY]: your reply.
+5. Keep it concise (2-4 sentences). Be warm and encouraging.`;
+    }
+
+    function renderAIMessage(raw) {
+      const corrMatch = raw.match(/\[CORRECTION\]:\s*([\s\S]*?)\[REPLY\]:\s*([\s\S]*)/);
+      if (corrMatch) {
+        addBubble('ai-correction', corrMatch[1].trim());
+        addBubble('ai-chat', highlightWords(corrMatch[2].trim()));
+      } else {
+        const replyMatch = raw.match(/\[REPLY\]:\s*([\s\S]*)/);
+        const text = replyMatch ? replyMatch[1].trim() : raw;
+        addBubble('ai-chat', highlightWords(text));
+      }
+    }
+
+    function highlightWords(text) {
+      let result = text;
+      todayWords.forEach(w => {
+        const re = new RegExp(`\\b(${w.word})\\b`, 'gi');
+        result = result.replace(re, `<span class="word-highlight">$1</span>`);
+      });
+      return result;
+    }
+
+    function addBubble(type, html) {
+      const messages = document.getElementById('chat-messages');
+      const wrap = document.createElement('div');
+      wrap.className = `msg-wrap ${type === 'user' ? 'user' : 'ai'}`;
+      const bubble = document.createElement('div');
+      bubble.className = `bubble ${type}`;
+      if (type === 'user') bubble.textContent = html;
+      else bubble.innerHTML = html;
+      wrap.appendChild(bubble);
+      messages.appendChild(wrap);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    let typingEl = null;
+    function showTyping() {
+      const messages = document.getElementById('chat-messages');
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-wrap ai';
+      wrap.id = 'typing-wrap';
+      const dot = document.createElement('div');
+      dot.className = 'typing-indicator';
+      dot.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+      wrap.appendChild(dot);
+      messages.appendChild(wrap);
+      messages.scrollTop = messages.scrollHeight;
+      typingEl = wrap;
+    }
+    function hideTyping() {
+      typingEl?.remove();
+      typingEl = null;
+    }
+
+    // ── 结束对话 ─────────────────────────────────────────
+    document.getElementById('btn-end-chat').addEventListener('click', endChat);
+
+    async function endChat() {
+      document.getElementById('page-chat').classList.add('hidden');
+      document.getElementById('page-result').classList.remove('hidden');
+
+      // 统计今日词汇使用
+      const allUserText = userMessages.join(' ').toLowerCase();
+      const wordsContainer = document.getElementById('words-used');
+      todayWords.forEach(w => {
+        const tag = document.createElement('span');
+        tag.className = 'word-tag';
+        const used = allUserText.includes(w.word.toLowerCase());
+        if (used) tag.classList.add('used');
+        tag.textContent = used ? `✓ ${w.word}` : w.word;
+        wordsContainer.appendChild(tag);
+      });
+
+      // 请求 AI 评分
+      const scorePrompt = `Based on this English conversation, evaluate the user's performance.
+User's messages: ${userMessages.join(' | ')}
+Today's vocabulary they should use: ${todayWords.map(w=>w.word).join(', ')}
+
+Give:
+1. A score from 0-100
+2. 2-3 sentences of feedback in Chinese
+
+Format exactly:
+SCORE: [number]
+FEEDBACK: [Chinese feedback]`;
+
+      try {
+        const resp = await callDeepSeek(scorePrompt, []);
+        const scoreMatch = resp.match(/SCORE:\s*(\d+)/);
+        const feedbackMatch = resp.match(/FEEDBACK:\s*([\s\S]*)/);
+        document.getElementById('result-score').textContent =
+          scoreMatch ? scoreMatch[1] : '—';
+        document.getElementById('result-feedback').textContent =
+          feedbackMatch ? feedbackMatch[1].trim() : resp;
+      } catch(e) {
+        document.getElementById('result-score').textContent = '—';
+        document.getElementById('result-feedback').textContent = '评分生成失败，请重试。';
+      }
+    }
+
+    // ── 再来一场 ─────────────────────────────────────────
+    document.getElementById('btn-restart').addEventListener('click', () => {
+      document.getElementById('page-result').classList.add('hidden');
+      document.getElementById('page-scene').classList.remove('hidden');
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('words-used').innerHTML = '';
+      document.getElementById('result-score').textContent = '—';
+      document.getElementById('result-feedback').textContent = '正在生成评价…';
+      document.querySelectorAll('.scene-card').forEach(c => c.classList.remove('active'));
+      selectedScene = null;
+      customScene = '';
+      customInp.value = '';
+      updateStartBtn();
+    });
+
+    // ── DeepSeek API 调用 ─────────────────────────────────
+    async function callDeepSeek(systemPrompt, messages) {
+      const body = {
+        model: 'deepseek-chat',
+        max_tokens: 300,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages,
+        ],
+      };
+      const resp = await fetch(`${WORKER}/ds/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!resp.ok) throw new Error('API error');
+      const data = await resp.json();
+      return data.choices[0].message.content;
+    }
+  </script>
+</body>
+</html>
