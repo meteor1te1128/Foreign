@@ -12,13 +12,7 @@
   <link rel="stylesheet" href="css/learn.css" />
   <link rel="stylesheet" href="css/review.css" />
   <style>
-    #screen-list {
-      justify-content: flex-start;
-      padding-top: 72px;
-      padding-bottom: 60px;
-      overflow-y: auto;
-      align-items: center;
-    }
+    #screen-list { justify-content: flex-start; padding-top: 72px; padding-bottom: 60px; overflow-y: auto; align-items: center; }
     .list-inner { max-width: 580px; width: 100%; padding: 0 20px; }
     .review-page-header { text-align: center; margin-bottom: 28px; }
     .review-page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 6vw, 52px); font-weight: 500; color: #fff; margin-bottom: 6px; letter-spacing: -0.02em; }
@@ -52,7 +46,7 @@
     .wrong-info { flex: 1; min-width: 0; }
     .wrong-word { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; color: #fff; }
     .wrong-zh { font-size: 12px; color: rgba(255,255,255,.42); margin-top: 1px; }
-    .wrong-dim { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.28); flex-shrink: 0; }
+    .wrong-dim { font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.6); flex-shrink: 0; }
     .wrong-remove { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1); background: transparent; color: rgba(255,255,255,.28); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .18s; line-height: 1; }
     .wrong-remove:hover { background: rgba(248,113,113,.18); border-color: rgba(248,113,113,.35); color: #f87171; }
     .empty-card { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: 18px; padding: 48px 32px; text-align: center; }
@@ -193,7 +187,6 @@
     }
     function saveWrong(data) {
       localStorage.setItem('fg_wrong', JSON.stringify(data));
-      // 同步云端（fire and forget）
       getCurrentUser().then(user => { if (user) pushToCloud(); }).catch(()=>{});
     }
 
@@ -290,20 +283,10 @@
     $('add-search-input').addEventListener('input', () => {
       const q = $('add-search-input').value.trim().toLowerCase();
       const results = $('add-search-results');
-      if (!q) {
-        results.innerHTML = '<p class="add-search-empty">输入关键词搜索词库</p>';
-        return;
-      }
+      if (!q) { results.innerHTML = '<p class="add-search-empty">输入关键词搜索词库</p>'; return; }
       const wrong = loadWrong();
-      const matched = WORDS.filter(w =>
-        w.word.toLowerCase().includes(q) || w.zh.includes(q)
-      ).slice(0, 12);
-
-      if (!matched.length) {
-        results.innerHTML = '<p class="add-search-empty">没找到相关词汇</p>';
-        return;
-      }
-
+      const matched = WORDS.filter(w => w.word.toLowerCase().includes(q) || w.zh.includes(q)).slice(0, 12);
+      if (!matched.length) { results.innerHTML = '<p class="add-search-empty">没找到相关词汇</p>'; return; }
       results.innerHTML = '';
       matched.forEach(word => {
         const inWrong = !!wrong[word.id];
@@ -328,26 +311,16 @@
       });
     });
 
-    let reviewQueue  = [];
-    let reviewIdx    = 0;
-    let reviewHistory= [];
-    let currentWord  = null;
-    let answered     = false;
+    let reviewQueue=[], reviewIdx=0, reviewHistory=[], currentWord=null, answered=false;
 
-    function startReview() {
-      reviewIdx     = 0;
-      reviewHistory = [];
-      answered      = false;
-      showNextReview();
-    }
+    function startReview() { reviewIdx=0; reviewHistory=[]; answered=false; showNextReview(); }
 
     function showNextReview() {
       if (reviewIdx >= reviewQueue.length) { finishReview(); return; }
       const id = reviewQueue[reviewIdx];
       currentWord = WORDS.find(w => w.id === id);
       if (!currentWord) { reviewIdx++; showNextReview(); return; }
-      const history = reviewHistory[reviewIdx];
-      renderFill(currentWord, history);
+      renderFill(currentWord, reviewHistory[reviewIdx]);
     }
 
     function renderFill(word, history) {
@@ -355,7 +328,6 @@
       $('rf-progress-text').textContent = `${reviewIdx+1} / ${total}`;
       $('rf-progress-bar').style.width  = `${(reviewIdx/total)*100}%`;
       $('rf-nav-counter').textContent   = `${reviewIdx+1} / ${total}`;
-
       $('btn-prev').disabled     = reviewIdx === 0;
       $('btn-next-nav').disabled = reviewIdx >= reviewHistory.length;
 
@@ -364,9 +336,7 @@
         const cls = history.skipped ? 'skipped' : history.correct ? 'correct' : 'wrong';
         const label = history.skipped ? '⏭ 已跳过' : history.correct ? '✓ 答对了' : '✗ 答错了';
         replayArea.innerHTML = `<div class="rf-replay-badge ${cls}">${label}</div>`;
-      } else {
-        replayArea.innerHTML = '';
-      }
+      } else { replayArea.innerHTML = ''; }
 
       $('rf-meaning').textContent = word.zh;
       $('rf-hint').textContent    = `提示：${word.zh}`;
@@ -374,19 +344,11 @@
       const sentEl = $('rf-sentence');
       sentEl.innerHTML = '';
       const parts = (word.example || '').split(word.word);
-      if (parts.length >= 2) {
-        sentEl.appendChild(document.createTextNode(parts[0]));
-      } else {
-        sentEl.appendChild(document.createTextNode(word.example || ''));
-      }
+      sentEl.appendChild(document.createTextNode(parts.length >= 2 ? parts[0] : (word.example || '')));
 
       const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'fill-input';
-      input.id = 'rf-input-field';
-      input.placeholder = '输入答案…';
-      input.autocomplete = 'off'; input.autocorrect = 'off'; input.spellcheck = false;
-
+      input.type='text'; input.className='fill-input'; input.id='rf-input-field';
+      input.placeholder='输入答案…'; input.autocomplete='off'; input.autocorrect='off'; input.spellcheck=false;
       if (history) {
         input.value = history.skipped ? '' : (history.answer || '');
         input.disabled = true;
@@ -394,34 +356,19 @@
       }
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
-          if (!answered && $('rf-confirm-btn') && !$('rf-confirm-btn').classList.contains('hidden')) {
-            checkFill();
-          } else if (answered) {
-            advanceForward();
-          }
+          if (!answered && !$('rf-confirm-btn').classList.contains('hidden')) checkFill();
+          else if (answered) advanceForward();
         }
       });
       sentEl.appendChild(input);
-      if (parts.length >= 2 && parts[1]) {
-        sentEl.appendChild(document.createTextNode(parts[1]));
-      }
+      if (parts.length >= 2 && parts[1]) sentEl.appendChild(document.createTextNode(parts[1]));
 
       const fb = $('rf-feedback');
       if (history) {
-        fb.classList.remove('hidden', 'correct', 'wrong');
-        if (history.skipped) {
-          fb.textContent = `答案是：${word.word}`;
-          fb.classList.add('wrong');
-        } else if (history.correct) {
-          fb.textContent = `✓ ${word.word}`;
-          fb.classList.add('correct');
-        } else {
-          fb.textContent = `✗ 答案是：${word.word}`;
-          fb.classList.add('wrong');
-        }
-      } else {
-        fb.className = 'fill-feedback hidden';
-      }
+        fb.classList.remove('hidden','correct','wrong');
+        fb.textContent = history.skipped ? `答案是：${word.word}` : history.correct ? `✓ ${word.word}` : `✗ 答案是：${word.word}`;
+        fb.classList.add(history.skipped ? 'wrong' : history.correct ? 'correct' : 'wrong');
+      } else { fb.className = 'fill-feedback hidden'; }
 
       answered = !!history;
       if (history) {
@@ -436,11 +383,7 @@
 
       const card = $('rf-card');
       card.style.animation = 'none';
-      requestAnimationFrame(() => {
-        card.style.animation = '';
-        card.classList.add('slide-in');
-        setTimeout(() => card.classList.remove('slide-in'), 300);
-      });
+      requestAnimationFrame(() => { card.style.animation=''; card.classList.add('slide-in'); setTimeout(()=>card.classList.remove('slide-in'),300); });
 
       showScreen('screen-review-fill');
       if (!history) setTimeout(() => input.focus(), 300);
@@ -449,129 +392,67 @@
     function checkFill() {
       const input = $('rf-input-field');
       if (!input || !currentWord || answered) return;
-      const raw    = input.value.trim();
-      const answer = raw.toLowerCase();
-      const target = currentWord.word.toLowerCase();
-      const correct = answer === target ||
-        (answer.length >= 3 && target.startsWith(answer) && answer.length >= target.length - 2);
-
+      const raw=input.value.trim(), answer=raw.toLowerCase(), target=currentWord.word.toLowerCase();
+      const correct = answer===target || (answer.length>=3 && target.startsWith(answer) && answer.length>=target.length-2);
       answered = true;
       const fb = $('rf-feedback');
-      fb.classList.remove('hidden', 'correct', 'wrong');
-      input.classList.remove('input-correct', 'input-wrong');
-
+      fb.classList.remove('hidden','correct','wrong');
+      input.classList.remove('input-correct','input-wrong');
       if (correct) {
-        fb.textContent = `✓ ${currentWord.word}`;
-        fb.classList.add('correct');
-        input.classList.add('input-correct');
-        const wrong = loadWrong();
-        if (wrong[currentWord.id] > 1) wrong[currentWord.id]--;
-        else delete wrong[currentWord.id];
+        fb.textContent=`✓ ${currentWord.word}`; fb.classList.add('correct'); input.classList.add('input-correct');
+        const wrong=loadWrong();
+        if(wrong[currentWord.id]>1) wrong[currentWord.id]--; else delete wrong[currentWord.id];
         saveWrong(wrong);
       } else {
-        fb.textContent = `✗ 答案是：${currentWord.word}`;
-        fb.classList.add('wrong');
-        input.classList.add('input-wrong');
-        const wrong = loadWrong();
-        wrong[currentWord.id] = (wrong[currentWord.id] || 0) + 1;
-        saveWrong(wrong);
+        fb.textContent=`✗ 答案是：${currentWord.word}`; fb.classList.add('wrong'); input.classList.add('input-wrong');
+        const wrong=loadWrong(); wrong[currentWord.id]=(wrong[currentWord.id]||0)+1; saveWrong(wrong);
       }
-
-      reviewHistory[reviewIdx] = {
-        id: currentWord.id,
-        answer: raw,
-        correct,
-        skipped: false,
-      };
-
+      reviewHistory[reviewIdx]={id:currentWord.id,answer:raw,correct,skipped:false};
       $('rf-confirm-btn').classList.add('hidden');
       $('rf-next-btn').classList.remove('hidden');
       $('rf-skip-btn').classList.add('hidden');
-      $('btn-next-nav').disabled = false;
+      $('btn-next-nav').disabled=false;
     }
 
     function skipFill() {
-      if (!currentWord || answered) return;
-      answered = true;
-      reviewHistory[reviewIdx] = {
-        id: currentWord.id,
-        answer: '',
-        correct: false,
-        skipped: true,
-      };
-      const fb = $('rf-feedback');
-      fb.classList.remove('hidden', 'correct', 'wrong');
-      fb.textContent = `答案是：${currentWord.word}`;
-      fb.classList.add('wrong');
-      $('rf-confirm-btn').classList.add('hidden');
-      $('rf-next-btn').classList.remove('hidden');
-      $('rf-skip-btn').classList.add('hidden');
-      $('btn-next-nav').disabled = false;
+      if (!currentWord||answered) return;
+      answered=true;
+      reviewHistory[reviewIdx]={id:currentWord.id,answer:'',correct:false,skipped:true};
+      const fb=$('rf-feedback'); fb.classList.remove('hidden','correct','wrong');
+      fb.textContent=`答案是：${currentWord.word}`; fb.classList.add('wrong');
+      $('rf-confirm-btn').classList.add('hidden'); $('rf-next-btn').classList.remove('hidden'); $('rf-skip-btn').classList.add('hidden');
+      $('btn-next-nav').disabled=false;
     }
 
-    function advanceForward() {
-      reviewIdx++;
-      answered = false;
-      showNextReview();
-    }
-
-    function goBack() {
-      if (reviewIdx === 0) return;
-      reviewIdx--;
-      answered = false;
-      showNextReview();
-    }
+    function advanceForward() { reviewIdx++; answered=false; showNextReview(); }
+    function goBack() { if(reviewIdx===0)return; reviewIdx--; answered=false; showNextReview(); }
 
     function finishReview() {
-      const total   = reviewHistory.filter(h => h && !h.skipped).length;
-      const correct = reviewHistory.filter(h => h && h.correct).length;
-      const pct = total ? Math.round(correct/total*100) : 0;
-      $('rv-pct').textContent     = pct + '%';
-      $('rv-correct').textContent = correct;
-      $('rv-total').textContent   = total;
-      $('rv-msg').textContent = pct>=80?'掌握得不错 👍':pct>=50?'继续加油 💪':'多练几次就好了 🌱';
+      const total=reviewHistory.filter(h=>h&&!h.skipped).length;
+      const correct=reviewHistory.filter(h=>h&&h.correct).length;
+      const pct=total?Math.round(correct/total*100):0;
+      $('rv-pct').textContent=pct+'%'; $('rv-correct').textContent=correct; $('rv-total').textContent=total;
+      $('rv-msg').textContent=pct>=80?'掌握得不错 👍':pct>=50?'继续加油 💪':'多练几次就好了 🌱';
       showScreen('screen-review-done');
-      setTimeout(() => { $('rv-bar').style.width = pct+'%'; }, 300);
+      setTimeout(()=>{ $('rv-bar').style.width=pct+'%'; },300);
       renderList();
     }
 
-    $('btn-start-all').addEventListener('click', () => {
-      reviewQueue = Object.keys(loadWrong());
-      if (!reviewQueue.length) return;
-      startReview();
-    });
-
-    $('rf-confirm-btn').addEventListener('click', checkFill);
-    $('rf-skip-btn').addEventListener('click', skipFill);
-    $('rf-next-btn').addEventListener('click', advanceForward);
-
-    $('btn-prev').addEventListener('click', goBack);
-    $('btn-next-nav').addEventListener('click', () => {
-      if (reviewIdx < reviewHistory.length) {
-        reviewIdx++;
-        answered = false;
-        showNextReview();
-      }
-    });
-
-    $('btn-rv-home').addEventListener('click', () => location.href = 'index.html');
-    $('btn-rv-again').addEventListener('click', () => {
-      reviewIdx = 0;
-      reviewHistory = [];
-      startReview();
-    });
+    $('btn-start-all').addEventListener('click',()=>{ reviewQueue=Object.keys(loadWrong()); if(!reviewQueue.length)return; startReview(); });
+    $('rf-confirm-btn').addEventListener('click',checkFill);
+    $('rf-skip-btn').addEventListener('click',skipFill);
+    $('rf-next-btn').addEventListener('click',advanceForward);
+    $('btn-prev').addEventListener('click',goBack);
+    $('btn-next-nav').addEventListener('click',()=>{ if(reviewIdx<reviewHistory.length){reviewIdx++;answered=false;showNextReview();} });
+    $('btn-rv-home').addEventListener('click',()=>location.href='index.html');
+    $('btn-rv-again').addEventListener('click',()=>{ reviewIdx=0; reviewHistory=[]; startReview(); });
 
     renderList();
   </script>
 
   <style>
-    @keyframes cardSlideIn {
-      from { opacity:.6; transform:translateY(10px); }
-      to   { opacity:1;  transform:translateY(0); }
-    }
-    #rf-card.slide-in {
-      animation: cardSlideIn .28s cubic-bezier(.34,1.2,.64,1);
-    }
+    @keyframes cardSlideIn { from{opacity:.6;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+    #rf-card.slide-in { animation: cardSlideIn .28s cubic-bezier(.34,1.2,.64,1); }
   </style>
 </body>
 </html>
