@@ -1,5 +1,5 @@
-// wordbank.js — Foreign词库 v3 · 300词
-// 六维度 × 50词，A1→C2 六难度均匀分布
+// wordbank.js — Foreign词库 v4 · 350词
+// daily×50, emotion×50, nature×100, abstract×50, social×50, academic×50
 
 export const DIMENSIONS = {
   daily:    { label:'日常生活', color:'#3b82f6', icon:'☕' },
@@ -94,7 +94,7 @@ export const WORDS = [
 {id:'e027',dim:'emotion',level:5,word:'introspective',phonetic:'/ˌɪntrəˈspɛktɪv/',zh:'内省的',example:'She became more introspective after the loss.',exZh:'失去亲人后她变得更加内省。'},
 {id:'e028',dim:'emotion',level:6,word:'melancholy',phonetic:'/ˈmɛlənkɒli/',zh:'忧郁',example:'A gentle melancholy settled over the empty house.',exZh:'一种淡淡的忧郁笼罩着空荡的房子。'},
 {id:'e029',dim:'emotion',level:6,word:'ineffable',phonetic:'/ɪnˈɛfəbəl/',zh:'难以言喻的',example:'The view was filled with ineffable sadness.',exZh:'那景色充满了难以言喻的悲伤。'},
-{id:'e030',dim:'emotion',level:6,word:'saudade',phonetic:'/saʊˈdɑːdə/',zh:'思念之苦(葡语借词)',example:'The music carried a deep sense of saudade.',exZh:'这段音乐承载着深沉的思念之苦。'},
+{id:'e030',dim:'emotion',level:6,word:'saudade',phonetic:'/saʊˈdɑːdə/',zh:'思念之苦',example:'The music carried a deep sense of saudade.',exZh:'这段音乐承载着深沉的思念之苦。'},
 {id:'e031',dim:'emotion',level:1,word:'excited',phonetic:'/ɪkˈsaɪtɪd/',zh:'兴奋的',example:'The children were excited about the trip.',exZh:'孩子们对这次旅行感到兴奋。'},
 {id:'e032',dim:'emotion',level:1,word:'scared',phonetic:'/skɛrd/',zh:'害怕的',example:'She was scared of the dark.',exZh:'她害怕黑暗。'},
 {id:'e033',dim:'emotion',level:2,word:'embarrassed',phonetic:'/ɪmˈbærəst/',zh:'尴尬的',example:'He was embarrassed by the mistake.',exZh:'他为那个错误感到尴尬。'},
@@ -106,7 +106,7 @@ export const WORDS = [
 {id:'e039',dim:'emotion',level:5,word:'perturbation',phonetic:'/ˌpɜːrtərˈbeɪʃən/',zh:'心神不宁',example:'His sudden departure caused her great perturbation.',exZh:'他的突然离去让她心神不宁。'},
 {id:'e040',dim:'emotion',level:5,word:'ennui',phonetic:'/ˌɒnˈwiː/',zh:'倦怠百无聊赖',example:'A deep ennui settled over her long vacation.',exZh:'漫长的假期让她陷入了深深的倦怠。'},
 {id:'e041',dim:'emotion',level:6,word:'angst',phonetic:'/æŋst/',zh:'深切的焦虑感',example:'Teenage angst is a universal experience.',exZh:'青少年时期的焦虑感是普遍体验。'},
-{id:'e042',dim:'emotion',level:6,word:'schadenfreude',phonetic:'/ˈʃɑːdənfrɔɪdə/',zh:'幸灾乐祸(德语借词)',example:'He felt a twinge of schadenfreude at his rival\'s fall.',exZh:'看到对手跌倒，他心中闪过一丝幸灾乐祸。'},
+{id:'e042',dim:'emotion',level:6,word:'schadenfreude',phonetic:'/ˈʃɑːdənfrɔɪdə/',zh:'幸灾乐祸',example:'He felt a twinge of schadenfreude at his rival\'s fall.',exZh:'看到对手跌倒，他心中闪过一丝幸灾乐祸。'},
 {id:'e043',dim:'emotion',level:3,word:'compassionate',phonetic:'/kəmˈpæʃənɪt/',zh:'富有同情心的',example:'A compassionate response can change everything.',exZh:'一个富有同情心的回应可以改变一切。'},
 {id:'e044',dim:'emotion',level:4,word:'distraught',phonetic:'/dɪˈstrɔːt/',zh:'极度痛苦的',example:'She was distraught after hearing the news.',exZh:'听到这个消息后她极度痛苦。'},
 {id:'e045',dim:'emotion',level:4,word:'sullen',phonetic:'/ˈsʌlən/',zh:'闷闷不乐的',example:'He sat in sullen silence after the argument.',exZh:'争吵后他闷闷不乐地沉默着。'},
@@ -116,7 +116,7 @@ export const WORDS = [
 {id:'e049',dim:'emotion',level:2,word:'jealous',phonetic:'/ˈdʒɛləs/',zh:'嫉妒的',example:'She was jealous of her sister\'s success.',exZh:'她嫉妒姐姐的成功。'},
 {id:'e050',dim:'emotion',level:3,word:'serene',phonetic:'/səˈriːn/',zh:'宁静祥和的',example:'The lake looked serene at dawn.',exZh:'黎明时湖面宁静祥和。'},
 
-// ─── NATURE 自然世界 ×50 ───────────────────────────────────
+// ─── NATURE 自然世界 ×100 ──────────────────────────────────
 {id:'n001',dim:'nature',level:1,word:'breeze',phonetic:'/briːz/',zh:'微风',example:'A cool breeze came through the window.',exZh:'一阵凉风从窗户吹进来。'},
 {id:'n002',dim:'nature',level:1,word:'horizon',phonetic:'/həˈraɪzən/',zh:'地平线',example:'The sun sank below the horizon.',exZh:'太阳沉到了地平线以下。'},
 {id:'n003',dim:'nature',level:1,word:'meadow',phonetic:'/ˈmɛdoʊ/',zh:'草地',example:'Children played in the wide meadow.',exZh:'孩子们在宽阔的草地上玩耍。'},
@@ -167,6 +167,56 @@ export const WORDS = [
 {id:'n048',dim:'nature',level:6,word:'noctilucent',phonetic:'/ˌnɒktɪˈluːsənt/',zh:'夜光的',example:'Noctilucent clouds glow after sunset.',exZh:'夜光云在日落后发光。'},
 {id:'n049',dim:'nature',level:2,word:'avalanche',phonetic:'/ˈævəlɑːntʃ/',zh:'雪崩',example:'Heavy snowfall triggered an avalanche.',exZh:'大雪引发了雪崩。'},
 {id:'n050',dim:'nature',level:3,word:'overcast',phonetic:'/ˌoʊvərˈkæst/',zh:'阴天的',example:'The sky was overcast all day.',exZh:'天空整天都是阴的。'},
+{id:'n051',dim:'nature',level:1,word:'river',phonetic:'/ˈrɪvər/',zh:'河流',example:'The river flows through the valley.',exZh:'这条河流穿过山谷。'},
+{id:'n052',dim:'nature',level:2,word:'mountain',phonetic:'/ˈmaʊntən/',zh:'山脉',example:'Snow covered the top of the mountain.',exZh:'白雪覆盖了山顶。'},
+{id:'n053',dim:'nature',level:3,word:'waterfall',phonetic:'/ˈwɔːtərfɔːl/',zh:'瀑布',example:'We heard the waterfall from far away.',exZh:'我们从很远处就听到了瀑布的声音。'},
+{id:'n054',dim:'nature',level:4,word:'wetland',phonetic:'/ˈwɛtlænd/',zh:'湿地',example:'Wetlands filter water and support wildlife.',exZh:'湿地净化水源并支撑野生动物生存。'},
+{id:'n055',dim:'nature',level:5,word:'ecosystem',phonetic:'/ˈiːkəʊsɪstəm/',zh:'生态系统',example:'A healthy ecosystem supports many species.',exZh:'健康的生态系统支撑着许多物种。'},
+{id:'n056',dim:'nature',level:6,word:'coral',phonetic:'/ˈkɒrəl/',zh:'珊瑚',example:'Coral reefs are threatened by rising sea temperatures.',exZh:'珊瑚礁受到海水升温的威胁。'},
+{id:'n057',dim:'nature',level:1,word:'tree',phonetic:'/triː/',zh:'树木',example:'A tall tree stood beside the house.',exZh:'房子旁边有一棵高大的树。'},
+{id:'n058',dim:'nature',level:2,word:'ocean',phonetic:'/ˈoʊʃən/',zh:'海洋',example:'The ocean looked calm this morning.',exZh:'今天早上海洋看起来很平静。'},
+{id:'n059',dim:'nature',level:3,word:'desert',phonetic:'/ˈdɛzərt/',zh:'沙漠',example:'Few plants can survive in the desert.',exZh:'很少有植物能在沙漠中生存。'},
+{id:'n060',dim:'nature',level:4,word:'volcano',phonetic:'/vɒlˈkeɪnoʊ/',zh:'火山',example:'The volcano erupted last year.',exZh:'这座火山去年爆发了。'},
+{id:'n061',dim:'nature',level:5,word:'habitat',phonetic:'/ˈhæbɪtæt/',zh:'栖息地',example:'Wetlands are an important habitat for birds.',exZh:'湿地是鸟类重要的栖息地。'},
+{id:'n062',dim:'nature',level:6,word:'photosynthesis',phonetic:'/ˌfoʊtəʊˈsɪnθəsɪs/',zh:'光合作用',example:'Plants use photosynthesis to produce energy.',exZh:'植物通过光合作用产生能量。'},
+{id:'n063',dim:'nature',level:1,word:'leaf',phonetic:'/liːf/',zh:'树叶',example:'A yellow leaf fell to the ground.',exZh:'一片黄色的叶子落到了地上。'},
+{id:'n064',dim:'nature',level:2,word:'island',phonetic:'/ˈaɪlənd/',zh:'岛屿',example:'They spent the summer on a small island.',exZh:'他们在一个小岛上度过了夏天。'},
+{id:'n065',dim:'nature',level:3,word:'thunder',phonetic:'/ˈθʌndər/',zh:'雷声',example:'The thunder shook the windows.',exZh:'雷声震动了窗户。'},
+{id:'n066',dim:'nature',level:4,word:'canyon',phonetic:'/ˈkænjən/',zh:'峡谷',example:'The hikers explored the deep canyon.',exZh:'徒步旅行者探索了这条深邃的峡谷。'},
+{id:'n067',dim:'nature',level:5,word:'landslide',phonetic:'/ˈlændslaɪd/',zh:'山体滑坡',example:'The landslide blocked the mountain road.',exZh:'山体滑坡堵住了山路。'},
+{id:'n068',dim:'nature',level:6,word:'deforestation',phonetic:'/diːˌfɒrɪˈsteɪʃən/',zh:'森林砍伐',example:'Deforestation threatens many animals.',exZh:'森林砍伐威胁着许多动物。'},
+{id:'n069',dim:'nature',level:1,word:'flower',phonetic:'/ˈflaʊər/',zh:'花朵',example:'The flower opened in the sunlight.',exZh:'花朵在阳光下绽放了。'},
+{id:'n070',dim:'nature',level:2,word:'valley',phonetic:'/ˈvæli/',zh:'山谷',example:'A river runs through the valley.',exZh:'一条河流穿过山谷。'},
+{id:'n071',dim:'nature',level:3,word:'rainforest',phonetic:'/ˈreɪnfɒrɪst/',zh:'雨林',example:'The rainforest is home to rare animals.',exZh:'雨林是稀有动物的家园。'},
+{id:'n072',dim:'nature',level:4,word:'tsunami',phonetic:'/tsuːˈnɑːmi/',zh:'海啸',example:'The tsunami caused severe damage to the coast.',exZh:'海啸对海岸造成了严重破坏。'},
+{id:'n073',dim:'nature',level:5,word:'climate',phonetic:'/ˈklaɪmɪt/',zh:'气候',example:'The region has a warm climate all year.',exZh:'这个地区全年气候温暖。'},
+{id:'n074',dim:'nature',level:6,word:'geothermal',phonetic:'/ˌdʒiːoʊˈθɜːrməl/',zh:'地热的',example:'The town uses geothermal energy for heating.',exZh:'这个小镇利用地热能供暖。'},
+{id:'n075',dim:'nature',level:1,word:'grass',phonetic:'/ɡræs/',zh:'草地',example:'The grass was wet after the rain.',exZh:'雨后草地湿漉漉的。'},
+{id:'n076',dim:'nature',level:2,word:'storm',phonetic:'/stɔːrm/',zh:'暴风雨',example:'The storm lasted all night.',exZh:'暴风雨持续了一整夜。'},
+{id:'n077',dim:'nature',level:3,word:'plateau',phonetic:'/ˈplætoʊ/',zh:'高原',example:'The plateau sits two thousand metres above sea level.',exZh:'这片高原海拔两千米。'},
+{id:'n078',dim:'nature',level:4,word:'blizzard',phonetic:'/ˈblɪzərd/',zh:'暴风雪',example:'The blizzard trapped travellers for days.',exZh:'暴风雪使旅客被困数日。'},
+{id:'n079',dim:'nature',level:5,word:'renewable',phonetic:'/rɪˈnjuːəbəl/',zh:'可再生的',example:'Solar power is a renewable energy source.',exZh:'太阳能是一种可再生能源。'},
+{id:'n080',dim:'nature',level:6,word:'conservation',phonetic:'/ˌkɒnsəˈveɪʃən/',zh:'保护',example:'Wildlife conservation is becoming more important.',exZh:'野生动物保护变得越来越重要。'},
+{id:'n081',dim:'nature',level:1,word:'rock',phonetic:'/rɒk/',zh:'岩石',example:'The child picked up a smooth rock.',exZh:'那个孩子捡起了一块光滑的岩石。'},
+{id:'n082',dim:'nature',level:2,word:'forest',phonetic:'/ˈfɒrɪst/',zh:'森林',example:'The forest was quiet at dawn.',exZh:'黎明时森林十分安静。'},
+{id:'n083',dim:'nature',level:3,word:'fog',phonetic:'/fɒɡ/',zh:'雾',example:'Thick fog covered the highway.',exZh:'浓雾笼罩了高速公路。'},
+{id:'n084',dim:'nature',level:4,word:'earthquake',phonetic:'/ˈɜːrθkweɪk/',zh:'地震',example:'The earthquake damaged several buildings.',exZh:'地震损坏了几栋建筑。'},
+{id:'n085',dim:'nature',level:5,word:'pollution',phonetic:'/pəˈluːʃən/',zh:'污染',example:'Air pollution affects human health.',exZh:'空气污染影响人类健康。'},
+{id:'n086',dim:'nature',level:6,word:'endangered',phonetic:'/ɪnˈdeɪndʒərd/',zh:'濒危的',example:'The panda is an endangered species.',exZh:'熊猫是一种濒危物种。'},
+{id:'n087',dim:'nature',level:1,word:'lake',phonetic:'/leɪk/',zh:'湖泊',example:'The lake reflected the blue sky.',exZh:'湖面倒映着蓝天。'},
+{id:'n088',dim:'nature',level:2,word:'cloud',phonetic:'/klaʊd/',zh:'云',example:'A dark cloud moved across the sky.',exZh:'一朵乌云飘过天空。'},
+{id:'n089',dim:'nature',level:3,word:'wildlife',phonetic:'/ˈwaɪldlaɪf/',zh:'野生动物',example:'The park protects local wildlife.',exZh:'这个公园保护当地的野生动物。'},
+{id:'n090',dim:'nature',level:4,word:'hurricane',phonetic:'/ˈhʌrɪkən/',zh:'飓风',example:'The hurricane forced people to leave the town.',exZh:'飓风迫使人们离开小镇。'},
+{id:'n091',dim:'nature',level:5,word:'atmosphere',phonetic:'/ˈætməsfɪər/',zh:'大气层',example:'The atmosphere traps heat from the sun.',exZh:'大气层吸收来自太阳的热量。'},
+{id:'n092',dim:'nature',level:6,word:'sustainability',phonetic:'/səˌsteɪnəˈbɪlɪti/',zh:'可持续性',example:'Sustainability is important for the future of the planet.',exZh:'可持续性对地球的未来非常重要。'},
+{id:'n093',dim:'nature',level:1,word:'rain',phonetic:'/reɪn/',zh:'雨',example:'The rain stopped before sunset.',exZh:'太阳落山前雨停了。'},
+{id:'n094',dim:'nature',level:2,word:'beach',phonetic:'/biːtʃ/',zh:'海滩',example:'Children played on the beach all day.',exZh:'孩子们在海滩上玩了一整天。'},
+{id:'n095',dim:'nature',level:3,word:'jungle',phonetic:'/ˈdʒʌŋɡəl/',zh:'丛林',example:'The jungle was filled with strange sounds.',exZh:'丛林里充满了奇怪的声音。'},
+{id:'n096',dim:'nature',level:4,word:'heatwave',phonetic:'/ˈhiːtweɪv/',zh:'热浪',example:'The heatwave broke records across the country.',exZh:'热浪打破了全国各地的纪录。'},
+{id:'n097',dim:'nature',level:5,word:'organic',phonetic:'/ɔːrˈɡænɪk/',zh:'有机的',example:'They grow organic vegetables on the farm.',exZh:'他们在农场种植有机蔬菜。'},
+{id:'n098',dim:'nature',level:6,word:'extinction',phonetic:'/ɪkˈstɪŋkʃən/',zh:'灭绝',example:'Human activity can lead to species extinction.',exZh:'人类活动可能导致物种灭绝。'},
+{id:'n099',dim:'nature',level:1,word:'sun',phonetic:'/sʌn/',zh:'太阳',example:'The sun rose above the hills.',exZh:'太阳从山丘上升起。'},
+{id:'n100',dim:'nature',level:2,word:'wind',phonetic:'/wɪnd/',zh:'风',example:'The wind blew strongly by the sea.',exZh:'海边的风吹得很猛烈。'},
 
 // ─── ABSTRACT 抽象概念 ×50 ────────────────────────────────
 {id:'a001',dim:'abstract',level:1,word:'progress',phonetic:'/ˈprɒɡrɛs/',zh:'进步',example:'We made good progress today.',exZh:'我们今天取得了很大进步。'},
@@ -217,7 +267,7 @@ export const WORDS = [
 {id:'a046',dim:'abstract',level:3,word:'bias',phonetic:'/ˈbaɪəs/',zh:'偏见/偏差',example:'Everyone has unconscious bias.',exZh:'每个人都有无意识的偏见。'},
 {id:'a047',dim:'abstract',level:4,word:'paradigm shift',phonetic:'/ˈpærədaɪm ʃɪft/',zh:'范式转变',example:'The internet caused a paradigm shift in communication.',exZh:'互联网引发了通信领域的范式转变。'},
 {id:'a048',dim:'abstract',level:5,word:'allegory',phonetic:'/ˈæləɡɔːri/',zh:'寓言/象征',example:'The novel is an allegory for political oppression.',exZh:'这部小说是政治压迫的寓言。'},
-{id:'a049',dim:'abstract',level:6,word:'apophenia',phonetic:'/ˌæpəˈfiːniə/',zh:'模式幻觉(错误连接)',example:'Seeing faces in clouds is an example of apophenia.',exZh:'在云彩中看到人脸是模式幻觉的一个例子。'},
+{id:'a049',dim:'abstract',level:6,word:'apophenia',phonetic:'/ˌæpəˈfiːniə/',zh:'模式幻觉',example:'Seeing faces in clouds is an example of apophenia.',exZh:'在云彩中看到人脸是模式幻觉的一个例子。'},
 {id:'a050',dim:'abstract',level:3,word:'contradiction',phonetic:'/ˌkɒntrəˈdɪkʃən/',zh:'矛盾',example:'There is a contradiction in what you said.',exZh:'你说的话存在矛盾。'},
 
 // ─── SOCIAL 社交场景 ×50 ───────────────────────────────────
@@ -305,47 +355,4 @@ export const WORDS = [
 {id:'ac030',dim:'academic',level:2,word:'analyse',phonetic:'/ˈænəlaɪz/',zh:'分析',example:'We need to analyse the data carefully.',exZh:'我们需要仔细分析数据。'},
 {id:'ac031',dim:'academic',level:3,word:'argument',phonetic:'/ˈɑːrɡjʊmənt/',zh:'论点',example:'Her argument was well-structured and clear.',exZh:'她的论点结构清晰，条理分明。'},
 {id:'ac032',dim:'academic',level:3,word:'plagiarism',phonetic:'/ˈpleɪdʒərɪzəm/',zh:'抄袭',example:'Plagiarism is treated seriously in academia.',exZh:'学术界对抄袭行为严肃对待。'},
-{id:'ac033',dim:'academic',level:4,word:'ambivalence',phonetic:'/æmˈbɪvələns/',zh:'矛盾态度',example:'Scholars show ambivalence toward the new theory.',exZh:'学者们对这一新理论态度矛盾。'},
-{id:'ac034',dim:'academic',level:4,word:'implication',phonetic:'/ˌɪmplɪˈkeɪʃən/',zh:'含义/影响',example:'The implications of the findings are significant.',exZh:'这些发现的影响是深远的。'},
-{id:'ac035',dim:'academic',level:5,word:'phenomenological',phonetic:'/fɪˌnɒmɪnəˈlɒdʒɪkəl/',zh:'现象学的',example:'A phenomenological approach was used.',exZh:'采用了现象学方法。'},
-{id:'ac036',dim:'academic',level:5,word:'semiotics',phonetic:'/ˌsiːmiˈɒtɪks/',zh:'符号学',example:'Semiotics studies signs and their meanings.',exZh:'符号学研究符号及其意义。'},
-{id:'ac037',dim:'academic',level:6,word:'teleological',phonetic:'/ˌtɛliəˈlɒdʒɪkəl/',zh:'目的论的',example:'A teleological argument for design.',exZh:'一个支持设计论的目的论论证。'},
-{id:'ac038',dim:'academic',level:2,word:'conclude',phonetic:'/kənˈkluːd/',zh:'得出结论',example:'The paper concludes with recommendations.',exZh:'论文最后给出了建议。'},
-{id:'ac039',dim:'academic',level:3,word:'refute',phonetic:'/rɪˈfjuːt/',zh:'驳斥',example:'The experiment refuted the original claim.',exZh:'实验驳斥了最初的主张。'},
-{id:'ac040',dim:'academic',level:4,word:'nuanced',phonetic:'/ˈnjuːɑːnst/',zh:'细腻入微的',example:'Her analysis was nuanced and thorough.',exZh:'她的分析细腻入微且全面深入。'},
-{id:'ac041',dim:'academic',level:4,word:'anecdotal',phonetic:'/ˌænɪkˈdoʊtəl/',zh:'轶事的/非实证的',example:'Anecdotal evidence is not enough.',exZh:'轶事证据是不够的。'},
-{id:'ac042',dim:'academic',level:5,word:'interpolate',phonetic:'/ɪnˈtɜːrpəleɪt/',zh:'插值/篡入',example:'Extra data was interpolated from the model.',exZh:'额外数据从模型中插值得出。'},
-{id:'ac043',dim:'academic',level:6,word:'heuristic',phonetic:'/hjʊˈrɪstɪk/',zh:'启发式的',example:'A heuristic approach speeds up problem-solving.',exZh:'启发式方法加快了问题解决速度。'},
-{id:'ac044',dim:'academic',level:3,word:'coherent',phonetic:'/koʊˈhɪərənt/',zh:'连贯的/有条理的',example:'The essay was coherent and well-argued.',exZh:'这篇文章连贯有力，论证充分。'},
-{id:'ac045',dim:'academic',level:4,word:'objective',phonetic:'/əbˈdʒɛktɪv/',zh:'客观的',example:'Scientific research must remain objective.',exZh:'科学研究必须保持客观。'},
-{id:'ac046',dim:'academic',level:5,word:'extrapolate',phonetic:'/ɪkˈstræpəleɪt/',zh:'推断/外推',example:'We can extrapolate future trends from this data.',exZh:'我们可以从这些数据推断未来趋势。'},
-{id:'ac047',dim:'academic',level:6,word:'syllogism',phonetic:'/ˈsɪlədʒɪzəm/',zh:'三段论',example:'A syllogism draws a conclusion from two premises.',exZh:'三段论从两个前提推导出结论。'},
-{id:'ac048',dim:'academic',level:2,word:'paraphrase',phonetic:'/ˈpærəfreɪz/',zh:'释义/改述',example:'Paraphrase the author\'s idea in your own words.',exZh:'用自己的语言改述作者的观点。'},
-{id:'ac049',dim:'academic',level:3,word:'counterargument',phonetic:'/ˈkaʊntərˌɑːrɡjʊmənt/',zh:'反驳论点',example:'Always address the strongest counterargument.',exZh:'总要回应最有力的反驳论点。'},
-{id:'ac050',dim:'academic',level:4,word:'substantiate',phonetic:'/səbˈstænʃieɪt/',zh:'证实/佐证',example:'You need evidence to substantiate your claim.',exZh:'你需要证据来佐证你的主张。'},
-];
-
-export function getByDimension(dim){ return WORDS.filter(w=>w.dim===dim); }
-export function getByLevel(level){ return WORDS.filter(w=>w.level===level); }
-export function getDimStats(cards={}){
-  const stats={};
-  for(const dim of Object.keys(DIMENSIONS)){
-    const words=getByDimension(dim);
-    const total=words.length;
-    let learned=0,mastered=0;
-    for(const w of words){
-      const card=cards[w.id];
-      if(!card)continue;
-      if(card.reps>=1||card.state==='review')learned++;
-      if(card.reps>=5||card.stability>=21)mastered++;
-    }
-    stats[dim]={total,learned,mastered,pct:total?learned/total:0};
-  }
-  return stats;
-}
-export function getWeakDimensions(cards={}){
-  const stats=getDimStats(cards);
-  return Object.entries(stats).sort((a,b)=>a[1].pct-b[1].pct).slice(0,3).map(([dim])=>dim);
-}
-export function getWordById(id){ return WORDS.find(w=>w.id===id); }
-export const TOTAL=WORDS.length;
+{id:'ac033',dim:'academic',level:4,word:'ambivalence',phonetic:'/æmˈbɪvələns/'
