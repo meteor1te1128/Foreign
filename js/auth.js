@@ -1,5 +1,6 @@
 // js/auth.js — 注册 / 登录 / 登出 / 云端数据同步
 import { supabase } from './supabase.js';
+import { invalidateCache } from './fsrs.js';
 
 // ── 工具：用户名转假邮箱 ──────────────────────────────────
 function toEmail(username) {
@@ -7,7 +8,6 @@ function toEmail(username) {
 }
 
 // ── 注册 ──────────────────────────────────────────────────
-// 返回 { ok: true } 或 { ok: false, msg: '...' }
 export async function register(username, password) {
   if (!username || !password) return { ok: false, msg: '请填写用户名和密码' };
   if (username.length < 2)    return { ok: false, msg: '用户名至少2个字符' };
@@ -17,7 +17,6 @@ export async function register(username, password) {
 
   const email = toEmail(username);
 
-  // 先检查用户名是否已存在
   const { data: existing } = await supabase
     .from('user_data')
     .select('username')
@@ -25,7 +24,6 @@ export async function register(username, password) {
     .maybeSingle();
   if (existing) return { ok: false, msg: '用户名已被使用' };
 
-  // Supabase Auth 注册
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) {
     if (error.message.includes('already registered'))
@@ -36,7 +34,6 @@ export async function register(username, password) {
   const uid = data.user?.id;
   if (!uid) return { ok: false, msg: '注册失败，请重试' };
 
-  // 写入 user_data 表（初始空数据）
   const { error: dbErr } = await supabase.from('user_data').insert({
     id: uid,
     username,
@@ -49,7 +46,6 @@ export async function register(username, password) {
   });
   if (dbErr) return { ok: false, msg: '数据初始化失败: ' + dbErr.message };
 
-  // 把用户名存本地，方便显示
   localStorage.setItem('fg_user', username);
   return { ok: true };
 }
@@ -66,7 +62,6 @@ export async function login(username, password) {
     return { ok: false, msg: error.message };
   }
 
-  // 从云端拉取数据覆盖本地
   await pullFromCloud();
   localStorage.setItem('fg_user', username);
   return { ok: true };
@@ -75,10 +70,10 @@ export async function login(username, password) {
 // ── 登出 ──────────────────────────────────────────────────
 export async function logout() {
   await supabase.auth.signOut();
-  // 清除本地用户相关数据（保留主题）
   const theme = localStorage.getItem('fg_theme');
   localStorage.clear();
   if (theme) localStorage.setItem('fg_theme', theme);
+  invalidateCache(); // 清除 fsrs 内存缓存
 }
 
 // ── 获取当前登录用户 ──────────────────────────────────────
@@ -106,6 +101,9 @@ export async function pullFromCloud() {
   if (data.last_study_day) localStorage.setItem('fg_last_study_day', data.last_study_day);
   if (data.theme)          localStorage.setItem('fg_theme',          data.theme);
   if (data.username)       localStorage.setItem('fg_user',           data.username);
+
+  // 云端数据已写入 localStorage，清除 fsrs 内存缓存确保下次读取最新数据
+  invalidateCache();
 }
 
 // ── 把本地数据推送到云端 ──────────────────────────────────
@@ -139,7 +137,6 @@ export function startAutoSync() {
     if (user) await pushToCloud();
   }, 5 * 60 * 1000);
 
-  // 页面关闭/切换时也推一次
   window.addEventListener('beforeunload', () => {
     getCurrentUser().then(user => { if (user) pushToCloud(); });
   });
