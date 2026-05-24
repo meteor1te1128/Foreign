@@ -379,26 +379,124 @@
       line-height: 1.6;
       white-space: pre-wrap;
     }
+
+    /* ── 本场词汇 chip ── */
     .words-used {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 12px;
     }
-    .word-tag {
+    .word-chip {
       background: rgba(255,255,255,.1);
       border: 1px solid rgba(255,255,255,.18);
       border-radius: 8px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       font-family: 'Space Mono', monospace;
       font-size: 11px;
-      color: rgba(255,255,255,.7);
+      color: rgba(255,255,255,.75);
+      cursor: pointer;
+      transition: all .18s;
+      user-select: none;
     }
-    .word-tag.used {
-      background: rgba(74,222,128,.12);
-      border-color: rgba(74,222,128,.3);
-      color: #4ade80;
+    .word-chip:hover {
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.35);
+      color: #fff;
+      transform: translateY(-1px);
     }
+
+    /* ── 词汇详情弹窗 ── */
+    .word-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn .15s ease;
+    }
+    .word-modal-overlay.hidden { display: none !important; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .word-modal {
+      background: rgba(20,24,40,.92);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: 28px 24px 24px;
+      width: 100%;
+      max-width: 340px;
+      backdrop-filter: blur(24px);
+      animation: modalUp .2s cubic-bezier(.34,1.2,.64,1);
+      position: relative;
+    }
+    @keyframes modalUp {
+      from { opacity:0; transform: translateY(16px) scale(.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .word-modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: rgba(255,255,255,.08);
+      border: none;
+      border-radius: 6px;
+      color: rgba(255,255,255,.4);
+      font-size: 16px;
+      width: 28px; height: 28px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .word-modal-close:hover { background: rgba(255,255,255,.16); color: #fff; }
+    .modal-word {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .modal-phonetic {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+    }
+    .modal-zh {
+      font-size: 15px;
+      color: var(--theme-color, #3b82f6);
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .modal-divider {
+      height: 1px;
+      background: rgba(255,255,255,.1);
+      margin-bottom: 14px;
+    }
+    .modal-example-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: rgba(255,255,255,.3);
+      letter-spacing: .1em;
+      margin-bottom: 6px;
+    }
+    .modal-example {
+      font-size: 14px;
+      color: rgba(255,255,255,.75);
+      line-height: 1.6;
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+    .modal-example-zh {
+      font-size: 12px;
+      color: rgba(255,255,255,.4);
+      line-height: 1.5;
+    }
+
     .btn-restart {
       width: 100%;
       max-width: 560px;
@@ -425,6 +523,14 @@
     body.dm .scene-name { color: #1e293b; }
     body.dm .top-title { color: #1e293b; }
     body.dm .back-btn-ai { color: rgba(0,0,0,.5); background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
+    body.dm .word-modal { background: rgba(240,242,248,.95); border-color: rgba(0,0,0,.1); }
+    body.dm .modal-word { color: #1e293b; }
+    body.dm .modal-example { color: #475569; }
+    body.dm .modal-example-zh { color: #94a3b8; }
+    body.dm .word-modal-close { color: rgba(0,0,0,.4); }
+    body.dm .word-modal-close:hover { background: rgba(0,0,0,.08); color: #1e293b; }
+    body.dm .word-chip { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.12); color: rgba(0,0,0,.6); }
+    body.dm .word-chip:hover { background: rgba(0,0,0,.1); color: #1e293b; }
   </style>
 </head>
 <body>
@@ -512,12 +618,26 @@
         <div class="result-feedback" id="result-feedback">正在生成评价…</div>
       </div>
       <div class="result-card">
-        <h3>今日词汇使用情况</h3>
+        <h3>本场词汇</h3>
         <div class="words-used" id="words-used"></div>
       </div>
       <button class="btn-restart" id="btn-restart">再来一场</button>
     </div>
 
+  </div>
+
+  <!-- ── 词汇详情弹窗 ── -->
+  <div class="word-modal-overlay hidden" id="word-modal-overlay">
+    <div class="word-modal" id="word-modal">
+      <button class="word-modal-close" id="word-modal-close">✕</button>
+      <div class="modal-word"   id="modal-word"></div>
+      <div class="modal-phonetic" id="modal-phonetic"></div>
+      <div class="modal-zh"    id="modal-zh"></div>
+      <div class="modal-divider"></div>
+      <div class="modal-example-label">EXAMPLE</div>
+      <div class="modal-example"    id="modal-example"></div>
+      <div class="modal-example-zh" id="modal-example-zh"></div>
+    </div>
   </div>
 
   <script type="module">
@@ -565,8 +685,8 @@
 
     let selectedScene = null;
     let customScene   = '';
-    let chatHistory   = []; // DeepSeek messages
-    let userMessages  = []; // 用户发的所有消息文本
+    let chatHistory   = [];
+    let userMessages  = [];
 
     const btnStart  = document.getElementById('btn-start-chat');
     const customInp = document.getElementById('custom-scene-input');
@@ -606,7 +726,6 @@
         ? { icon:'✨', label: customScene }
         : SCENES[sceneKey];
 
-      // 切换页面
       document.getElementById('page-scene').classList.add('hidden');
       document.getElementById('page-chat').classList.remove('hidden');
       document.getElementById('chat-scene-tag').textContent =
@@ -615,7 +734,6 @@
       chatHistory  = [];
       userMessages = [];
 
-      // 构建系统 prompt
       const wordList = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
       const sceneDesc = sceneKey === 'custom' ? customScene : sceneInfo.desc;
 
@@ -758,16 +876,14 @@ Rules:
       document.getElementById('page-chat').classList.add('hidden');
       document.getElementById('page-result').classList.remove('hidden');
 
-      // 统计今日词汇使用
-      const allUserText = userMessages.join(' ').toLowerCase();
+      // 渲染本场词汇 chips（可点击）
       const wordsContainer = document.getElementById('words-used');
       todayWords.forEach(w => {
-        const tag = document.createElement('span');
-        tag.className = 'word-tag';
-        const used = allUserText.includes(w.word.toLowerCase());
-        if (used) tag.classList.add('used');
-        tag.textContent = used ? `✓ ${w.word}` : w.word;
-        wordsContainer.appendChild(tag);
+        const chip = document.createElement('button');
+        chip.className = 'word-chip';
+        chip.textContent = w.word;
+        chip.addEventListener('click', () => openWordModal(w));
+        wordsContainer.appendChild(chip);
       });
 
       // 请求 AI 评分
@@ -796,6 +912,25 @@ FEEDBACK: [Chinese feedback]`;
         document.getElementById('result-feedback').textContent = '评分生成失败，请重试。';
       }
     }
+
+    // ── 词汇弹窗 ─────────────────────────────────────────
+    function openWordModal(w) {
+      document.getElementById('modal-word').textContent     = w.word;
+      document.getElementById('modal-phonetic').textContent = w.phonetic || '';
+      document.getElementById('modal-zh').textContent       = w.zh;
+      document.getElementById('modal-example').textContent  = w.example || '';
+      document.getElementById('modal-example-zh').textContent = w.exZh || '';
+      document.getElementById('word-modal-overlay').classList.remove('hidden');
+    }
+
+    function closeWordModal() {
+      document.getElementById('word-modal-overlay').classList.add('hidden');
+    }
+
+    document.getElementById('word-modal-close').addEventListener('click', closeWordModal);
+    document.getElementById('word-modal-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('word-modal-overlay')) closeWordModal();
+    });
 
     // ── 再来一场 ─────────────────────────────────────────
     document.getElementById('btn-restart').addEventListener('click', () => {
