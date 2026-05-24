@@ -1,4 +1,4 @@
-// quiz.js v3 — Oxford场景分类 + 答错自动入回炉 + 云端同步
+// quiz.js v4 — Oxford场景分类 + 答错自动入回炉 + 云端同步
 
 import { startAnim, stopAnim } from './animations.js';
 import { initAllButtons } from './buttons.js';
@@ -78,15 +78,17 @@ let EXTENDED_QUESTIONS = [];
 
 async function loadExtended() {
   try {
-    const [d, f, w] = await Promise.all([
+    const [d, f, w, tr] = await Promise.all([
       import('./qbank/daily.js').catch(()=>({QBANK_DAILY:[]})),
       import('./qbank/food.js').catch(()=>({QBANK_FOOD:[]})),
       import('./qbank/work.js').catch(()=>({QBANK_WORK:[]})),
+      import('./qbank/travel.js').catch(()=>({QBANK_TRAVEL:[]})),
     ]);
     EXTENDED_QUESTIONS = [
       ...(d.QBANK_DAILY||[]),
       ...(f.QBANK_FOOD||[]),
       ...(w.QBANK_WORK||[]),
+      ...(tr.QBANK_TRAVEL||[]),
     ];
   } catch(e) {
     EXTENDED_QUESTIONS = [];
@@ -122,7 +124,6 @@ function buildQuiz() {
 
 const DOTS = ['●○○○○','●●○○○','●●●○○','●●●●○','●●●●●'];
 
-// ── 回炉本操作（含云端同步）────────────────────────────────
 async function syncCloud() {
   try {
     const user = await getCurrentUser();
@@ -217,11 +218,9 @@ function checkAnswer(skipped=false) {
   const ok=!skipped&&raw===q.word.toLowerCase();
 
   if(ok) { score++; if(sceneScores[q.scene]) sceneScores[q.scene].correct++; }
-
   if(!ok && !skipped) addToReview(q.id);
   if(skipped) addToReview(q.id);
 
-  // 答题后同步云端（fire and forget）
   syncCloud();
 
   const inReview = isInReview(q.id);
@@ -240,13 +239,8 @@ function checkAnswer(skipped=false) {
       addBtn.dataset.id  = q.id;
       addBtn.style.display = 'inline-flex';
       addBtn.onclick = () => {
-        if(isInReview(q.id)){
-          removeFromReview(q.id);
-          addBtn.textContent='＋ 加入回炉本';
-        } else {
-          addToReview(q.id);
-          addBtn.textContent='✓ 已在回炉本';
-        }
+        if(isInReview(q.id)){ removeFromReview(q.id); addBtn.textContent='＋ 加入回炉本'; }
+        else { addToReview(q.id); addBtn.textContent='✓ 已在回炉本'; }
         syncCloud();
       };
     }
