@@ -355,4 +355,47 @@ export const WORDS = [
 {id:'ac030',dim:'academic',level:2,word:'analyse',phonetic:'/ˈænəlaɪz/',zh:'分析',example:'We need to analyse the data carefully.',exZh:'我们需要仔细分析数据。'},
 {id:'ac031',dim:'academic',level:3,word:'argument',phonetic:'/ˈɑːrɡjʊmənt/',zh:'论点',example:'Her argument was well-structured and clear.',exZh:'她的论点结构清晰，条理分明。'},
 {id:'ac032',dim:'academic',level:3,word:'plagiarism',phonetic:'/ˈpleɪdʒərɪzəm/',zh:'抄袭',example:'Plagiarism is treated seriously in academia.',exZh:'学术界对抄袭行为严肃对待。'},
-{id:'ac033',dim:'academic',level:4,word:'ambivalence',phonetic:'/æmˈbɪvələns/'
+{id:'ac033',dim:'academic',level:4,word:'ambivalence',phonetic:'/æmˈbɪvələns/',zh:'矛盾态度',example:'Scholars show ambivalence toward the new theory.',exZh:'学者们对这一新理论态度矛盾。'},
+{id:'ac034',dim:'academic',level:4,word:'implication',phonetic:'/ˌɪmplɪˈkeɪʃən/',zh:'含义/影响',example:'The implications of the findings are significant.',exZh:'这些发现的影响是深远的。'},
+{id:'ac035',dim:'academic',level:5,word:'phenomenological',phonetic:'/fɪˌnɒmɪnəˈlɒdʒɪkəl/',zh:'现象学的',example:'A phenomenological approach was used.',exZh:'采用了现象学方法。'},
+{id:'ac036',dim:'academic',level:5,word:'semiotics',phonetic:'/ˌsiːmiˈɒtɪks/',zh:'符号学',example:'Semiotics studies signs and their meanings.',exZh:'符号学研究符号及其意义。'},
+{id:'ac037',dim:'academic',level:6,word:'teleological',phonetic:'/ˌtɛliəˈlɒdʒɪkəl/',zh:'目的论的',example:'A teleological argument for design.',exZh:'一个支持设计论的目的论论证。'},
+{id:'ac038',dim:'academic',level:2,word:'conclude',phonetic:'/kənˈkluːd/',zh:'得出结论',example:'The paper concludes with recommendations.',exZh:'论文最后给出了建议。'},
+{id:'ac039',dim:'academic',level:3,word:'refute',phonetic:'/rɪˈfjuːt/',zh:'驳斥',example:'The experiment refuted the original claim.',exZh:'实验驳斥了最初的主张。'},
+{id:'ac040',dim:'academic',level:4,word:'nuanced',phonetic:'/ˈnjuːɑːnst/',zh:'细腻入微的',example:'Her analysis was nuanced and thorough.',exZh:'她的分析细腻入微且全面深入。'},
+{id:'ac041',dim:'academic',level:4,word:'anecdotal',phonetic:'/ˌænɪkˈdoʊtəl/',zh:'轶事的/非实证的',example:'Anecdotal evidence is not enough.',exZh:'轶事证据是不够的。'},
+{id:'ac042',dim:'academic',level:5,word:'interpolate',phonetic:'/ɪnˈtɜːrpəleɪt/',zh:'插值/篡入',example:'Extra data was interpolated from the model.',exZh:'额外数据从模型中插值得出。'},
+{id:'ac043',dim:'academic',level:6,word:'heuristic',phonetic:'/hjʊˈrɪstɪk/',zh:'启发式的',example:'A heuristic approach speeds up problem-solving.',exZh:'启发式方法加快了问题解决速度。'},
+{id:'ac044',dim:'academic',level:3,word:'coherent',phonetic:'/koʊˈhɪərənt/',zh:'连贯的/有条理的',example:'The essay was coherent and well-argued.',exZh:'这篇文章连贯有力，论证充分。'},
+{id:'ac045',dim:'academic',level:4,word:'objective',phonetic:'/əbˈdʒɛktɪv/',zh:'客观的',example:'Scientific research must remain objective.',exZh:'科学研究必须保持客观。'},
+{id:'ac046',dim:'academic',level:5,word:'extrapolate',phonetic:'/ɪkˈstræpəleɪt/',zh:'推断/外推',example:'We can extrapolate future trends from this data.',exZh:'我们可以从这些数据推断未来趋势。'},
+{id:'ac047',dim:'academic',level:6,word:'syllogism',phonetic:'/ˈsɪlədʒɪzəm/',zh:'三段论',example:'A syllogism draws a conclusion from two premises.',exZh:'三段论从两个前提推导出结论。'},
+{id:'ac048',dim:'academic',level:2,word:'paraphrase',phonetic:'/ˈpærəfreɪz/',zh:'释义/改述',example:'Paraphrase the author\'s idea in your own words.',exZh:'用自己的语言改述作者的观点。'},
+{id:'ac049',dim:'academic',level:3,word:'counterargument',phonetic:'/ˈkaʊntərˌɑːrɡjʊmənt/',zh:'反驳论点',example:'Always address the strongest counterargument.',exZh:'总要回应最有力的反驳论点。'},
+{id:'ac050',dim:'academic',level:4,word:'substantiate',phonetic:'/səbˈstænʃieɪt/',zh:'证实/佐证',example:'You need evidence to substantiate your claim.',exZh:'你需要证据来佐证你的主张。'},
+];
+
+export function getByDimension(dim){ return WORDS.filter(w=>w.dim===dim); }
+export function getByLevel(level){ return WORDS.filter(w=>w.level===level); }
+export function getDimStats(cards={}){
+  const stats={};
+  for(const dim of Object.keys(DIMENSIONS)){
+    const words=getByDimension(dim);
+    const total=words.length;
+    let learned=0,mastered=0;
+    for(const w of words){
+      const card=cards[w.id];
+      if(!card)continue;
+      if(card.reps>=1||card.state==='review')learned++;
+      if(card.reps>=5||card.stability>=21)mastered++;
+    }
+    stats[dim]={total,learned,mastered,pct:total?learned/total:0};
+  }
+  return stats;
+}
+export function getWeakDimensions(cards={}){
+  const stats=getDimStats(cards);
+  return Object.entries(stats).sort((a,b)=>a[1].pct-b[1].pct).slice(0,3).map(([dim])=>dim);
+}
+export function getWordById(id){ return WORDS.find(w=>w.id===id); }
+export const TOTAL=WORDS.length;
