@@ -1,4 +1,4 @@
-// quiz.js v4 — Oxford场景分类 + 答错自动入回炉 + 云端同步
+// quiz.js v5 — 全场景题库 + 云端同步
 
 import { startAnim, stopAnim } from './animations.js';
 import { initAllButtons } from './buttons.js';
@@ -78,17 +78,21 @@ let EXTENDED_QUESTIONS = [];
 
 async function loadExtended() {
   try {
-    const [d, f, w, tr] = await Promise.all([
+    const [d, f, w, tr, hl, sc] = await Promise.all([
       import('./qbank/daily.js').catch(()=>({QBANK_DAILY:[]})),
       import('./qbank/food.js').catch(()=>({QBANK_FOOD:[]})),
       import('./qbank/work.js').catch(()=>({QBANK_WORK:[]})),
       import('./qbank/travel.js').catch(()=>({QBANK_TRAVEL:[]})),
+      import('./qbank/health.js').catch(()=>({QBANK_HEALTH:[]})),
+      import('./qbank/social.js').catch(()=>({QBANK_SOCIAL:[]})),
     ]);
     EXTENDED_QUESTIONS = [
       ...(d.QBANK_DAILY||[]),
       ...(f.QBANK_FOOD||[]),
       ...(w.QBANK_WORK||[]),
       ...(tr.QBANK_TRAVEL||[]),
+      ...(hl.QBANK_HEALTH||[]),
+      ...(sc.QBANK_SOCIAL||[]),
     ];
   } catch(e) {
     EXTENDED_QUESTIONS = [];
