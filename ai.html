@@ -683,10 +683,11 @@
       doctor:    { icon:'🏥', label:'看医生', desc:'去医院看病描述症状' },
     };
 
-    let selectedScene = null;
-    let customScene   = '';
-    let chatHistory   = [];
-    let userMessages  = [];
+    let selectedScene  = null;
+    let customScene    = '';
+    let chatHistory    = [];
+    let userMessages   = [];
+    let activeSystemPrompt = '';
 
     const btnStart  = document.getElementById('btn-start-chat');
     const customInp = document.getElementById('custom-scene-input');
@@ -734,10 +735,10 @@
       chatHistory  = [];
       userMessages = [];
 
-      const wordList = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
+      const wordList  = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
       const sceneDesc = sceneKey === 'custom' ? customScene : sceneInfo.desc;
 
-      const systemPrompt = `You are a friendly English conversation partner helping a Chinese learner practice English.
+      activeSystemPrompt = `You are a friendly English conversation partner helping a Chinese learner practice English.
 
 Scene: ${sceneDesc}
 
@@ -745,7 +746,7 @@ Today's vocabulary the user is learning: ${wordList || 'general vocabulary'}
 
 Your rules:
 1. Always reply in English, keep sentences natural and not too complex (B1-B2 level).
-2. Naturally weave in the today's vocabulary words when appropriate.
+2. Naturally weave in today's vocabulary words when appropriate.
 3. If the user makes a grammar or vocabulary mistake, FIRST output a correction line starting with [CORRECTION]: briefly explain the error in Chinese, then on a new line output [REPLY]: your natural conversation reply.
 4. If no mistake, just output [REPLY]: your reply.
 5. Keep replies concise (2-4 sentences).
@@ -757,9 +758,10 @@ Start the conversation by setting the scene in 1-2 sentences.`;
       chatHistory = [initMsg];
 
       showTyping();
-      const reply = await callDeepSeek(systemPrompt, chatHistory);
+      const reply = await callDeepSeek(activeSystemPrompt, chatHistory);
       hideTyping();
 
+      // 把 AI 的开场白也加入历史，保持 user/assistant 交替正确
       chatHistory.push({ role: 'assistant', content: reply });
       renderAIMessage(reply);
     }
@@ -790,30 +792,14 @@ Start the conversation by setting the scene in 1-2 sentences.`;
 
       chatHistory.push({ role: 'user', content: text });
 
-      const systemPrompt = buildSystemPrompt();
       showTyping();
-      const reply = await callDeepSeek(systemPrompt, chatHistory);
+      const reply = await callDeepSeek(activeSystemPrompt, chatHistory);
       hideTyping();
 
       chatHistory.push({ role: 'assistant', content: reply });
       renderAIMessage(reply);
       btnSend.disabled = false;
       chatInput.focus();
-    }
-
-    function buildSystemPrompt() {
-      const wordList = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
-      const sceneKey  = selectedScene;
-      const sceneDesc = sceneKey === 'custom' ? customScene : (SCENES[sceneKey]?.desc || '');
-      return `You are a friendly English conversation partner helping a Chinese learner practice English.
-Scene: ${sceneDesc}
-Today's vocabulary: ${wordList || 'general vocabulary'}
-Rules:
-1. Reply in English, B1-B2 level.
-2. Weave in today's vocabulary naturally.
-3. If user makes a mistake, output [CORRECTION]: brief Chinese explanation, then [REPLY]: your reply.
-4. If no mistake, just [REPLY]: your reply.
-5. Keep it concise (2-4 sentences). Be warm and encouraging.`;
     }
 
     function renderAIMessage(raw) {
