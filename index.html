@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="css/theme-buttons.css" />
   <link rel="stylesheet" href="css/dock.css" />
   <style>
-    /* ── 主页专属布局 ── */
     #hero {
       position: fixed;
       inset: 0;
@@ -21,7 +20,6 @@
       align-items: center;
       justify-content: center;
       padding: 0 24px;
-      /* 为顶部导航卡和底部按钮留出空间 */
       padding-top: 200px;
       padding-bottom: 120px;
     }
@@ -50,7 +48,6 @@
       transition: color .3s;
     }
 
-    /* ── 顶部导航卡：2+1 布局 ── */
     .nav-cards {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -62,7 +59,6 @@
       gap: 10px;
     }
 
-    /* 「每日学习」占满第一行 */
     .nav-card:first-child {
       grid-column: 1 / -1;
     }
@@ -90,10 +86,7 @@
     }
     .nav-card:active { transform: scale(.97); }
 
-    .nav-card-icon {
-      font-size: 28px;
-      flex-shrink: 0;
-    }
+    .nav-card-icon { font-size: 28px; flex-shrink: 0; }
     .nav-card-info { flex: 1; min-width: 0; }
     .nav-card-name {
       font-family: 'DM Sans', sans-serif;
@@ -109,7 +102,6 @@
       color: var(--theme-color, #3b82f6);
       opacity: .85;
     }
-    /* 每日学习卡片额外右侧显示今日数量 */
     .nav-card-badge {
       font-family: 'Cormorant Garamond', serif;
       font-size: 28px;
@@ -118,7 +110,6 @@
       flex-shrink: 0;
     }
 
-    /* ── 底部按钮区 ── */
     .bottom-actions {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -148,21 +139,17 @@
       color: rgba(255,255,255,.82);
       transition: all .2s;
     }
-    .bottom-btn:hover {
-      background: rgba(255,255,255,.18);
-      color: #fff;
-    }
+    .bottom-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
     .bottom-btn:active { transform: scale(.96); }
 
-    /* ── 主题选择器位置覆盖：右下角独立悬浮 ── */
+    /* 主题选择器：左下角 */
     #theme-dock {
       position: fixed;
       bottom: 100px;
-      right: 16px;
+      left: 16px;
       z-index: 9000;
     }
 
-    /* ── 登录按钮 ── */
     .login-btn {
       position: fixed;
       top: 20px; right: 16px;
@@ -180,7 +167,6 @@
     }
     .login-btn:hover { color: #fff; background: rgba(255,255,255,.15); }
 
-    /* dm 适配 */
     body.dm .hero-title { color: #111; text-shadow: none; }
     body.dm .hero-sub   { color: rgba(0,0,0,.38); }
     body.dm .nav-card   { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.12); }
@@ -191,17 +177,13 @@
     body.dm .bottom-btn:hover { background: rgba(0,0,0,.1); color: #111; }
     body.dm .login-btn { color: rgba(0,0,0,.45); background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
 
-    /* 雨天主题手机端背景优化 */
-    body.theme-rain #bg {
-      background-position: 30% center;
-    }
+    body.theme-rain #bg { background-position: 30% center; }
 
     @keyframes heroIn {
       from { opacity:0; transform:translateY(16px); }
       to   { opacity:1; transform:translateY(0); }
     }
 
-    /* ── 响应式：桌面端恢复原始布局 ── */
     @media (min-width: 768px) {
       #hero {
         padding-top: 0;
@@ -218,10 +200,7 @@
         background: none;
       }
       .nav-card:first-child { grid-column: auto; }
-      .nav-card {
-        padding: 14px 20px;
-        border-radius: 14px;
-      }
+      .nav-card { padding: 14px 20px; border-radius: 14px; }
       .bottom-actions {
         display: flex;
         flex-direction: row;
@@ -230,7 +209,7 @@
       }
       #theme-dock {
         bottom: 28px;
-        right: 28px;
+        left: 28px;
       }
       .login-btn {
         top: 24px; right: 24px;
@@ -245,10 +224,8 @@
   <div id="grad"></div>
   <canvas id="cv"></canvas>
 
-  <!-- 登录按钮 -->
   <button class="login-btn" id="btn-login">登录</button>
 
-  <!-- 顶部导航卡 -->
   <div class="nav-cards">
     <a href="learn.html" class="nav-card">
       <span class="nav-card-icon">📖</span>
@@ -262,7 +239,7 @@
       <span class="nav-card-icon">📚</span>
       <div class="nav-card-info">
         <div class="nav-card-name">单词库</div>
-        <div class="nav-card-meta">300 WORDS</div>
+        <div class="nav-card-meta">350 WORDS</div>
       </div>
     </a>
     <a href="review.html" class="nav-card">
@@ -274,7 +251,6 @@
     </a>
   </div>
 
-  <!-- 品牌标志 -->
   <div id="hero">
     <div class="hero-brand">
       <div class="hero-title">Foreign</div>
@@ -282,16 +258,13 @@
     </div>
   </div>
 
-  <!-- 底部功能按钮 -->
   <div class="bottom-actions">
     <a href="quiz.html" class="bottom-btn">词汇测试 →</a>
     <a href="vocab.html" class="bottom-btn">词汇图谱 →</a>
   </div>
 
-  <!-- 主题选择器 -->
   <div id="theme-dock"></div>
 
-  <!-- 登录模态框 -->
   <div class="ov" id="login-modal">
     <div class="md" id="login-box">
       <button class="xb" id="close-modal">×</button>
