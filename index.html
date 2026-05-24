@@ -12,65 +12,33 @@
   <link rel="stylesheet" href="css/dock.css" />
   <style>
     #hero {
-      position: fixed;
-      inset: 0;
-      z-index: 30;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 0 24px;
-      padding-top: 200px;
-      padding-bottom: 120px;
+      position: fixed; inset: 0; z-index: 30;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 0 24px; padding-top: 220px; padding-bottom: 120px;
     }
-
     .hero-brand { text-align: center; animation: heroIn 1s ease both; }
-    .hero-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(52px, 12vw, 88px);
-      font-weight: 600;
-      color: #fff;
-      letter-spacing: -0.02em;
-      line-height: 1;
-      margin-bottom: 12px;
-      text-shadow: 0 2px 40px rgba(0,0,0,.3);
-      transition: color .3s, text-shadow .3s;
-    }
-    .hero-sub {
-      font-family: 'Space Mono', monospace;
-      font-size: clamp(9px, 2.2vw, 11px);
-      letter-spacing: 0.22em;
-      color: rgba(255,255,255,.45);
-      text-transform: uppercase;
-      transition: color .3s;
-    }
+    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px, 12vw, 88px); font-weight: 600; color: #fff; letter-spacing: -0.02em; line-height: 1; margin-bottom: 12px; text-shadow: 0 2px 40px rgba(0,0,0,.3); transition: color .3s, text-shadow .3s; }
+    .hero-sub { font-family: 'Space Mono', monospace; font-size: clamp(9px, 2.2vw, 11px); letter-spacing: 0.22em; color: rgba(255,255,255,.45); text-transform: uppercase; transition: color .3s; }
 
+    /* 顶部导航卡：3列网格 */
     .nav-cards {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 40;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
       padding: 16px 16px 0;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto;
       gap: 10px;
     }
+    /* 每日学习占满第一行 */
     .nav-card:first-child { grid-column: 1 / -1; }
+
     .nav-card {
-      background: rgba(255,255,255,.11);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 16px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 16px 20px;
-      cursor: pointer;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.18);
+      border-radius: 16px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      padding: 16px 20px; cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; gap: 14px;
       transition: all .22s cubic-bezier(.34,1.2,.64,1);
-      overflow: hidden;
-      position: relative;
+      overflow: hidden; position: relative;
     }
     .nav-card:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.32); transform: translateY(-2px); }
     .nav-card:active { transform: scale(.97); }
@@ -80,61 +48,32 @@
     .nav-card-meta { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: var(--theme-color, #3b82f6); opacity: .85; }
     .nav-card-badge { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: rgba(255,255,255,.7); flex-shrink: 0; }
 
-    /* ── 底部按钮：靠左排列 ── */
+    /* 底部按钮靠左 */
     .bottom-actions {
-      position: fixed;
-      bottom: 0; left: 0;
-      z-index: 40;
+      position: fixed; bottom: 0; left: 0; z-index: 40;
       padding: 0 16px 24px;
-      display: flex;
-      flex-direction: row;
-      gap: 10px;
+      display: flex; flex-direction: row; gap: 10px;
     }
     .bottom-btn {
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 14px;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 14px 20px;
-      cursor: pointer;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      color: rgba(255,255,255,.82);
-      transition: all .2s;
-      white-space: nowrap;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      padding: 14px 20px; cursor: pointer; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+      color: rgba(255,255,255,.82); transition: all .2s; white-space: nowrap;
     }
     .bottom-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
     .bottom-btn:active { transform: scale(.96); }
 
-    /* ── 主题选择器：右下角 ── */
-    #theme-dock {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      z-index: 9000;
-    }
+    /* 主题选择器右下角 */
+    #theme-dock { position: fixed; bottom: 28px; right: 28px; z-index: 9000; }
 
     .login-btn {
-      position: fixed;
-      top: 20px; right: 16px;
-      z-index: 50;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .08em;
-      color: rgba(255,255,255,.5);
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 8px;
-      padding: 7px 14px;
-      cursor: pointer;
-      transition: all .2s;
+      position: fixed; top: 20px; right: 16px; z-index: 50;
+      font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em;
+      color: rgba(255,255,255,.5); background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14); border-radius: 8px;
+      padding: 7px 14px; cursor: pointer; transition: all .2s;
     }
     .login-btn:hover { color: #fff; background: rgba(255,255,255,.15); }
 
@@ -147,23 +86,13 @@
     body.dm .bottom-btn { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.12); color: rgba(0,0,0,.65); }
     body.dm .bottom-btn:hover { background: rgba(0,0,0,.1); color: #111; }
     body.dm .login-btn { color: rgba(0,0,0,.45); background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
-
     body.theme-rain #bg { background-position: 30% center; }
 
-    @keyframes heroIn {
-      from { opacity:0; transform:translateY(16px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
+    @keyframes heroIn { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);} }
 
     @media (min-width: 768px) {
       #hero { padding-top: 0; padding-bottom: 0; justify-content: center; }
-      .nav-cards {
-        display: flex;
-        flex-direction: row;
-        padding: 20px 24px;
-        gap: 12px;
-        background: none;
-      }
+      .nav-cards { display: flex; flex-direction: row; padding: 20px 24px; gap: 12px; background: none; }
       .nav-card:first-child { grid-column: auto; }
       .nav-card { padding: 14px 20px; border-radius: 14px; }
       .bottom-actions { padding: 0 24px 24px; }
@@ -173,7 +102,6 @@
   </style>
 </head>
 <body>
-
   <div id="bg"></div>
   <div id="vignette"></div>
   <div id="grad"></div>
@@ -204,6 +132,13 @@
         <div class="nav-card-meta">REVIEW</div>
       </div>
     </a>
+    <a href="ai.html" class="nav-card">
+      <span class="nav-card-icon">💬</span>
+      <div class="nav-card-info">
+        <div class="nav-card-name">AI 对话</div>
+        <div class="nav-card-meta">CHAT · PRACTICE</div>
+      </div>
+    </a>
   </div>
 
   <div id="hero">
@@ -213,13 +148,11 @@
     </div>
   </div>
 
-  <!-- 底部按钮靠左 -->
   <div class="bottom-actions">
     <a href="quiz.html" class="bottom-btn">词汇测试 →</a>
     <a href="vocab.html" class="bottom-btn">词汇图谱 →</a>
   </div>
 
-  <!-- 主题选择器右下角独立 -->
   <div id="theme-dock"></div>
 
   <div class="ov" id="login-modal">
