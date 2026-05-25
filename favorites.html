@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的收藏 · Foreign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme-buttons.css" />
+  <link rel="stylesheet" href="css/dock.css" />
+  <style>
+    .bg-image{position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;animation:bgBreath 16s ease-in-out infinite alternate}
+    .bg-canvas{position:fixed;inset:0;z-index:1;width:100%;height:100%;pointer-events:none}
+    .bg-overlay{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 20%,rgba(0,0,0,.55) 100%)}
+    @keyframes bgBreath{0%{transform:scale(1)}100%{transform:scale(1.035)}}
+
+    .page-wrap{position:relative;z-index:10;max-width:760px;margin:0 auto;padding:80px 24px 120px;min-height:100vh}
+    .page-header{display:flex;align-items:center;gap:16px;margin-bottom:32px}
+    .back-link{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 14px;text-decoration:none;transition:all .2s;letter-spacing:.05em;flex-shrink:0}
+    .back-link:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.13)}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,44px);font-weight:600;color:#fff;letter-spacing:-.02em}
+
+    /* 统计栏 */
+    .fav-stats{display:flex;align-items:center;gap:20px;margin-bottom:24px;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.38);letter-spacing:.06em}
+    .fav-stats strong{color:rgba(255,255,255,.75);font-size:15px;font-family:'Cormorant Garamond',serif;font-weight:600}
+
+    /* 搜索 */
+    .search-wrap{margin-bottom:20px}
+    .search-input{width:100%;padding:11px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .18s}
+    .search-input:focus{border-color:rgba(255,255,255,.3)}
+    .search-input::placeholder{color:rgba(255,255,255,.28)}
+
+    /* 词卡列表 */
+    .word-list{display:flex;flex-direction:column;gap:10px}
+    .word-card{background:rgba(255,255,255,.07);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:18px 22px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px}
+    .word-card:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);transform:translateX(4px)}
+    .word-card.expanded{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.1)}
+    .word-main{flex:1;min-width:0}
+    .word-en{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#fff;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+    .word-phonetic{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.38);font-weight:300}
+    .word-zh{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.6);margin-top:2px}
+    .word-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+    .word-level{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:2px 7px;letter-spacing:.06em}
+    .word-status{font-size:9px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.35);font-family:'Space Mono',monospace}
+    .status-dot{width:6px;height:6px;border-radius:50%}
+    .status-dot.new{background:#64748b}.status-dot.learning{background:#f59e0b}
+    .status-dot.review{background:#22c55e}.status-dot.mastered{background:#818cf8}
+
+    /* 展开详情 */
+    .word-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+    .word-card.expanded .word-detail{display:block}
+    .word-sentence{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:6px}
+    .blank-word{color:#fff;font-style:normal;font-weight:600;border-bottom:1px solid rgba(255,255,255,.4)}
+    .word-translation{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.45)}
+    .word-actions{display:flex;gap:10px;margin-top:14px}
+    .btn-unfav{font-family:'Space Mono',monospace;font-size:10px;background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.3);border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .2s;letter-spacing:.04em;color:#fbbf24}
+    .btn-unfav:hover{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.35);color:#f87171}
+
+    /* 空状态 */
+    .empty-state{text-align:center;padding:80px 24px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.3)}
+    .empty-icon{font-size:52px;margin-bottom:16px}
+    .empty-state p{font-size:14px;line-height:1.8}
+    .empty-state a{color:var(--theme-color,#3b82f6);text-decoration:none;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.04em;display:inline-block;margin-top:14px;border:1px solid;border-radius:8px;padding:8px 18px;transition:opacity .2s}
+    .empty-state a:hover{opacity:.75}
+
+    /* 排序控件 */
+    .sort-bar{display:flex;gap:8px;margin-bottom:16px}
+    .sort-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.06em;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;cursor:pointer;transition:all .18s}
+    .sort-btn.on{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.85)}
+
+    /* 亮色 */
+    body.dm .back-link{color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.12)}
+    body.dm .page-title{color:#111}
+    body.dm .fav-stats{color:rgba(0,0,0,.38)}
+    body.dm .fav-stats strong{color:rgba(0,0,0,.7)}
+    body.dm .search-input{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1);color:#111}
+    body.dm .word-card{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
+    body.dm .word-card:hover{background:rgba(0,0,0,.09)}
+    body.dm .word-en{color:#111}
+    body.dm .word-zh{color:rgba(0,0,0,.6)}
+    body.dm .word-sentence{color:rgba(0,0,0,.65)}
+    body.dm .word-translation{color:rgba(0,0,0,.42)}
+    body.dm .sort-btn{color:rgba(0,0,0,.4);background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
+    body.dm .sort-btn.on{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.2);color:#111}
+  </style>
+  <link rel="stylesheet" href="css/mobile.css" />
+</head>
+<body>
+  <div id="bg-image" class="bg-image"></div>
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+  <div class="bg-overlay"></div>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <a href="index.html" class="back-link">← 返回</a>
+      <h1 class="page-title">我的收藏</h1>
+    </div>
+
+    <div class="fav-stats">
+      <span>⭐ <strong id="fav-count">0</strong> 个收藏</span>
+      <span id="fav-dim-counts"></span>
+    </div>
+
+    <div class="search-wrap">
+      <input class="search-input" id="search-input" placeholder="搜索收藏的单词…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+    </div>
+
+    <div class="sort-bar">
+      <button class="sort-btn on" data-sort="time">最近收藏</button>
+      <button class="sort-btn" data-sort="alpha">字母排序</button>
+      <button class="sort-btn" data-sort="level">难度排序</button>
+    </div>
+
+    <div class="word-list" id="word-list"></div>
+  </div>
+
+  <script type="module">
+    import { startAnim } from './js/animations.js';
+    import { WORDS, DIMENSIONS } from './js/wordbank.js';
+    import { initDock } from './js/dock.js';
+    import { pushToCloud, getCurrentUser } from './js/auth.js';
+
+    // ── 背景 ──
+    const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
+    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
+    const theme = localStorage.getItem('fg_theme') || 'ocean';
+    document.body.className = `theme-${theme}`;
+    if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
+    else if(theme==='black'){document.body.style.background='#080808';}
+    const bgEl=document.getElementById('bg-image'), cvEl=document.getElementById('bg-canvas');
+    cvEl.width=window.innerWidth; cvEl.height=window.innerHeight;
+    window.addEventListener('resize',()=>{cvEl.width=window.innerWidth;cvEl.height=window.innerHeight;});
+    if(THEME_IMGS[theme]){bgEl.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bgEl.style.opacity='1';}
+    else{bgEl.style.opacity='0';}
+    if(THEME_ANIMS[theme]&&THEME_ANIMS[theme]!=='none') startAnim(THEME_ANIMS[theme],cvEl);
+    initDock();
+
+    // ── 数据 ──
+    const LEVEL_MAP = {1:'A1',2:'A2',3:'B1',4:'B2',5:'C1',6:'C2'};
+    const STATUS_LABEL = {new:'未学习',learning:'学习中',review:'复习中',mastered:'已掌握'};
+    const DIM_COLORS = {daily:'#3b82f6',emotion:'#f9a8d4',nature:'#86efac',abstract:'#818cf8',social:'#fb923c',academic:'#6ee7b7'};
+
+    let cards = {};
+    try { cards = JSON.parse(localStorage.getItem('fg_cards')||'{}'); } catch{}
+
+    function getStatus(wordId){
+      const c=cards[wordId];
+      if(!c||c.state==='new') return 'new';
+      if(c.state==='learning'||c.state==='relearn') return 'learning';
+      if(c.reps>=5||(c.stability!=null&&c.stability>=21)) return 'mastered';
+      return 'review';
+    }
+
+    function loadFavs(){ try{return JSON.parse(localStorage.getItem('fg_favorites')||'{}')}catch{return{}} }
+    function saveFavs(d){
+      localStorage.setItem('fg_favorites',JSON.stringify(d));
+      getCurrentUser().then(u=>{ if(u) pushToCloud(); }).catch(()=>{});
+    }
+
+    let sortMode = 'time';
+    let searchQ  = '';
+
+    document.querySelectorAll('.sort-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        sortMode=btn.dataset.sort;
+        document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('on',b===btn));
+        renderList();
+      });
+    });
+
+    document.getElementById('search-input').addEventListener('input',e=>{
+      searchQ=e.target.value.trim().toLowerCase();
+      renderList();
+    });
+
+    function renderList(){
+      const favs=loadFavs();
+      const list=document.getElementById('word-list');
+
+      // 找出收藏的词
+      let favWords = WORDS.filter(w=>!!favs[w.id]);
+
+      // 搜索过滤
+      if(searchQ) favWords=favWords.filter(w=>w.word.toLowerCase().includes(searchQ)||(w.zh||'').includes(searchQ));
+
+      // 排序
+      if(sortMode==='time'){
+        favWords.sort((a,b)=>(favs[b.id]||0)-(favs[a.id]||0));
+      } else if(sortMode==='alpha'){
+        favWords.sort((a,b)=>a.word.localeCompare(b.word));
+      } else if(sortMode==='level'){
+        favWords.sort((a,b)=>a.level-b.level);
+      }
+
+      // 统计
+      const total=Object.keys(favs).length;
+      document.getElementById('fav-count').textContent=total;
+
+      // 维度分布小标签
+      const dimCounts={};
+      WORDS.filter(w=>!!favs[w.id]).forEach(w=>{ dimCounts[w.dim]=(dimCounts[w.dim]||0)+1; });
+      const dimEl=document.getElementById('fav-dim-counts');
+      dimEl.innerHTML=Object.entries(dimCounts).map(([d,n])=>{
+        const info=DIMENSIONS[d]||{icon:'',label:d};
+        return `<span style="color:${DIM_COLORS[d]||'#94a3b8'};opacity:.75">${info.icon} ${n}</span>`;
+      }).join('<span style="opacity:.2"> · </span>');
+
+      list.innerHTML='';
+
+      if(favWords.length===0){
+        list.innerHTML=`<div class="empty-state">
+          <div class="empty-icon">${total===0?'⭐':'🔍'}</div>
+          <p>${total===0?'还没有收藏的单词<br>在单词库里点 ☆ 收藏':'没找到匹配的收藏词'}</p>
+          ${total===0?'<a href="wordbank.html">去单词库收藏 →</a>':''}
+        </div>`;
+        return;
+      }
+
+      favWords.forEach(word=>{
+        const status=getStatus(word.id);
+        const dim=DIMENSIONS[word.dim]||{icon:'',label:word.dim};
+        const levelLabel=LEVEL_MAP[word.level]||word.level;
+
+        function hl(str){
+          if(!searchQ)return str;
+          const idx=str.toLowerCase().indexOf(searchQ);
+          if(idx<0)return str;
+          return str.slice(0,idx)+`<mark style="background:rgba(255,220,0,.3);border-radius:2px">${str.slice(idx,idx+searchQ.length)}</mark>`+str.slice(idx+searchQ.length);
+        }
+
+        const card=document.createElement('div');
+        card.className='word-card';
+
+        const exHl=(word.example||'').replace(word.word,`<span class="blank-word">${word.word}</span>`);
+
+        card.innerHTML=`
+          <div class="word-main">
+            <div class="word-en">⭐ ${hl(word.word)}<span class="word-phonetic">${word.phonetic||''}</span></div>
+            <div class="word-zh">${hl(word.zh||'')}</div>
+            <div class="word-detail">
+              <div class="word-sentence">${exHl}</div>
+              <div class="word-translation">${word.exZh||''}</div>
+              <div class="word-actions">
+                <button class="btn-unfav" data-id="${word.id}">☆ 取消收藏</button>
+              </div>
+            </div>
+          </div>
+          <div class="word-meta">
+            <span class="word-level">${levelLabel} · ${dim.icon}</span>
+            <span class="word-status"><span class="status-dot ${status}"></span>${STATUS_LABEL[status]}</span>
+          </div>`;
+
+        card.addEventListener('click',e=>{
+          if(e.target.closest('.btn-unfav'))return;
+          card.classList.toggle('expanded');
+        });
+
+        card.querySelector('.btn-unfav').addEventListener('click',e=>{
+          e.stopPropagation();
+          const f=loadFavs();
+          delete f[word.id];
+          saveFavs(f);
+          card.style.transition='opacity .22s,transform .22s';
+          card.style.opacity='0'; card.style.transform='translateX(12px)';
+          setTimeout(()=>renderList(),230);
+        });
+
+        list.appendChild(card);
+      });
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
