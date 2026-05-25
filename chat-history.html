@@ -122,6 +122,7 @@
     if (THEME_IMGS[theme]) { bgEl.style.backgroundImage = `url(${THEME_IMGS[theme]})`; bgEl.style.opacity = '1'; }
     else { bgEl.style.opacity = '0'; }
     if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cvEl);
+    import('./js/transitions.js');
     initDock();
 
     const SCENE_ICONS = {cafe:'☕',interview:'💼',travel:'✈️',friend:'😊',shopping:'🛍️',doctor:'🏥',custom:'✨'};
