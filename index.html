@@ -21,7 +21,6 @@
     .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px, 12vw, 88px); font-weight: 600; color: #fff; letter-spacing: -0.02em; line-height: 1; margin-bottom: 12px; text-shadow: 0 2px 40px rgba(0,0,0,.3); transition: color .3s, text-shadow .3s; }
     .hero-sub { font-family: 'Space Mono', monospace; font-size: clamp(9px, 2.2vw, 11px); letter-spacing: 0.22em; color: rgba(255,255,255,.45); text-transform: uppercase; transition: color .3s; }
 
-    /* 顶部导航卡：3列网格 */
     .nav-cards {
       position: fixed; top: 0; left: 0; right: 0; z-index: 40;
       padding: 16px 16px 0;
@@ -29,7 +28,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    /* 每日学习占满第一行 */
     .nav-card:first-child { grid-column: 1 / -1; }
 
     .nav-card {
@@ -48,7 +46,6 @@
     .nav-card-meta { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: var(--theme-color, #3b82f6); opacity: .85; }
     .nav-card-badge { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: rgba(255,255,255,.7); flex-shrink: 0; }
 
-    /* 底部按钮靠左 */
     .bottom-actions {
       position: fixed; bottom: 0; left: 0; z-index: 40;
       padding: 0 16px 24px;
@@ -65,7 +62,6 @@
     .bottom-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
     .bottom-btn:active { transform: scale(.96); }
 
-    /* 主题选择器右下角 */
     #theme-dock { position: fixed; bottom: 28px; right: 28px; z-index: 9000; }
 
     .login-btn {
@@ -122,7 +118,7 @@
       <span class="nav-card-icon">📚</span>
       <div class="nav-card-info">
         <div class="nav-card-name">单词库</div>
-        <div class="nav-card-meta">350 WORDS</div>
+        <div class="nav-card-meta" id="wordbank-meta">600 WORDS</div>
       </div>
     </a>
     <a href="review.html" class="nav-card">
@@ -173,6 +169,12 @@
     </div>
   </div>
 
+  <script type="module">
+    import { TOTAL } from './js/wordbank.js';
+    // 动态更新词数
+    const meta = document.getElementById('wordbank-meta');
+    if (meta) meta.textContent = TOTAL + ' WORDS';
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
