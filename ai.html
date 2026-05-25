@@ -233,7 +233,7 @@
     import { getTodayPlan } from './js/fsrs.js';
     import { pushToCloud, getCurrentUser } from './js/auth.js';
     import { speak, createSpeakBtn, applyDmStyle } from './js/tts.js';
-    import './js/transitions.js';
+    import { navigate } from './js/transitions.js';
 
     const THEME_IMGS   = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
     const THEME_ANIMS  = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
@@ -541,5 +541,6 @@
       return fullText;
     }
   </script>
+  <script type="module" src="js/keyboard.js"></script>
 </body>
 </html>
