@@ -21,7 +21,9 @@ const THEMES = {
 const bg=document.getElementById('bg');
 const cv=document.getElementById('cv');
 function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
-resize();window.addEventListener('resize',()=>{resize();applyTheme();});
+resize();
+// fix #6: resize 只更新 canvas 尺寸，不重启动画
+window.addEventListener('resize',()=>{ resize(); });
 
 function applyTheme(){
   const key=localStorage.getItem('fg_theme')||'ocean';
@@ -57,7 +59,7 @@ const BUILTIN_QUESTIONS = [
   {id:'wk003',scene:'work',level:3,word:'redundant',sentence:'Two hundred workers were made ___ last month.',zh:'上个月有两百名工人被裁员。',hint:'被裁员的'},
   {id:'wk004',scene:'work',level:4,word:'autonomy',sentence:'Employees need ___ to do their best work.',zh:'员工需要自主权才能做出最好的工作。',hint:'自主权'},
   {id:'wk005',scene:'work',level:5,word:'meritocracy',sentence:'A true ___ rewards skill over connections.',zh:'真正的精英制度奖励能力而非关系。',hint:'精英制度'},
-  {id:'tr001',scene:'travel',level:1,word:'passport',sentence:'Don\'t forget your ___ at the airport.',zh:'在机场不要忘记你的护照。',hint:'护照'},
+  {id:'tr001',scene:'travel',level:1,word:'passport',sentence:"Don't forget your ___ at the airport.",zh:'在机场不要忘记你的护照。',hint:'护照'},
   {id:'tr002',scene:'travel',level:2,word:'itinerary',sentence:'She planned a detailed ___ for the trip.',zh:'她为这次旅行制定了详细的行程。',hint:'行程计划'},
   {id:'tr003',scene:'travel',level:3,word:'layover',sentence:'We had a four-hour ___ in Dubai.',zh:'我们在迪拜有四小时的中途停留。',hint:'中途停留'},
   {id:'tr004',scene:'travel',level:4,word:'itinerant',sentence:'He lived an ___ life, moving city to city.',zh:'他过着流浪的生活，从一个城市移到另一个城市。',hint:'流浪的/巡回的'},
@@ -208,6 +210,15 @@ function loadQuestion(idx) {
   qInput.value='';
   btnConfirm.classList.remove('ready');
   qFeedback.classList.remove('visible');
+
+  // fix #5: 每道新题加载时彻底重置 feedback-add-btn 状态，防止上一题残留
+  const addBtn = qFeedback.querySelector('.feedback-add-btn');
+  if (addBtn) {
+    addBtn.style.display = 'none';
+    addBtn.textContent = '＋ 加入回炉本';
+    addBtn.onclick = null;
+  }
+
   const parts=q.sentence.split('___');
   qSentence.innerHTML=parts[0]+'<span class="q-blank">____</span>'+(parts[1]||'');
   qCard.classList.add('exit');
