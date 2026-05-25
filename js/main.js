@@ -4,6 +4,7 @@ import { initAllButtons }       from './buttons.js';
 import { getTodayPlan }         from './fsrs.js';
 import { WORDS }                from './wordbank.js';
 import { register, login, logout, getCurrentUser, pullFromCloud, startAutoSync } from './auth.js';
+import './transitions.js';
 
 // ── 主题配置 ──────────────────────────────────────────────
 const THEMES = {
