@@ -91,29 +91,35 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:24px 3
   .progress-big{font-size:38px}
 }
 
-/* 亮色主题 */
-body.theme-white{color:#1e293b}
-body.theme-white .card{background:rgba(255,255,255,.72);border-color:rgba(30,41,59,.1)}
-body.theme-white .card-label,.theme-white .trend-label{color:rgba(30,41,59,.42)}
-body.theme-white .progress-big{color:#1e293b}
-body.theme-white .progress-sub{color:rgba(30,41,59,.52)}
-body.theme-white .progress-track,.theme-white .dim-bar-track{background:rgba(30,41,59,.1)}
-body.theme-white .progress-labels{color:rgba(30,41,59,.38)}
-body.theme-white .dim-bar-name{color:rgba(30,41,59,.65)}
-body.theme-white .dim-bar-name span{color:rgba(30,41,59,.38)}
-body.theme-white .nav-back{color:rgba(30,41,59,.6);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
-body.theme-white .nav-title{color:#1e293b}
-body.theme-white .weak-item{background:rgba(30,41,59,.05);border-color:rgba(30,41,59,.1)}
-body.theme-white .weak-item:hover{background:rgba(30,41,59,.1)}
-body.theme-white .weak-dim-name{color:#1e293b}
-body.theme-white .weak-pct{color:rgba(30,41,59,.42)}
-body.theme-white .weak-word-tag{background:rgba(30,41,59,.07);color:rgba(30,41,59,.6)}
-body.theme-white .heat-legend,.theme-white .heat-months{color:rgba(30,41,59,.42)}
-body.theme-white .heat-empty{color:rgba(30,41,59,.35)}
-body.theme-white .heat-tooltip{background:rgba(255,255,255,.97);border-color:rgba(30,41,59,.15);color:#1e293b}
-body.theme-white .trend-divider{background:rgba(30,41,59,.08)}
-body.theme-white .trend-stat-num{color:#1e293b}
-body.theme-white .trend-stat-label{color:rgba(30,41,59,.38)}
+/* ════════════════════════════════════════════════
+   body.dm — 亮色背景统一适配（white + black 共用）
+   ════════════════════════════════════════════════ */
+body.dm { color: #1e293b; }
+body.dm .card { background:rgba(255,255,255,.72); border-color:rgba(30,41,59,.1); }
+body.dm .card-label { color:rgba(30,41,59,.42); }
+body.dm .trend-label { color:rgba(30,41,59,.42); }
+body.dm .progress-big { color:#1e293b; }
+body.dm .progress-sub { color:rgba(30,41,59,.52); }
+body.dm .progress-track { background:rgba(30,41,59,.1); }
+body.dm .dim-bar-track { background:rgba(30,41,59,.08); }
+body.dm .progress-labels { color:rgba(30,41,59,.38); }
+body.dm .dim-bar-name { color:rgba(30,41,59,.65); }
+body.dm .dim-bar-name span { color:rgba(30,41,59,.38); }
+body.dm .nav-back { color:rgba(30,41,59,.6); background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.1); }
+body.dm .nav-back:hover { color:#1e293b; background:rgba(0,0,0,.1); }
+body.dm .nav-title { color:#1e293b; }
+body.dm .weak-item { background:rgba(30,41,59,.05); border-color:rgba(30,41,59,.1); }
+body.dm .weak-item:hover { background:rgba(30,41,59,.1); border-color:rgba(30,41,59,.2); }
+body.dm .weak-dim-name { color:#1e293b; }
+body.dm .weak-pct { color:rgba(30,41,59,.42); }
+body.dm .weak-word-tag { background:rgba(30,41,59,.07); color:rgba(30,41,59,.6); }
+body.dm .heat-legend { color:rgba(30,41,59,.42); }
+body.dm .heat-months { color:rgba(30,41,59,.42); }
+body.dm .heat-empty { color:rgba(30,41,59,.35); }
+body.dm .heat-tooltip { background:rgba(255,255,255,.97); border-color:rgba(30,41,59,.15); color:#1e293b; }
+body.dm .trend-divider { background:rgba(30,41,59,.08); }
+body.dm .trend-stat-num { color:#1e293b; }
+body.dm .trend-stat-label { color:rgba(30,41,59,.38); }
 </style>
 </head>
 <body>
@@ -131,7 +137,6 @@ body.theme-white .trend-stat-label{color:rgba(30,41,59,.38)}
   </nav>
 
   <div class="main">
-    <!-- 总体进度 -->
     <div class="card card-total">
       <div class="card-label">总体进度</div>
       <div class="progress-row">
@@ -147,25 +152,20 @@ body.theme-white .trend-stat-label{color:rgba(30,41,59,.38)}
       <div class="dim-bars" id="dimBars"></div>
     </div>
 
-    <!-- 雷达图 -->
     <div class="card card-radar">
       <div class="card-label">六维度掌握度</div>
       <canvas id="radarCanvas" width="320" height="300"></canvas>
     </div>
 
-    <!-- 热力图 + 趋势折线图 -->
     <div class="card card-heat">
       <div class="card-label">学习热力图</div>
       <div class="heat-scroll" id="heatmapWrap"></div>
-
-      <!-- 趋势折线图 -->
       <div class="trend-divider"></div>
       <div class="trend-label">近30天学习趋势</div>
       <canvas id="trendCanvas" height="100"></canvas>
       <div class="trend-stats" id="trendStats"></div>
     </div>
 
-    <!-- 薄弱维度 -->
     <div class="card card-weak">
       <div class="card-label">薄弱维度 · 推荐练习</div>
       <div class="weak-list" id="weakList"></div>
@@ -180,210 +180,218 @@ import { initDock } from './js/dock.js';
 
 const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
 const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
-const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#94a3b8'};
+const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#475569'};
 
 const theme = localStorage.getItem('fg_theme') || 'ocean';
 document.body.className = `theme-${theme}`;
 const themeColor = THEME_COLORS[theme] || '#3b82f6';
 document.documentElement.style.setProperty('--theme-color', themeColor);
-if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
-else if(theme==='black'){document.body.style.background='#080808';}
-const bg=document.getElementById('bg-image'), cv=document.getElementById('bg-canvas');
-cv.width=window.innerWidth; cv.height=window.innerHeight;
-window.addEventListener('resize',()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;});
-if(THEME_IMGS[theme]){bg.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bg.style.opacity='1';}
-else bg.style.opacity='0';
-if(THEME_ANIMS[theme]&&THEME_ANIMS[theme]!=='none') startAnim(THEME_ANIMS[theme], cv);
 
-initDock('bg-image','bg-canvas');
+// white 和 black 都用 dm（深色文字）
+if (theme === 'white') {
+  document.body.style.background = '#f6f5f0';
+  document.body.classList.add('dm');
+} else if (theme === 'black') {
+  document.body.style.background = '#080808';
+  document.body.classList.add('dm');
+}
+
+const bg = document.getElementById('bg-image');
+const cv = document.getElementById('bg-canvas');
+cv.width = window.innerWidth; cv.height = window.innerHeight;
+window.addEventListener('resize', () => { cv.width = window.innerWidth; cv.height = window.innerHeight; });
+if (THEME_IMGS[theme]) { bg.style.backgroundImage = `url(${THEME_IMGS[theme]})`; bg.style.opacity = '1'; }
+else bg.style.opacity = '0';
+if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cv);
+
+initDock('bg-image', 'bg-canvas');
 
 // ── 数据 ──
-const rawCards  = JSON.parse(localStorage.getItem('fg_cards')||'{}');
-const studyLog  = JSON.parse(localStorage.getItem('fg_study_log')||'{}');
-const dimStats  = getDimStats(rawCards);
-const total     = WORDS.length;
-const learned   = Object.values(dimStats).reduce((s,d)=>s+d.learned,0);
-const pct       = total ? learned/total : 0;
-const isDark    = theme !== 'white';
+const rawCards = JSON.parse(localStorage.getItem('fg_cards') || '{}');
+const studyLog = JSON.parse(localStorage.getItem('fg_study_log') || '{}');
+const dimStats = getDimStats(rawCards);
+const total    = WORDS.length;
+const learned  = Object.values(dimStats).reduce((s, d) => s + d.learned, 0);
+const pct      = total ? learned / total : 0;
+
+// isDark：有背景图 = 深色；white/black 都用 dm，canvas 颜色用亮色方案
+const isDark = !!THEME_IMGS[theme];
 
 // ── 总体进度 ──
 document.getElementById('learnedCount').textContent = learned;
 document.getElementById('totalCount').textContent   = total;
-document.getElementById('pctLabel').textContent     = `${Math.round(pct*100)}% 已接触`;
-setTimeout(()=>{ document.getElementById('progressFill').style.width=`${Math.round(pct*100)}%`; },100);
+document.getElementById('pctLabel').textContent     = `${Math.round(pct * 100)}% 已接触`;
+setTimeout(() => { document.getElementById('progressFill').style.width = `${Math.round(pct * 100)}%`; }, 100);
 
 // ── 维度进度条 ──
 const dimColors = {daily:'#3b82f6',emotion:'#f9a8d4',nature:'#86efac',abstract:'#818cf8',social:'#fb923c',academic:'#6ee7b7'};
 const dimBarsEl = document.getElementById('dimBars');
-for(const [dim,info] of Object.entries(DIMENSIONS)){
-  const st=dimStats[dim];
-  const el=document.createElement('div');
-  el.innerHTML=`
+for (const [dim, info] of Object.entries(DIMENSIONS)) {
+  const st = dimStats[dim];
+  const el = document.createElement('div');
+  el.innerHTML = `
     <div class="dim-bar-name">${info.icon} ${info.label}<span>${st.learned}/${st.total}</span></div>
-    <div class="dim-bar-track"><div class="dim-bar-fill" style="width:0%;background:${dimColors[dim]||themeColor}"></div></div>`;
+    <div class="dim-bar-track"><div class="dim-bar-fill" style="width:0%;background:${dimColors[dim] || themeColor}"></div></div>`;
   dimBarsEl.appendChild(el);
-  setTimeout(()=>el.querySelector('.dim-bar-fill').style.width=`${Math.round(st.pct*100)}%`,200);
+  setTimeout(() => el.querySelector('.dim-bar-fill').style.width = `${Math.round(st.pct * 100)}%`, 200);
 }
 
 // ── 雷达图 ──
 const radarCv = document.getElementById('radarCanvas');
 const ctx = radarCv.getContext('2d');
 const isMobile = window.innerWidth < 768;
-const rSize = isMobile ? Math.min(window.innerWidth-64, 280) : 320;
-radarCv.width = rSize; radarCv.height = Math.round(rSize*0.94);
-const cx=rSize/2, cy=radarCv.height/2, R=rSize*.34;
-const dims=Object.keys(DIMENSIONS);
-const labels=dims.map(d=>DIMENSIONS[d].label);
-const values=dims.map(d=>dimStats[d].pct);
-const N=dims.length, PI2=Math.PI*2;
-const gridCol  = isDark?'rgba(241,245,249,.1)':'rgba(30,41,59,.1)';
-const labelCol = isDark?'rgba(241,245,249,.58)':'rgba(30,41,59,.58)';
+const rSize = isMobile ? Math.min(window.innerWidth - 64, 280) : 320;
+radarCv.width = rSize; radarCv.height = Math.round(rSize * 0.94);
+const cx = rSize / 2, cy = radarCv.height / 2, R = rSize * .34;
+const dims = Object.keys(DIMENSIONS);
+const labels = dims.map(d => DIMENSIONS[d].label);
+const values = dims.map(d => dimStats[d].pct);
+const N = dims.length, PI2 = Math.PI * 2;
+const gridCol  = isDark ? 'rgba(241,245,249,.1)'  : 'rgba(30,41,59,.1)';
+const labelCol = isDark ? 'rgba(241,245,249,.58)' : 'rgba(30,41,59,.58)';
 
-function polarPt(i,r){ const a=(PI2*i/N)-Math.PI/2; return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]; }
+function polarPt(i, r) { const a = (PI2 * i / N) - Math.PI / 2; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; }
 
-let prog=0;
-function drawRadar(p){
-  ctx.clearRect(0,0,radarCv.width,radarCv.height);
-  [.25,.5,.75,1].forEach(r=>{
+let prog = 0;
+function drawRadar(p) {
+  ctx.clearRect(0, 0, radarCv.width, radarCv.height);
+  [.25, .5, .75, 1].forEach(r => {
     ctx.beginPath();
-    for(let i=0;i<N;i++){const[x,y]=polarPt(i,R*r);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
-    ctx.closePath();ctx.strokeStyle=gridCol;ctx.lineWidth=1;ctx.stroke();
+    for (let i = 0; i < N; i++) { const [x, y] = polarPt(i, R * r); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+    ctx.closePath(); ctx.strokeStyle = gridCol; ctx.lineWidth = 1; ctx.stroke();
   });
-  for(let i=0;i<N;i++){
-    const[x,y]=polarPt(i,R);
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.strokeStyle=gridCol;ctx.lineWidth=1;ctx.stroke();
-    const[lx,ly]=polarPt(i,R+(isMobile?18:24));
-    ctx.font=`${isMobile?10:11}px "DM Sans"`;ctx.fillStyle=labelCol;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(labels[i],lx,ly);
-    ctx.font=`9px "Space Mono"`;ctx.fillStyle=themeColor+'cc';
-    ctx.fillText(Math.round(values[i]*100)+'%',lx,ly+(isMobile?12:14));
+  for (let i = 0; i < N; i++) {
+    const [x, y] = polarPt(i, R);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.strokeStyle = gridCol; ctx.lineWidth = 1; ctx.stroke();
+    const [lx, ly] = polarPt(i, R + (isMobile ? 18 : 24));
+    ctx.font = `${isMobile ? 10 : 11}px "DM Sans"`; ctx.fillStyle = labelCol; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(labels[i], lx, ly);
+    ctx.font = `9px "Space Mono"`; ctx.fillStyle = themeColor + 'cc';
+    ctx.fillText(Math.round(values[i] * 100) + '%', lx, ly + (isMobile ? 12 : 14));
   }
   ctx.beginPath();
-  for(let i=0;i<N;i++){
-    const v=values[i]*p;
-    const[x,y]=polarPt(i,R*Math.max(v,.02));
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  for (let i = 0; i < N; i++) {
+    const v = values[i] * p;
+    const [x, y] = polarPt(i, R * Math.max(v, .02));
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle=themeColor+'44';ctx.fill();
-  ctx.strokeStyle=themeColor;ctx.lineWidth=1.5;ctx.stroke();
-  for(let i=0;i<N;i++){
-    const v=values[i]*p;
-    const[x,y]=polarPt(i,R*Math.max(v,.02));
-    ctx.beginPath();ctx.arc(x,y,3.5,0,PI2);ctx.fillStyle=themeColor;ctx.fill();
+  ctx.fillStyle = themeColor + '44'; ctx.fill();
+  ctx.strokeStyle = themeColor; ctx.lineWidth = 1.5; ctx.stroke();
+  for (let i = 0; i < N; i++) {
+    const v = values[i] * p;
+    const [x, y] = polarPt(i, R * Math.max(v, .02));
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, PI2); ctx.fillStyle = themeColor; ctx.fill();
   }
 }
-function animRadar(){ prog+=.04;if(prog>1)prog=1;drawRadar(prog);if(prog<1)requestAnimationFrame(animRadar); }
-setTimeout(animRadar,200);
+function animRadar() { prog += .04; if (prog > 1) prog = 1; drawRadar(prog); if (prog < 1) requestAnimationFrame(animRadar); }
+setTimeout(animRadar, 200);
 
 // ── 热力图 ──
-function buildHeatmap(){
-  const wrap=document.getElementById('heatmapWrap');
-  const today=new Date();
-  const WEEKS=isMobile?18:26, DAYS=7;
-  const cells=WEEKS*DAYS;
-  const dates=[];
-  for(let i=cells-1;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);dates.push({key:d.toISOString().slice(0,10),d});}
-  const maxCount=Math.max(1,...Object.values(studyLog));
-  const CELL=isMobile?12:13, GAP=isMobile?2:3;
-  const gridW=WEEKS*(CELL+GAP);
+function buildHeatmap() {
+  const wrap = document.getElementById('heatmapWrap');
+  const today = new Date();
+  const WEEKS = isMobile ? 18 : 26, DAYS = 7;
+  const cells = WEEKS * DAYS;
+  const dates = [];
+  for (let i = cells - 1; i >= 0; i--) { const d = new Date(today); d.setDate(today.getDate() - i); dates.push({ key: d.toISOString().slice(0, 10), d }); }
+  const maxCount = Math.max(1, ...Object.values(studyLog));
+  const CELL = isMobile ? 12 : 13, GAP = isMobile ? 2 : 3;
+  const gridW = WEEKS * (CELL + GAP);
 
-  function cellColor(count){
-    if(!count)return isDark?'rgba(241,245,249,.07)':'rgba(30,41,59,.08)';
-    const idx=Math.min(Math.floor(count/maxCount*5),4);
-    const alpha=[.2,.4,.6,.8,1][idx];
-    return themeColor+Math.round(alpha*255).toString(16).padStart(2,'0');
+  function cellColor(count) {
+    if (!count) return isDark ? 'rgba(241,245,249,.07)' : 'rgba(30,41,59,.08)';
+    const idx = Math.min(Math.floor(count / maxCount * 5), 4);
+    const alpha = [.2, .4, .6, .8, 1][idx];
+    return themeColor + Math.round(alpha * 255).toString(16).padStart(2, '0');
   }
 
-  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthRow=document.createElement('div');
-  monthRow.className='heat-months';
-  monthRow.style.cssText=`width:${gridW}px;position:relative;height:14px;margin-bottom:4px`;
-  for(let w=0;w<WEEKS;w++){
-    const d=dates[w*7];
-    if(d&&(w===0||dates[(w-1)*7].d.getMonth()!==d.d.getMonth())){
-      const span=document.createElement('span');
-      span.textContent=monthNames[d.d.getMonth()];
-      span.style.cssText=`position:absolute;left:${w*(CELL+GAP)}px;font-size:9px`;
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthRow = document.createElement('div');
+  monthRow.className = 'heat-months';
+  monthRow.style.cssText = `width:${gridW}px;position:relative;height:14px;margin-bottom:4px`;
+  for (let w = 0; w < WEEKS; w++) {
+    const d = dates[w * 7];
+    if (d && (w === 0 || dates[(w - 1) * 7].d.getMonth() !== d.d.getMonth())) {
+      const span = document.createElement('span');
+      span.textContent = monthNames[d.d.getMonth()];
+      span.style.cssText = `position:absolute;left:${w * (CELL + GAP)}px;font-size:9px`;
       monthRow.appendChild(span);
     }
   }
   wrap.appendChild(monthRow);
 
-  const grid=document.createElement('div');
-  grid.style.cssText=`display:grid;grid-template-columns:repeat(${WEEKS},${CELL}px);grid-template-rows:repeat(${DAYS},${CELL}px);gap:${GAP}px;width:${gridW}px`;
-  const tip=document.getElementById('heatTip');
+  const grid = document.createElement('div');
+  grid.style.cssText = `display:grid;grid-template-columns:repeat(${WEEKS},${CELL}px);grid-template-rows:repeat(${DAYS},${CELL}px);gap:${GAP}px;width:${gridW}px`;
+  const tip = document.getElementById('heatTip');
 
-  dates.forEach(({key,d})=>{
-    const count=studyLog[key]||0;
-    const cell=document.createElement('div');
-    cell.style.cssText=`width:${CELL}px;height:${CELL}px;background:${cellColor(count)};border-radius:2px;cursor:default;transition:transform .15s`;
-    cell.addEventListener('mouseenter',ev=>{
-      tip.textContent=count?`${d.getMonth()+1}月${d.getDate()}日 · 学了 ${count} 词`:`${d.getMonth()+1}月${d.getDate()}日 · 未学习`;
-      tip.style.cssText=`display:block;left:${ev.clientX+12}px;top:${ev.clientY-32}px`;
+  dates.forEach(({ key, d }) => {
+    const count = studyLog[key] || 0;
+    const cell = document.createElement('div');
+    cell.style.cssText = `width:${CELL}px;height:${CELL}px;background:${cellColor(count)};border-radius:2px;cursor:default;transition:transform .15s`;
+    cell.addEventListener('mouseenter', ev => {
+      tip.textContent = count ? `${d.getMonth() + 1}月${d.getDate()}日 · 学了 ${count} 词` : `${d.getMonth() + 1}月${d.getDate()}日 · 未学习`;
+      tip.style.cssText = `display:block;left:${ev.clientX + 12}px;top:${ev.clientY - 32}px`;
     });
-    cell.addEventListener('mouseleave',()=>tip.style.display='none');
-    cell.addEventListener('touchstart',ev=>{
-      tip.textContent=count?`${d.getMonth()+1}月${d.getDate()}日 · 学了 ${count} 词`:`${d.getMonth()+1}月${d.getDate()}日 · 未学习`;
-      const t=ev.touches[0];
-      tip.style.cssText=`display:block;left:${t.clientX+12}px;top:${t.clientY-48}px`;
-      setTimeout(()=>tip.style.display='none',1800);
+    cell.addEventListener('mouseleave', () => tip.style.display = 'none');
+    cell.addEventListener('touchstart', ev => {
+      tip.textContent = count ? `${d.getMonth() + 1}月${d.getDate()}日 · 学了 ${count} 词` : `${d.getMonth() + 1}月${d.getDate()}日 · 未学习`;
+      const t = ev.touches[0];
+      tip.style.cssText = `display:block;left:${t.clientX + 12}px;top:${t.clientY - 48}px`;
+      setTimeout(() => tip.style.display = 'none', 1800);
     });
     grid.appendChild(cell);
   });
   wrap.appendChild(grid);
 
-  const legend=document.createElement('div');
-  legend.className='heat-legend';
-  legend.innerHTML='<span>少</span>';
-  [0,.25,.5,.75,1].forEach(v=>{
-    const sw=document.createElement('div');sw.className='heat-swatch';
-    sw.style.background=v===0?(isDark?'rgba(241,245,249,.07)':'rgba(30,41,59,.08)'):themeColor+Math.round(v*255).toString(16).padStart(2,'0');
+  const legend = document.createElement('div');
+  legend.className = 'heat-legend';
+  legend.innerHTML = '<span>少</span>';
+  [0, .25, .5, .75, 1].forEach(v => {
+    const sw = document.createElement('div'); sw.className = 'heat-swatch';
+    sw.style.background = v === 0 ? (isDark ? 'rgba(241,245,249,.07)' : 'rgba(30,41,59,.08)') : themeColor + Math.round(v * 255).toString(16).padStart(2, '0');
     legend.appendChild(sw);
   });
-  legend.insertAdjacentHTML('beforeend','<span>多</span>');
+  legend.insertAdjacentHTML('beforeend', '<span>多</span>');
   wrap.appendChild(legend);
 
-  const streakDays=parseInt(localStorage.getItem('fg_streak')||'0');
-  if(streakDays>0){
-    const el=document.createElement('div');
-    el.style.cssText=`margin-top:10px;font-size:11px;color:${themeColor};font-family:'Space Mono',monospace;letter-spacing:.04em`;
-    el.textContent=`🔥 连续学习 ${streakDays} 天`;
+  const streakDays = parseInt(localStorage.getItem('fg_streak') || '0');
+  if (streakDays > 0) {
+    const el = document.createElement('div');
+    el.style.cssText = `margin-top:10px;font-size:11px;color:${themeColor};font-family:'Space Mono',monospace;letter-spacing:.04em`;
+    el.textContent = `🔥 连续学习 ${streakDays} 天`;
     wrap.appendChild(el);
   }
-  if(!Object.keys(studyLog).length){
-    const el=document.createElement('div');
-    el.className='heat-empty';
-    el.textContent='完成每日学习后\n这里会显示你的学习记录';
+  if (!Object.keys(studyLog).length) {
+    const el = document.createElement('div');
+    el.className = 'heat-empty';
+    el.textContent = '完成每日学习后\n这里会显示你的学习记录';
     wrap.appendChild(el);
   }
 }
 buildHeatmap();
 
 // ── 趋势折线图 ──
-function buildTrendChart(){
+function buildTrendChart() {
   const canvas = document.getElementById('trendCanvas');
   const statsEl = document.getElementById('trendStats');
-  if(!canvas) return;
+  if (!canvas) return;
 
-  // 取过去30天数据
   const DAYS = 30;
   const today = new Date();
   const data = [];
-  for(let i=DAYS-1; i>=0; i--){
+  for (let i = DAYS - 1; i >= 0; i--) {
     const d = new Date(today);
-    d.setDate(today.getDate()-i);
-    const key = d.toISOString().slice(0,10);
-    data.push({ key, count: studyLog[key]||0, d });
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    data.push({ key, count: studyLog[key] || 0, d });
   }
 
-  // 计算统计数据
-  const activeDays = data.filter(d=>d.count>0).length;
-  const totalWords = data.reduce((s,d)=>s+d.count, 0);
-  const maxVal = Math.max(1, ...data.map(d=>d.count));
-  const avgWords = activeDays ? Math.round(totalWords/activeDays) : 0;
+  const activeDays = data.filter(d => d.count > 0).length;
+  const totalWords = data.reduce((s, d) => s + d.count, 0);
+  const maxVal = Math.max(1, ...data.map(d => d.count));
+  const avgWords = activeDays ? Math.round(totalWords / activeDays) : 0;
 
-  // 渲染统计数字
   statsEl.innerHTML = `
     <div class="trend-stat">
       <div class="trend-stat-num">${totalWords}</div>
@@ -398,121 +406,98 @@ function buildTrendChart(){
       <div class="trend-stat-label">日均词数</div>
     </div>`;
 
-  // 画布尺寸
   const W = canvas.offsetWidth || canvas.parentElement.offsetWidth || 300;
   const H = 100;
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = W; canvas.height = H;
   const ctx2 = canvas.getContext('2d');
 
-  const PAD_L=6, PAD_R=6, PAD_T=12, PAD_B=20;
-  const chartW = W-PAD_L-PAD_R;
-  const chartH = H-PAD_T-PAD_B;
+  const PAD_L = 6, PAD_R = 6, PAD_T = 12, PAD_B = 20;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
 
-  ctx2.clearRect(0,0,W,H);
+  ctx2.clearRect(0, 0, W, H);
 
-  // 网格线（3条横线）
-  const gridLineCol = isDark?'rgba(241,245,249,.06)':'rgba(30,41,59,.06)';
-  [0,.5,1].forEach(frac=>{
-    const y = PAD_T + chartH*(1-frac);
-    ctx2.beginPath();ctx2.moveTo(PAD_L,y);ctx2.lineTo(W-PAD_R,y);
-    ctx2.strokeStyle=gridLineCol;ctx2.lineWidth=1;ctx2.stroke();
+  const gridLineCol = isDark ? 'rgba(241,245,249,.06)' : 'rgba(30,41,59,.06)';
+  [0, .5, 1].forEach(frac => {
+    const y = PAD_T + chartH * (1 - frac);
+    ctx2.beginPath(); ctx2.moveTo(PAD_L, y); ctx2.lineTo(W - PAD_R, y);
+    ctx2.strokeStyle = gridLineCol; ctx2.lineWidth = 1; ctx2.stroke();
   });
 
-  // 如果没有数据，画虚线提示
-  if(totalWords===0){
-    ctx2.font=`10px "Space Mono"`;
-    ctx2.fillStyle=isDark?'rgba(241,245,249,.25)':'rgba(30,41,59,.25)';
-    ctx2.textAlign='center';
-    ctx2.fillText('完成学习后这里会显示趋势',W/2,H/2+4);
+  if (totalWords === 0) {
+    ctx2.font = `10px "Space Mono"`;
+    ctx2.fillStyle = isDark ? 'rgba(241,245,249,.25)' : 'rgba(30,41,59,.25)';
+    ctx2.textAlign = 'center';
+    ctx2.fillText('完成学习后这里会显示趋势', W / 2, H / 2 + 4);
     return;
   }
 
-  // 计算折线点
-  const pts = data.map((d,i)=>({
-    x: PAD_L + (i/(DAYS-1))*chartW,
-    y: PAD_T + chartH*(1 - d.count/maxVal),
+  const pts = data.map((d, i) => ({
+    x: PAD_L + (i / (DAYS - 1)) * chartW,
+    y: PAD_T + chartH * (1 - d.count / maxVal),
     count: d.count,
     d: d.d,
   }));
 
-  // 填充区域（渐变）
-  const grad = ctx2.createLinearGradient(0, PAD_T, 0, PAD_T+chartH);
-  grad.addColorStop(0, themeColor+'55');
-  grad.addColorStop(1, themeColor+'00');
+  const grad = ctx2.createLinearGradient(0, PAD_T, 0, PAD_T + chartH);
+  grad.addColorStop(0, themeColor + '55');
+  grad.addColorStop(1, themeColor + '00');
   ctx2.beginPath();
-  ctx2.moveTo(pts[0].x, PAD_T+chartH);
-  pts.forEach(p=>ctx2.lineTo(p.x, p.y));
-  ctx2.lineTo(pts[pts.length-1].x, PAD_T+chartH);
+  ctx2.moveTo(pts[0].x, PAD_T + chartH);
+  pts.forEach(p => ctx2.lineTo(p.x, p.y));
+  ctx2.lineTo(pts[pts.length - 1].x, PAD_T + chartH);
   ctx2.closePath();
-  ctx2.fillStyle=grad;
-  ctx2.fill();
+  ctx2.fillStyle = grad; ctx2.fill();
 
-  // 折线
   ctx2.beginPath();
-  pts.forEach((p,i)=>i===0?ctx2.moveTo(p.x,p.y):ctx2.lineTo(p.x,p.y));
-  ctx2.strokeStyle=themeColor;
-  ctx2.lineWidth=1.5;
-  ctx2.lineJoin='round';
-  ctx2.stroke();
+  pts.forEach((p, i) => i === 0 ? ctx2.moveTo(p.x, p.y) : ctx2.lineTo(p.x, p.y));
+  ctx2.strokeStyle = themeColor; ctx2.lineWidth = 1.5; ctx2.lineJoin = 'round'; ctx2.stroke();
 
-  // 月份标签（X轴）
-  const labelColor2 = isDark?'rgba(241,245,249,.3)':'rgba(30,41,59,.3)';
-  ctx2.font=`8px "Space Mono"`;
-  ctx2.fillStyle=labelColor2;
-  ctx2.textAlign='center';
-  const monthNames=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  let lastMonth=-1;
-  pts.forEach((p,i)=>{
+  const labelColor2 = isDark ? 'rgba(241,245,249,.3)' : 'rgba(30,41,59,.3)';
+  ctx2.font = `8px "Space Mono"`; ctx2.fillStyle = labelColor2; ctx2.textAlign = 'center';
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  let lastMonth = -1;
+  pts.forEach((p, i) => {
     const m = data[i].d.getMonth();
-    if(m!==lastMonth){
-      ctx2.fillText(monthNames[m], p.x, H-4);
-      lastMonth=m;
-    }
+    if (m !== lastMonth) { ctx2.fillText(monthNames[m], p.x, H - 4); lastMonth = m; }
   });
 
-  // hover 交互（鼠标悬浮显示数值）
-  const tip=document.getElementById('heatTip');
-  canvas.addEventListener('mousemove', ev=>{
-    const rect=canvas.getBoundingClientRect();
-    const mx=ev.clientX-rect.left;
-    // 找最近的点
-    let best=null, bestDist=Infinity;
-    pts.forEach((p,i)=>{
-      const dist=Math.abs(p.x-mx);
-      if(dist<bestDist){bestDist=dist;best={p,i};}
-    });
-    if(best && bestDist<chartW/DAYS*1.5){
-      const d=data[best.i];
-      tip.textContent=d.count
-        ? `${d.d.getMonth()+1}月${d.d.getDate()}日 · 学了 ${d.count} 词`
-        : `${d.d.getMonth()+1}月${d.d.getDate()}日 · 未学习`;
-      tip.style.cssText=`display:block;left:${ev.clientX+12}px;top:${ev.clientY-32}px`;
+  const tip = document.getElementById('heatTip');
+  canvas.addEventListener('mousemove', ev => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = ev.clientX - rect.left;
+    let best = null, bestDist = Infinity;
+    pts.forEach((p, i) => { const dist = Math.abs(p.x - mx); if (dist < bestDist) { bestDist = dist; best = { p, i }; } });
+    if (best && bestDist < chartW / DAYS * 1.5) {
+      const d = data[best.i];
+      tip.textContent = d.count
+        ? `${d.d.getMonth() + 1}月${d.d.getDate()}日 · 学了 ${d.count} 词`
+        : `${d.d.getMonth() + 1}月${d.d.getDate()}日 · 未学习`;
+      tip.style.cssText = `display:block;left:${ev.clientX + 12}px;top:${ev.clientY - 32}px`;
     }
   });
-  canvas.addEventListener('mouseleave',()=>tip.style.display='none');
+  canvas.addEventListener('mouseleave', () => tip.style.display = 'none');
 }
-// 等 DOM 渲染完再画（需要 offsetWidth）
 setTimeout(buildTrendChart, 100);
 
 // ── 薄弱维度 ──
-function buildWeakDims(){
-  const weakDims=getWeakDimensions(rawCards);
-  const list=document.getElementById('weakList');
-  list.innerHTML='';
-  weakDims.forEach(dim=>{
-    const info=DIMENSIONS[dim];
-    const st=dimStats[dim];
-    const words=getByDimension(dim);
-    const shown=words.filter(w=>!rawCards[w.id]||rawCards[w.id].stability<1).slice(0,4);
-    const item=document.createElement('a');
-    item.className='weak-item';
-    item.href='learn.html';
-    item.innerHTML=`
+function buildWeakDims() {
+  const weakDims = getWeakDimensions(rawCards);
+  const list = document.getElementById('weakList');
+  list.innerHTML = '';
+  weakDims.forEach(dim => {
+    const info = DIMENSIONS[dim];
+    const st = dimStats[dim];
+    const words = getByDimension(dim);
+    const shown = words.filter(w => !rawCards[w.id] || rawCards[w.id].stability < 1).slice(0, 4);
+    const item = document.createElement('a');
+    item.className = 'weak-item';
+    item.href = 'learn.html';
+    item.innerHTML = `
       <div class="weak-icon">${info.icon}</div>
       <div class="weak-dim-name">${info.label}</div>
-      <div class="weak-pct">掌握度 ${Math.round(st.pct*100)}% · ${st.learned}/${st.total} 词</div>
-      <div class="weak-words">${shown.map(w=>`<span class="weak-word-tag">${w.word}</span>`).join('')}</div>
+      <div class="weak-pct">掌握度 ${Math.round(st.pct * 100)}% · ${st.learned}/${st.total} 词</div>
+      <div class="weak-words">${shown.map(w => `<span class="weak-word-tag">${w.word}</span>`).join('')}</div>
       <div class="weak-cta">开始练习 →</div>`;
     list.appendChild(item);
   });
