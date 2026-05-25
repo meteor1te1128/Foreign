@@ -27,7 +27,7 @@
   <canvas id="bg-canvas" class="bg-canvas"></canvas>
   <div class="bg-overlay"></div>
 
-  <button class="back-btn" onclick="history.length > 1 ? history.back() : location.href='index.html'">← 返回</button>
+  <a href="index.html" class="back-btn">← 返回</a>
 
   <section id="screen-loading" class="screen active">
     <div class="loading-dots"><span></span><span></span><span></span></div>
@@ -127,5 +127,6 @@
     if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cv);
   </script>
   <script type="module" src="js/learn.js"></script>
+  <script type="module" src="js/keyboard.js"></script>
 </body>
 </html>
