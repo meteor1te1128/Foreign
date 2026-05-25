@@ -27,7 +27,8 @@ if (!THEMES[cur]) cur = 'ocean';
 
 function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight; }
 resize();
-window.addEventListener('resize', () => { resize(); applyTheme(cur); });
+// fix #6: resize 只更新 canvas 尺寸，不重启动画
+window.addEventListener('resize', () => { resize(); });
 
 function applyTheme(key, save = true) {
   if (!THEMES[key]) return;
@@ -202,7 +203,6 @@ function initLogin() {
   }
   function closeModal() { modal.classList.remove('open'); }
 
-  // 更新登录按钮显示
   function updateLoginBtn() {
     const saved = localStorage.getItem('fg_user');
     if (saved && btnL) btnL.textContent = saved;
@@ -210,7 +210,6 @@ function initLogin() {
   }
 
   btnL?.addEventListener('click', async () => {
-    // 如果已登录，点击显示登出选项
     const user = await getCurrentUser();
     if (user) {
       const confirmOut = confirm(`当前用户：${localStorage.getItem('fg_user') || user.email}\n\n确定要登出吗？`);
@@ -240,7 +239,6 @@ function initLogin() {
     const user = document.getElementById('inp-user')?.value.trim();
     const pass = document.getElementById('inp-pass')?.value.trim();
 
-    // 禁用按钮防止重复点击
     btnSub.disabled = true;
     btnSub.textContent = '请稍候...';
     if (msg) { msg.textContent = ''; msg.className = 'mmsg'; }
@@ -265,7 +263,6 @@ function initLogin() {
     }
   });
 
-  // 回车提交
   [document.getElementById('inp-user'), document.getElementById('inp-pass')].forEach(inp => {
     inp?.addEventListener('keydown', e => { if (e.key === 'Enter') btnSub?.click(); });
   });
@@ -280,11 +277,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initLogin();
   initAllButtons();
 
-  // 检查是否已登录，自动拉取云端数据
   const user = await getCurrentUser();
   if (user) {
     await pullFromCloud();
-    // 拉取后主题可能变了
     const cloudTheme = localStorage.getItem('fg_theme') || 'ocean';
     if (cloudTheme !== cur) applyTheme(cloudTheme, false);
   }
