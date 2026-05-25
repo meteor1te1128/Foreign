@@ -6,25 +6,7 @@ import { pushToCloud, getCurrentUser } from './auth.js';
 import { speak } from './tts.js';
 import { navigate } from './transitions.js';
 
-const THEMES = {
-  ocean:        { img:'assets/images/ocean.jpg',        anim:'ocean'  },
-  fog_forest:   { img:'assets/images/fog_forest.jpg',   anim:'mist'   },
-  galaxy:       { img:'assets/images/galaxy.jpg',       anim:'stars'  },
-  rain:         { img:'assets/images/rain.jpg',         anim:'rain'   },
-  aurora:       { img:'assets/images/aurora.jpg',       anim:'none'   },
-  sakura:       { img:'assets/images/sakura.jpg',       anim:'sakura' },
-  sunset:       { img:'assets/images/sunset.jpg',       anim:'clouds' },
-  snow:         { img:'assets/images/snow.jpg',         anim:'snow'   },
-  forest_green: { img:'assets/images/forest_green.jpg', anim:'forest' },
-  white:        { img:null, anim:'none', dm:true  },
-  black:        { img:null, anim:'none', dm:true  }, // 修复：black 也需要 dm
-};
 
-const THEME_COLORS = {
-  ocean:'#3b82f6', fog_forest:'#6ee7b7', galaxy:'#818cf8', rain:'#93c5fd',
-  aurora:'#34d399', sakura:'#f9a8d4',    sunset:'#fb923c', snow:'#bae6fd',
-  forest_green:'#86efac', white:'#64748b', black:'#475569',
-};
 
 const bg = document.getElementById('bg');
 const cv = document.getElementById('cv');
@@ -32,34 +14,6 @@ function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight
 resize();
 window.addEventListener('resize', () => { resize(); });
 
-function applyTheme() {
-  const key = localStorage.getItem('fg_theme') || 'ocean';
-  const t   = THEMES[key] || THEMES.ocean;
-
-  // 清除旧主题 class，重新加
-  document.body.classList.remove(
-    ...Object.keys(THEMES).map(k => `theme-${k}`), 'dm'
-  );
-  document.body.classList.add(`theme-${key}`);
-  if (t.dm) document.body.classList.add('dm');
-
-  // 设置 --theme-color
-  document.documentElement.style.setProperty('--theme-color', THEME_COLORS[key] || '#3b82f6');
-
-  // 背景图 / 纯色
-  if (t.img) {
-    bg.style.backgroundImage = `url(${t.img})`;
-    bg.style.background      = '';
-    bg.className             = '';
-  } else {
-    bg.style.backgroundImage = 'none';
-    bg.style.background      = key === 'white' ? '#f6f5f0' : '#080808';
-    bg.className             = key === 'white' ? 'white-bg' : 'black-bg';
-  }
-
-  stopAnim();
-  if (t.anim !== 'none') startAnim(t.anim, cv);
-}
 
 export const SCENES = [
   { key:'daily',  label:'日常生活', color:'rgba(100,180,255,.85)', icon:'🏠' },
@@ -442,4 +396,4 @@ qInput.addEventListener('keydown', e => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => { applyTheme(); initAllButtons(); });
+document.addEventListener('DOMContentLoaded', () => { initAllButtons(); });
