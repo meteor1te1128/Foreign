@@ -124,6 +124,7 @@
     if (THEME_IMGS[theme]) { bgEl.style.backgroundImage = `url(${THEME_IMGS[theme]})`; bgEl.style.opacity = '1'; }
     else { bgEl.style.opacity = '0'; }
     if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cvEl);
+    import('./js/transitions.js');
     initDock();
 
     const LEVEL_MAP    = {1:'A1',2:'A2',3:'B1',4:'B2',5:'C1',6:'C2'};
@@ -206,6 +207,13 @@
             <span class="word-level">${levelLabel} · ${dim.icon}</span>
             <span class="word-status"><span class="status-dot ${status}"></span>${STATUS_LABEL[status]}</span>
           </div>`;
+        // 发音按钮
+        import('./js/tts.js').then(({ createSpeakBtn, applyDmStyle }) => {
+          const btn = createSpeakBtn(word.word, { size:24 });
+          if (document.body.classList.contains('dm')) applyDmStyle(btn);
+          card.querySelector('.word-en').appendChild(btn);
+        });
+
         card.addEventListener('click', e => { if (e.target.closest('.btn-unfav')) return; card.classList.toggle('expanded'); });
         card.querySelector('.btn-unfav').addEventListener('click', e => {
           e.stopPropagation();
