@@ -53,7 +53,7 @@
     </div>
   </section>
 
-  <!-- 情景卡片（直接显示全部内容+两个评分按钮） -->
+  <!-- 情景卡片 -->
   <section id="screen-card" class="screen">
     <div class="progress-wrap">
       <div class="progress-meta"><span>PROGRESS</span><span id="card-progress-text">1 / 10</span></div>
@@ -127,9 +127,10 @@
       sunset:'assets/images/sunset.jpg', snow:'assets/images/snow.jpg',
       forest_green:'assets/images/forest_green.jpg',
     };
+    // fix #4: aurora 动画已废弃，改为 none
     const THEME_ANIMS = {
       ocean:'ocean', fog_forest:'mist', galaxy:'stars', rain:'rain',
-      aurora:'aurora', sakura:'sakura', sunset:'clouds', snow:'snow', forest_green:'forest',
+      aurora:'none', sakura:'sakura', sunset:'clouds', snow:'snow', forest_green:'forest',
     };
     const theme = localStorage.getItem('fg_theme') || 'ocean';
     document.body.className = `theme-${theme}`;
@@ -138,10 +139,12 @@
     const bg = document.getElementById('bg-image');
     const cv = document.getElementById('bg-canvas');
     cv.width = window.innerWidth; cv.height = window.innerHeight;
+    // fix #6: resize 只更新 canvas 尺寸，不重启动画
     window.addEventListener('resize', () => { cv.width=window.innerWidth; cv.height=window.innerHeight; });
     if (THEME_IMGS[theme]) { bg.style.backgroundImage=`url(${THEME_IMGS[theme]})`; bg.style.opacity='1'; }
     else { bg.style.opacity='0'; }
-    if (THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cv);
+    // fix #4: 排除 'none' 再调用 startAnim
+    if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cv);
   </script>
   <script type="module" src="js/learn.js"></script>
 </body>
