@@ -75,10 +75,8 @@ export async function login(username, password) {
 // ── 登出 ──────────────────────────────────────────────────
 export async function logout() {
   await supabase.auth.signOut();
-  const theme = localStorage.getItem('fg_theme');
-  localStorage.clear();
-  if (theme) localStorage.setItem('fg_theme', theme);
-  invalidateCache();
+  // 只清用户数据，保留主题等偏好设置
+  clearLocalData();
 }
 
 // ── 获取当前用户 ──────────────────────────────────────────
