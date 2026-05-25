@@ -104,6 +104,16 @@
     .modal-example-zh { font-size:12px; color:rgba(255,255,255,.4); line-height:1.5; }
 
     .hidden { display:none !important; }
+    .stream-cursor {
+      display:inline-block;
+      width:2px; height:1em;
+      background:currentColor;
+      margin-left:2px;
+      vertical-align:text-bottom;
+      animation:cursorBlink .7s steps(1) infinite;
+      border-radius:1px;
+    }
+    @keyframes cursorBlink { 0%,100%{opacity:1}50%{opacity:0} }
 
     /* ── body.dm ── */
     body.dm .top-title       { color:#111; }
@@ -222,6 +232,8 @@
     import { WORDS } from './js/wordbank.js';
     import { getTodayPlan } from './js/fsrs.js';
     import { pushToCloud, getCurrentUser } from './js/auth.js';
+    import { speak, createSpeakBtn, applyDmStyle } from './js/tts.js';
+    import './js/transitions.js';
 
     const THEME_IMGS   = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
     const THEME_ANIMS  = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
@@ -324,16 +336,40 @@
       chatInput.focus();
     }
 
-    function renderAIMessage(raw) {
+    function renderAIMessage(raw, alreadyRendered = false) {
       const corrMatch = raw.match(/\[CORRECTION\]:\s*([\s\S]*?)\[REPLY\]:\s*([\s\S]*)/);
       if (corrMatch) {
-        const corrText = corrMatch[1].trim();
+        const corrText  = corrMatch[1].trim();
+        const replyText = corrMatch[2].trim();
         corrections.push(corrText);
-        addBubble('ai-correction', corrText);
-        addBubble('ai-chat', highlightWords(corrMatch[2].trim()));
+        if (alreadyRendered) {
+          // 流式已渲染了完整内容，找到最后一个气泡重写为 reply，再插一个纠错气泡在前面
+          const msgsEl = document.getElementById('chat-messages');
+          const lastBubble = msgsEl.querySelector('.msg-wrap.ai:last-child .bubble');
+          if (lastBubble) lastBubble.innerHTML = highlightWords(replyText);
+          // 在它之前插入纠错气泡
+          const corrWrap   = document.createElement('div');
+          corrWrap.className = 'msg-wrap ai';
+          const corrBubble = document.createElement('div');
+          corrBubble.className = 'bubble ai-correction';
+          corrBubble.textContent = corrText;
+          corrWrap.appendChild(corrBubble);
+          msgsEl.insertBefore(corrWrap, msgsEl.querySelector('.msg-wrap.ai:last-child'));
+        } else {
+          addBubble('ai-correction', corrText);
+          addBubble('ai-chat', highlightWords(replyText));
+        }
       } else {
         const replyMatch = raw.match(/\[REPLY\]:\s*([\s\S]*)/);
-        addBubble('ai-chat', highlightWords(replyMatch ? replyMatch[1].trim() : raw));
+        const text = highlightWords(replyMatch ? replyMatch[1].trim() : raw);
+        if (alreadyRendered) {
+          // 流式已渲染，直接更新最后气泡内容（去掉 [REPLY]: 前缀）
+          const msgsEl     = document.getElementById('chat-messages');
+          const lastBubble = msgsEl.querySelector('.msg-wrap.ai:last-child .bubble');
+          if (lastBubble) lastBubble.innerHTML = text;
+        } else {
+          addBubble('ai-chat', text);
+        }
       }
     }
 
@@ -420,6 +456,17 @@
       document.getElementById('modal-zh').textContent        = w.zh;
       document.getElementById('modal-example').textContent   = w.example || '';
       document.getElementById('modal-example-zh').textContent = w.exZh || '';
+      // 发音按钮
+      const modalWord = document.getElementById('modal-word');
+      const existBtn = modalWord.parentNode.querySelector('.modal-speak-btn');
+      if (existBtn) existBtn.remove();
+      const speakBtn = createSpeakBtn(w.word, { size:30 });
+      speakBtn.classList.add('modal-speak-btn');
+      speakBtn.style.marginLeft = '10px';
+      speakBtn.style.verticalAlign = 'middle';
+      if (document.body.classList.contains('dm')) applyDmStyle(speakBtn);
+      modalWord.insertAdjacentElement('afterend', speakBtn);
+
       document.getElementById('word-modal-overlay').classList.remove('hidden');
     }
     function closeWordModal() { document.getElementById('word-modal-overlay').classList.add('hidden'); }
@@ -438,12 +485,60 @@
       updateStartBtn();
     });
 
+    // 普通调用（评分等不需要流式的场景）
     async function callDeepSeek(systemPrompt, messages) {
       const body = { model:'deepseek-chat', max_tokens:300, messages:[{ role:'system', content:systemPrompt }, ...messages] };
       const resp = await fetch(`${WORKER}/ds/v1/chat/completions`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
       if (!resp.ok) throw new Error('API error');
       const data = await resp.json();
       return data.choices[0].message.content;
+    }
+
+    // 流式调用（打字机效果）
+    async function callDeepSeekStream(systemPrompt, messages) {
+      const body = { model:'deepseek-chat', max_tokens:300, stream:true, messages:[{ role:'system', content:systemPrompt }, ...messages] };
+      const resp = await fetch(`${WORKER}/ds/v1/chat/completions`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      if (!resp.ok) throw new Error('API error');
+
+      hideTyping();
+      const msgsEl = document.getElementById('chat-messages');
+      const wrap   = document.createElement('div');
+      wrap.className = 'msg-wrap ai';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ai-chat';
+      bubble.innerHTML = '<span class="stream-cursor">▋</span>';
+      wrap.appendChild(bubble);
+      msgsEl.appendChild(wrap);
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+
+      const reader  = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '', buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream:true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const chunk = line.slice(6).trim();
+          if (chunk === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(chunk);
+            const delta  = parsed.choices?.[0]?.delta?.content || '';
+            if (delta) {
+              fullText += delta;
+              bubble.innerHTML = highlightWords(fullText) + '<span class="stream-cursor">▋</span>';
+              msgsEl.scrollTop = msgsEl.scrollHeight;
+            }
+          } catch {}
+        }
+      }
+      bubble.innerHTML = highlightWords(fullText);
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+      return fullText;
     }
   </script>
 </body>
