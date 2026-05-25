@@ -1,14 +1,15 @@
 // qbank/work.js — 工作与职场场景 · Oxford 3000
+// fix: qwk001-qwk005 重命名（原 wk001-wk005 与 quiz.js 内置题ID冲突）
 
 export const QBANK_WORK = [
-{id:'wk001',scene:'work',level:1,word:'job',sentence:'She got a new ___ at the hospital.',zh:'她在医院找到了一份新工作。',hint:'工作（名词）'},
-{id:'wk002',scene:'work',level:1,word:'office',sentence:'He works in an ___ in the city centre.',zh:'他在市中心的一间办公室工作。',hint:'办公室'},
-{id:'wk003',scene:'work',level:1,word:'boss',sentence:'My ___ is very strict about deadlines.',zh:'我的老板对截止日期非常严格。',hint:'老板'},
-{id:'wk004',scene:'work',level:1,word:'meeting',sentence:'We have a team ___ every Monday morning.',zh:'我们每周一早上都有团队会议。',hint:'会议'},
-{id:'wk005',scene:'work',level:1,word:'salary',sentence:'He negotiated a higher ___ before accepting the offer.',zh:'他在接受邀约前谈判了更高的薪水。',hint:'薪水'},
+{id:'qwk001',scene:'work',level:1,word:'job',sentence:'She got a new ___ at the hospital.',zh:'她在医院找到了一份新工作。',hint:'工作（名词）'},
+{id:'qwk002',scene:'work',level:1,word:'office',sentence:'He works in an ___ in the city centre.',zh:'他在市中心的一间办公室工作。',hint:'办公室'},
+{id:'qwk003',scene:'work',level:1,word:'boss',sentence:'My ___ is very strict about deadlines.',zh:'我的老板对截止日期非常严格。',hint:'老板'},
+{id:'qwk004',scene:'work',level:1,word:'meeting',sentence:'We have a team ___ every Monday morning.',zh:'我们每周一早上都有团队会议。',hint:'会议'},
+{id:'qwk005',scene:'work',level:1,word:'salary',sentence:'He negotiated a higher ___ before accepting the offer.',zh:'他在接受邀约前谈判了更高的薪水。',hint:'薪水'},
 {id:'wk006',scene:'work',level:1,word:'interview',sentence:'She prepared thoroughly for the job ___.',zh:'她为工作面试做了充分准备。',hint:'面试'},
 {id:'wk007',scene:'work',level:1,word:'colleague',sentence:'My ___ helped me finish the report.',zh:'我的同事帮我完成了报告。',hint:'同事'},
-{id:'wk008',scene:'work',level:1,word:'busy',sentence:'I\'m too ___ to take a lunch break today.',zh:'我今天太忙了，没时间吃午饭。',hint:'忙碌的'},
+{id:'wk008',scene:'work',level:1,word:'busy',sentence:"I'm too ___ to take a lunch break today.",zh:'我今天太忙了，没时间吃午饭。',hint:'忙碌的'},
 {id:'wk009',scene:'work',level:1,word:'project',sentence:'The whole team worked on the ___ together.',zh:'整个团队一起参与了这个项目。',hint:'项目'},
 {id:'wk010',scene:'work',level:1,word:'deadline',sentence:'The ___ for this report is Friday.',zh:'这份报告的截止日期是周五。',hint:'截止日期'},
 {id:'wk011',scene:'work',level:2,word:'promote',sentence:'She was ___ to senior manager last year.',zh:'她去年晋升为高级经理。',hint:'晋升（过去分词）'},
@@ -43,7 +44,7 @@ export const QBANK_WORK = [
 {id:'wk040',scene:'work',level:4,word:'diligent',sentence:'She is ___ and never misses a deadline.',zh:'她勤勉尽责，从不错过截止日期。',hint:'勤勉的'},
 {id:'wk041',scene:'work',level:5,word:'fiduciary',sentence:'Directors have a ___ duty to shareholders.',zh:'董事对股东负有受托责任。',hint:'受托的/信托的'},
 {id:'wk042',scene:'work',level:5,word:'retrenchment',sentence:'The economic crisis led to mass ___.',zh:'经济危机导致了大规模裁员。',hint:'裁员/缩减'},
-{id:'wk043',scene:'work',level:5,word:'nepotism',sentence:'Accusations of ___ damaged the company\'s reputation.',zh:'关于任人唯亲的指控损害了公司的声誉。',hint:'任人唯亲'},
+{id:'wk043',scene:'work',level:5,word:'nepotism',sentence:"Accusations of ___ damaged the company's reputation.",zh:'关于任人唯亲的指控损害了公司的声誉。',hint:'任人唯亲'},
 {id:'wk044',scene:'work',level:5,word:'meritocracy',sentence:'A true ___ rewards skill over connections.',zh:'真正的精英制度奖励能力而非关系。',hint:'精英制度'},
 {id:'wk045',scene:'work',level:5,word:'emolument',sentence:'His total ___ exceeded two million a year.',zh:'他的总报酬每年超过两百万。',hint:'报酬/薪俸（正式用语）'},
 ];
