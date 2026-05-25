@@ -203,6 +203,7 @@ window.addEventListener('resize', () => { cv.width = window.innerWidth; cv.heigh
 if (THEME_IMGS[theme]) { bg.style.backgroundImage = `url(${THEME_IMGS[theme]})`; bg.style.opacity = '1'; }
 else bg.style.opacity = '0';
 if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cv);
+    import('./js/transitions.js');
 
 initDock('bg-image', 'bg-canvas');
 
