@@ -147,6 +147,7 @@
   <div class="bottom-actions">
     <a href="quiz.html" class="bottom-btn">词汇测试 →</a>
     <a href="vocab.html" class="bottom-btn">词汇图谱 →</a>
+    <a href="favorites.html" class="bottom-btn">⭐ 收藏</a>
   </div>
 
   <div id="theme-dock"></div>
@@ -171,7 +172,6 @@
 
   <script type="module">
     import { TOTAL } from './js/wordbank.js';
-    // 动态更新词数
     const meta = document.getElementById('wordbank-meta');
     if (meta) meta.textContent = TOTAL + ' WORDS';
   </script>
