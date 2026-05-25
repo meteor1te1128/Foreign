@@ -22,24 +22,20 @@
     .back-link:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.13)}
     .page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,44px);font-weight:600;color:#fff;letter-spacing:-.02em}
 
-    /* 筛选 tabs */
     .dim-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
     .dim-tab{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.45);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:6px 14px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
     .dim-tab:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
     .dim-tab.on{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);color:#fff}
 
-    /* 搜索框 */
     .search-wrap{margin-bottom:20px}
     .search-input{width:100%;padding:11px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#f1f5f9;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .18s}
     .search-input:focus{border-color:rgba(255,255,255,.3)}
     .search-input::placeholder{color:rgba(255,255,255,.28)}
 
-    /* 统计栏 */
     .stats-bar{display:flex;gap:20px;margin-bottom:24px;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.06em}
     .stats-bar span{display:flex;align-items:center;gap:5px}
     .stats-bar strong{color:rgba(255,255,255,.7);font-size:14px;font-family:'Cormorant Garamond',serif;font-weight:600}
 
-    /* 单词卡 */
     .word-list{display:flex;flex-direction:column;gap:10px}
     .word-card{background:rgba(255,255,255,.07);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:18px 22px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px}
     .word-card:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);transform:translateX(4px)}
@@ -57,7 +53,6 @@
     .status-dot.review{background:#22c55e}
     .status-dot.mastered{background:#818cf8}
 
-    /* 展开详情 */
     .word-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
     .word-card.expanded .word-detail{display:block}
     .word-sentence{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:6px}
@@ -69,12 +64,10 @@
     .word-action-btn.in-review{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.3);color:#4ade80}
     .word-action-btn.in-review:hover{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.3);color:#f87171}
 
-    /* 空/无结果 */
     .empty-state{text-align:center;padding:80px 24px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.3)}
     .empty-state .empty-icon{font-size:48px;margin-bottom:16px}
     .empty-state p{font-size:14px}
 
-    /* 亮色主题 */
     body.dm .back-link{color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.12)}
     body.dm .page-title{color:#111}
     body.dm .dim-tab{color:rgba(0,0,0,.45);background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1)}
@@ -103,17 +96,14 @@
       <h1 class="page-title">单词库</h1>
     </div>
 
-    <!-- 维度筛选 -->
     <div class="dim-tabs" id="dim-tabs">
       <div class="dim-tab on" data-dim="all">全部</div>
     </div>
 
-    <!-- 搜索 -->
     <div class="search-wrap">
       <input class="search-input" id="search-input" placeholder="搜索单词或中文含义…" autocomplete="off" autocorrect="off" spellcheck="false"/>
     </div>
 
-    <!-- 统计 -->
     <div class="stats-bar" id="stats-bar">
       <span><strong id="stat-shown">0</strong> 词</span>
       <span>🟡 <strong id="stat-learning">0</strong> 学习中</span>
@@ -121,18 +111,18 @@
       <span>⭐ <strong id="stat-mastered">0</strong> 已掌握</span>
     </div>
 
-    <!-- 单词列表 -->
     <div class="word-list" id="word-list"></div>
   </div>
 
   <script type="module">
     import { startAnim } from './js/animations.js';
-    import { WORDS, DIMENSIONS } from './js/wordbank.js';
+    import { WORDS, DIMENSIONS, TOTAL } from './js/wordbank.js';
     import { initDock } from './js/dock.js';
 
     // ── 背景初始化 ──
     const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
-    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
+    // fix #4: aurora 动画已废弃，改为 none
+    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
     const theme = localStorage.getItem('fg_theme') || 'ocean';
     document.body.className = `theme-${theme}`;
     if(theme==='white'){document.body.style.background='#f6f5f0';document.body.classList.add('dm');}
@@ -142,7 +132,7 @@
     window.addEventListener('resize',()=>{cvEl.width=window.innerWidth;cvEl.height=window.innerHeight;});
     if(THEME_IMGS[theme]){bgEl.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bgEl.style.opacity='1';}
     else{bgEl.style.opacity='0';}
-    if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme],cvEl);
+    if(THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cvEl);
 
     // ── dock ──
     initDock();
@@ -154,11 +144,12 @@
     let cards = {};
     try { cards = JSON.parse(localStorage.getItem('fg_cards')||'{}'); } catch{}
 
+    // fix #9: 掌握度判断 — reps>=5 OR stability>=21（约3周稳定）
     function getStatus(wordId) {
       const c = cards[wordId];
       if (!c || c.state==='new') return 'new';
-      if (c.state==='learning'||c.state==='relearn') return 'learning';
-      if (c.reps>=5) return 'mastered';
+      if (c.state==='learning' || c.state==='relearn') return 'learning';
+      if (c.reps >= 5 || (c.stability != null && c.stability >= 21)) return 'mastered';
       return 'review';
     }
 
@@ -222,7 +213,6 @@
         const inReview=!!wrong[word.id];
         const levelLabel=LEVEL_MAP[word.level]||word.level;
 
-        // 高亮搜索词
         function hl(str){
           if(!searchQ)return str;
           const idx=str.toLowerCase().indexOf(searchQ);
@@ -233,7 +223,6 @@
         const card=document.createElement('div');
         card.className='word-card';
 
-        // 例句：把单词替换成高亮
         const exampleHl=(word.example||'').replace(
           word.word,
           `<span class="blank-word">${word.word}</span>`
@@ -259,13 +248,11 @@
           </div>
         `;
 
-        // 展开/收起
         card.addEventListener('click',e=>{
           if(e.target.closest('.word-action-btn'))return;
           card.classList.toggle('expanded');
         });
 
-        // 加入/移出回炉本
         card.querySelector('.review-btn').addEventListener('click',e=>{
           e.stopPropagation();
           const btn=e.currentTarget;
