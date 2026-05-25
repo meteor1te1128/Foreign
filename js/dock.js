@@ -11,8 +11,8 @@ const THEMES = {
   sunset:       { img:'assets/images/sunset.jpg',       anim:'clouds', label:'火烧云', color:'#fb923c', rgb:'251,146,60'   },
   snow:         { img:'assets/images/snow.jpg',         anim:'snow',   label:'雪山',   color:'#bae6fd', rgb:'186,230,253'  },
   forest_green: { img:'assets/images/forest_green.jpg', anim:'forest', label:'雨林',   color:'#86efac', rgb:'134,239,172'  },
-  white:        { img:null, anim:'none', label:'纯白', color:'#e2e8f0', rgb:'226,232,240', dm:true  },
-  black:        { img:null, anim:'none', label:'纯黑', color:'#334155', rgb:'51,65,85'              },
+  white:        { img:null, anim:'none', label:'纯白', color:'#94a3b8', rgb:'148,163,184', dm:true },
+  black:        { img:null, anim:'none', label:'纯黑', color:'#475569', rgb:'71,85,105',   dm:true },
 };
 
 export function initDock(bgId='bg-image', cvId='bg-canvas') {
@@ -25,33 +25,44 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
     if (!THEMES[key]) return;
     cur = key;
     const t = THEMES[key];
-    document.body.classList.remove(...Object.keys(THEMES).map(k=>`theme-${k}`),'dm');
+
+    // 清除所有主题 class（含 dm），再重新加
+    document.body.classList.remove(...Object.keys(THEMES).map(k => `theme-${k}`), 'dm');
     document.body.classList.add(`theme-${key}`);
     if (t.dm) document.body.classList.add('dm');
-    document.body.style.background = key==='white'?'#f6f5f0':key==='black'?'#080808':'';
+
+    // 关键修复：切走 white/black 时必须清空 inline style，否则会覆盖背景图
+    if (t.img) {
+      document.body.style.background = '';
+    } else {
+      document.body.style.background = key === 'white' ? '#f6f5f0' : '#080808';
+    }
+
     document.documentElement.style.setProperty('--theme-color', t.color);
     document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
+
     if (bg) {
-      if (t.img) { bg.style.backgroundImage=`url(${t.img})`; bg.style.opacity='1'; }
-      else       { bg.style.backgroundImage='none'; bg.style.opacity='0'; }
+      if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
+      else       { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
     }
     if (cv) startAnim(t.anim, cv);
     localStorage.setItem('fg_theme', key);
     updateTrigger();
-    dock.querySelectorAll('.dock-card').forEach(c=>c.classList.toggle('active',c.dataset.t===key));
+    dock.querySelectorAll('.dock-card').forEach(c => c.classList.toggle('active', c.dataset.t === key));
   }
 
   function previewTheme(key) {
     if (!THEMES[key]) return;
     const t = THEMES[key];
     if (bg) {
-      if (t.img) { bg.style.backgroundImage=`url(${t.img})`; bg.style.opacity='1'; }
-      else       { bg.style.backgroundImage='none'; bg.style.opacity='0'; }
+      if (t.img) { bg.style.backgroundImage = `url(${t.img})`; bg.style.opacity = '1'; }
+      else       { bg.style.backgroundImage = 'none'; bg.style.opacity = '0'; }
     }
-    document.body.style.background = !t.img ? (key==='white'?'#f6f5f0':'#080808') : '';
-    // 预览时切换 dm class，确保文字颜色跟着背景变
-    if (key === 'white') document.body.classList.add('dm');
-    else document.body.classList.remove('dm');
+    // inline background（预览时也同步）
+    document.body.style.background = !t.img ? (key === 'white' ? '#f6f5f0' : '#080808') : '';
+    // white 和 black 都需要 dm（深色文字）
+    if (t.dm) document.body.classList.add('dm');
+    else      document.body.classList.remove('dm');
     if (cv) startAnim(t.anim, cv);
   }
 
@@ -61,10 +72,9 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
   const dock = document.createElement('div');
   dock.id = 'theme-dock';
 
-  // 触发按钮：胶囊形
   const trigger = document.createElement('button');
   trigger.className = 'dock-trigger';
-  trigger.setAttribute('aria-label','切换主题');
+  trigger.setAttribute('aria-label', '切换主题');
   trigger.style.position = 'relative';
   trigger.innerHTML = `
     <span class="dock-trigger-ring"></span>
@@ -100,7 +110,7 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
     if (key === cur) card.classList.add('active');
     card.innerHTML = `
       <span class="dock-card-swatch" style="background:${t.color}">
-        ${t.img?`<img src="${t.img}" alt="" aria-hidden="true" loading="lazy" draggable="false">`:''}
+        ${t.img ? `<img src="${t.img}" alt="" aria-hidden="true" loading="lazy" draggable="false">` : ''}
         <span class="dock-card-ring" style="border-color:${t.color}"></span>
       </span>
       <span class="dock-card-name">${t.label}</span>`;
@@ -110,47 +120,47 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
       const lbl = overlay.querySelector('#dockCurrentLabel');
       if (lbl) lbl.textContent = t.label;
       clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(()=>{ if(!panelClosing) previewTheme(key); }, 80);
+      hoverTimer = setTimeout(() => { if (!panelClosing) previewTheme(key); }, 80);
     });
     card.addEventListener('mouseleave', () => {
       card.classList.remove('hovered');
       const lbl = overlay.querySelector('#dockCurrentLabel');
       if (lbl) lbl.textContent = '';
       clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(()=>{ if(!panelClosing) restoreTheme(); }, 120);
+      hoverTimer = setTimeout(() => { if (!panelClosing) restoreTheme(); }, 120);
     });
     card.addEventListener('click', () => {
       clearTimeout(hoverTimer);
       const ripple = document.createElement('span');
-      ripple.className='dock-select-ripple'; ripple.style.background=t.color;
-      card.appendChild(ripple); setTimeout(()=>ripple.remove(), 500);
+      ripple.className = 'dock-select-ripple'; ripple.style.background = t.color;
+      card.appendChild(ripple); setTimeout(() => ripple.remove(), 500);
       applyTheme(key); closePanel();
     });
     grid.appendChild(card);
   });
 
   function openPanel() {
-    isOpen=true; panelClosing=false;
+    isOpen = true; panelClosing = false;
     overlay.classList.add('open'); trigger.classList.add('open');
-    grid.querySelectorAll('.dock-card').forEach((c,i)=>{
-      c.classList.toggle('active',c.dataset.t===cur);
-      c.style.transitionDelay=`${i*24}ms`; c.classList.add('visible');
+    grid.querySelectorAll('.dock-card').forEach((c, i) => {
+      c.classList.toggle('active', c.dataset.t === cur);
+      c.style.transitionDelay = `${i * 24}ms`; c.classList.add('visible');
     });
   }
   function closePanel() {
-    isOpen=false; panelClosing=true; clearTimeout(hoverTimer);
+    isOpen = false; panelClosing = true; clearTimeout(hoverTimer);
     overlay.classList.remove('open'); trigger.classList.remove('open');
-    grid.querySelectorAll('.dock-card').forEach(c=>{
-      c.style.transitionDelay='0ms'; c.classList.remove('visible','hovered');
+    grid.querySelectorAll('.dock-card').forEach(c => {
+      c.style.transitionDelay = '0ms'; c.classList.remove('visible', 'hovered');
     });
     restoreTheme();
-    setTimeout(()=>{ panelClosing=false; }, 400);
+    setTimeout(() => { panelClosing = false; }, 400);
   }
 
-  trigger.addEventListener('click', ()=>isOpen?closePanel():openPanel());
+  trigger.addEventListener('click', () => isOpen ? closePanel() : openPanel());
   overlay.querySelector('.dock-close').addEventListener('click', closePanel);
-  overlay.addEventListener('click', e=>{ if(e.target===overlay) closePanel(); });
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape'&&isOpen) closePanel(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen) closePanel(); });
 
   function updateTrigger() {
     const t = THEMES[cur];
@@ -160,12 +170,6 @@ export function initDock(bgId='bg-image', cvId='bg-canvas') {
     if (label) label.textContent    = t.label;
   }
 
-  // 初始化
-  const t = THEMES[cur];
-  document.body.classList.remove(...Object.keys(THEMES).map(k=>`theme-${k}`),'dm');
-  document.body.classList.add(`theme-${cur}`);
-  if (t.dm) document.body.classList.add('dm');
-  document.documentElement.style.setProperty('--theme-color', t.color);
-  document.documentElement.style.setProperty('--theme-color-rgb', t.rgb);
-  updateTrigger();
+  // 初始化应用主题
+  applyTheme(cur);
 }
