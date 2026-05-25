@@ -6,7 +6,7 @@ import { getStreak, markTodayDone, playStreakAnim } from './streak.js';
 import { recordStudyLog } from './study-log.js';
 import { pushToCloud, getCurrentUser } from './auth.js';
 import { speak, createSpeakBtn, applyDmStyle } from './tts.js';
-import './transitions.js';
+import { navigate } from './transitions.js';
 
 // ── 状态 ─────────────────────────────────────────────────────
 let plan           = [];
@@ -292,14 +292,14 @@ async function finishSession() {
 }
 
 $('btn-result-home')?.addEventListener('click', () => {
-  window.location.href = 'index.html';
+  navigate('index.html');
 });
 
 $('btn-result-again')?.addEventListener('click', () => {
   const wrongIds = sessionResults
     .filter(r => !r.correct || r.fillWrong)
     .map(r => r.wordId);
-  if (wrongIds.length === 0) { window.location.href = 'index.html'; return; }
+  if (wrongIds.length === 0) { navigate('index.html'); return; }
   plan           = [...new Set(wrongIds)];
   currentIdx     = 0;
   sessionResults = [];
