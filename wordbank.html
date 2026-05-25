@@ -58,11 +58,14 @@
     .word-sentence{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:6px}
     .blank-word{color:#fff;font-style:normal;font-weight:600;border-bottom:1px solid rgba(255,255,255,.4)}
     .word-translation{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.45)}
-    .word-actions{display:flex;gap:10px;margin-top:14px}
+    .word-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
     .word-action-btn{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:6px 14px;cursor:pointer;transition:all .2s;letter-spacing:.04em}
     .word-action-btn:hover{background:rgba(255,255,255,.14);color:rgba(255,255,255,.9)}
     .word-action-btn.in-review{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.3);color:#4ade80}
     .word-action-btn.in-review:hover{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.3);color:#f87171}
+    /* 收藏按钮 */
+    .word-action-btn.fav-btn.favorited{background:rgba(250,204,21,.12);border-color:rgba(250,204,21,.35);color:#fbbf24}
+    .word-action-btn.fav-btn.favorited:hover{background:rgba(250,204,21,.2)}
 
     .empty-state{text-align:center;padding:80px 24px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.3)}
     .empty-state .empty-icon{font-size:48px;margin-bottom:16px}
@@ -98,6 +101,7 @@
 
     <div class="dim-tabs" id="dim-tabs">
       <div class="dim-tab on" data-dim="all">全部</div>
+      <div class="dim-tab" data-dim="__favorites__">⭐ 收藏</div>
     </div>
 
     <div class="search-wrap">
@@ -118,10 +122,10 @@
     import { startAnim } from './js/animations.js';
     import { WORDS, DIMENSIONS, TOTAL } from './js/wordbank.js';
     import { initDock } from './js/dock.js';
+    import { pushToCloud, getCurrentUser } from './js/auth.js';
 
-    // ── 背景初始化 ──
+    // ── 背景 ──
     const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
-    // fix #4: aurora 动画已废弃，改为 none
     const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
     const theme = localStorage.getItem('fg_theme') || 'ocean';
     document.body.className = `theme-${theme}`;
@@ -132,29 +136,35 @@
     window.addEventListener('resize',()=>{cvEl.width=window.innerWidth;cvEl.height=window.innerHeight;});
     if(THEME_IMGS[theme]){bgEl.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bgEl.style.opacity='1';}
     else{bgEl.style.opacity='0';}
-    if(THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cvEl);
+    if(THEME_ANIMS[theme]&&THEME_ANIMS[theme]!=='none') startAnim(THEME_ANIMS[theme],cvEl);
 
-    // ── dock ──
     initDock();
 
-    // ── 数据 ──
+    // ── 数据工具 ──
     const LEVEL_MAP = {1:'A1',2:'A2',3:'B1',4:'B2',5:'C1',6:'C2'};
     const STATUS_LABEL = {new:'未学习',learning:'学习中',review:'复习中',mastered:'已掌握'};
 
     let cards = {};
     try { cards = JSON.parse(localStorage.getItem('fg_cards')||'{}'); } catch{}
 
-    // fix #9: 掌握度判断 — reps>=5 OR stability>=21（约3周稳定）
     function getStatus(wordId) {
       const c = cards[wordId];
       if (!c || c.state==='new') return 'new';
-      if (c.state==='learning' || c.state==='relearn') return 'learning';
-      if (c.reps >= 5 || (c.stability != null && c.stability >= 21)) return 'mastered';
+      if (c.state==='learning'||c.state==='relearn') return 'learning';
+      if (c.reps>=5||(c.stability!=null&&c.stability>=21)) return 'mastered';
       return 'review';
     }
 
+    // ── 回炉本 ──
     function loadWrong(){ try{return JSON.parse(localStorage.getItem('fg_wrong')||'{}')}catch{return{}} }
     function saveWrong(d){ localStorage.setItem('fg_wrong',JSON.stringify(d)); }
+
+    // ── 收藏 ──
+    function loadFavs(){ try{return JSON.parse(localStorage.getItem('fg_favorites')||'{}')}catch{return{}} }
+    function saveFavs(d){
+      localStorage.setItem('fg_favorites',JSON.stringify(d));
+      getCurrentUser().then(u=>{ if(u) pushToCloud(); }).catch(()=>{});
+    }
 
     // ── 维度 tabs ──
     const tabWrap = document.getElementById('dim-tabs');
@@ -183,7 +193,16 @@
     // ── 渲染 ──
     function renderList(){
       const list=document.getElementById('word-list');
-      let words = activeDim==='all' ? WORDS : WORDS.filter(w=>w.dim===activeDim);
+      const favs=loadFavs();
+
+      let words;
+      if(activeDim==='__favorites__'){
+        words=WORDS.filter(w=>!!favs[w.id]);
+      } else if(activeDim==='all'){
+        words=[...WORDS];
+      } else {
+        words=WORDS.filter(w=>w.dim===activeDim);
+      }
       if(searchQ) words=words.filter(w=>w.word.toLowerCase().includes(searchQ)||(w.zh||'').includes(searchQ));
 
       // 统计（全库）
@@ -201,7 +220,8 @@
 
       list.innerHTML='';
       if(!words.length){
-        list.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><p>没有找到相关单词</p></div>';
+        const msg=activeDim==='__favorites__'?'还没有收藏的单词<br><small style="font-size:12px;opacity:.6">在单词卡片里点 ⭐ 收藏</small>':'没有找到相关单词';
+        list.innerHTML=`<div class="empty-state"><div class="empty-icon">${activeDim==='__favorites__'?'⭐':'📭'}</div><p>${msg}</p></div>`;
         return;
       }
 
@@ -211,6 +231,7 @@
         const status=getStatus(word.id);
         const dim=DIMENSIONS[word.dim]||{icon:'',label:word.dim};
         const inReview=!!wrong[word.id];
+        const isFav=!!favs[word.id];
         const levelLabel=LEVEL_MAP[word.level]||word.level;
 
         function hl(str){
@@ -236,6 +257,9 @@
               <div class="word-sentence">${exampleHl}</div>
               <div class="word-translation">${word.exZh||''}</div>
               <div class="word-actions">
+                <button class="word-action-btn fav-btn ${isFav?'favorited':''}" data-id="${word.id}">
+                  ${isFav?'⭐ 已收藏':'☆ 收藏'}
+                </button>
                 <button class="word-action-btn review-btn ${inReview?'in-review':''}" data-id="${word.id}">
                   ${inReview?'✓ 已在回炉本':'＋ 加入回炉本'}
                 </button>
@@ -248,11 +272,36 @@
           </div>
         `;
 
+        // 展开/收起
         card.addEventListener('click',e=>{
           if(e.target.closest('.word-action-btn'))return;
           card.classList.toggle('expanded');
         });
 
+        // 收藏
+        card.querySelector('.fav-btn').addEventListener('click',e=>{
+          e.stopPropagation();
+          const btn=e.currentTarget;
+          const f=loadFavs();
+          if(f[word.id]){
+            delete f[word.id];
+            btn.textContent='☆ 收藏';
+            btn.classList.remove('favorited');
+            // 收藏 tab 下移除这张卡
+            if(activeDim==='__favorites__'){
+              card.style.transition='opacity .22s,transform .22s';
+              card.style.opacity='0'; card.style.transform='translateX(12px)';
+              setTimeout(()=>renderList(),230);
+            }
+          } else {
+            f[word.id]=Date.now();
+            btn.textContent='⭐ 已收藏';
+            btn.classList.add('favorited');
+          }
+          saveFavs(f);
+        });
+
+        // 回炉本
         card.querySelector('.review-btn').addEventListener('click',e=>{
           e.stopPropagation();
           const btn=e.currentTarget;
