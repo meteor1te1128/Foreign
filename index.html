@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Foreign · 沉浸式英语学习</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#080808" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Foreign" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono&display=swap" rel="stylesheet" />
@@ -11,46 +19,46 @@
   <link rel="stylesheet" href="css/theme-buttons.css" />
   <link rel="stylesheet" href="css/dock.css" />
   <style>
-    #hero { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px; padding-top: 220px; padding-bottom: 120px; }
-    .hero-brand { text-align: center; animation: heroIn 1s ease both; }
-    .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px, 12vw, 88px); font-weight: 600; color: #fff; letter-spacing: -0.02em; line-height: 1; margin-bottom: 12px; text-shadow: 0 2px 40px rgba(0,0,0,.3); transition: color .3s, text-shadow .3s; }
-    .hero-sub { font-family: 'Space Mono', monospace; font-size: clamp(9px, 2.2vw, 11px); letter-spacing: 0.22em; color: rgba(255,255,255,.45); text-transform: uppercase; transition: color .3s; }
-    .nav-cards { position: fixed; top: 0; left: 0; right: 0; z-index: 40; padding: 16px 16px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .nav-card:first-child { grid-column: 1 / -1; }
-    .nav-card { background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.18); border-radius: 16px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 16px 20px; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 14px; transition: all .22s cubic-bezier(.34,1.2,.64,1); overflow: hidden; position: relative; }
-    .nav-card:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.32); transform: translateY(-2px); }
-    .nav-card:active { transform: scale(.97); }
-    .nav-card-icon { font-size: 28px; flex-shrink: 0; }
-    .nav-card-info { flex: 1; min-width: 0; }
-    .nav-card-name { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 3px; }
-    .nav-card-meta { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: var(--theme-color, #3b82f6); opacity: .85; }
-    .nav-card-badge { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: rgba(255,255,255,.7); flex-shrink: 0; }
-    .bottom-actions { position: fixed; bottom: 0; left: 0; z-index: 40; padding: 0 16px 24px; display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap; }
-    .bottom-btn { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); border-radius: 14px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 14px 20px; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.82); transition: all .2s; white-space: nowrap; }
-    .bottom-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
-    .bottom-btn:active { transform: scale(.96); }
-    #theme-dock { position: fixed; bottom: 28px; right: 28px; z-index: 9000; }
-    .login-btn { position: fixed; top: 20px; right: 16px; z-index: 50; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em; color: rgba(255,255,255,.5); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 8px; padding: 7px 14px; cursor: pointer; transition: all .2s; }
-    .login-btn:hover { color: #fff; background: rgba(255,255,255,.15); }
-    body.dm .hero-title { color: #111; text-shadow: none; }
-    body.dm .hero-sub   { color: rgba(0,0,0,.38); }
-    body.dm .nav-card   { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.12); }
-    body.dm .nav-card:hover { background: rgba(0,0,0,.1); }
-    body.dm .nav-card-name { color: #111; }
-    body.dm .nav-card-badge { color: rgba(0,0,0,.55); }
-    body.dm .bottom-btn { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.12); color: rgba(0,0,0,.65); }
-    body.dm .bottom-btn:hover { background: rgba(0,0,0,.1); color: #111; }
-    body.dm .login-btn { color: rgba(0,0,0,.45); background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
-    body.theme-rain #bg { background-position: 30% center; }
-    @keyframes heroIn { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);} }
-    @media (min-width: 768px) {
-      #hero { padding-top: 0; padding-bottom: 0; justify-content: center; }
-      .nav-cards { display: flex; flex-direction: row; padding: 20px 24px; gap: 12px; background: none; }
-      .nav-card:first-child { grid-column: auto; }
-      .nav-card { padding: 14px 20px; border-radius: 14px; }
-      .bottom-actions { padding: 0 24px 24px; flex-wrap: nowrap; }
-      #theme-dock { bottom: 28px; right: 28px; }
-      .login-btn { top: 24px; right: 24px; }
+    #hero { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 24px; padding-top:220px; padding-bottom:120px; }
+    .hero-brand { text-align:center; animation:heroIn 1s ease both; }
+    .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(52px,12vw,88px); font-weight:600; color:#fff; letter-spacing:-0.02em; line-height:1; margin-bottom:12px; text-shadow:0 2px 40px rgba(0,0,0,.3); transition:color .3s,text-shadow .3s; }
+    .hero-sub { font-family:'Space Mono',monospace; font-size:clamp(9px,2.2vw,11px); letter-spacing:0.22em; color:rgba(255,255,255,.45); text-transform:uppercase; transition:color .3s; }
+    .nav-cards { position:fixed; top:0; left:0; right:0; z-index:40; padding:16px 16px 0; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nav-card:first-child { grid-column:1/-1; }
+    .nav-card { background:rgba(255,255,255,.11); border:1px solid rgba(255,255,255,.18); border-radius:16px; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); padding:16px 20px; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:14px; transition:all .22s cubic-bezier(.34,1.2,.64,1); overflow:hidden; position:relative; }
+    .nav-card:hover { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.32); transform:translateY(-2px); }
+    .nav-card:active { transform:scale(.97); }
+    .nav-card-icon { font-size:28px; flex-shrink:0; }
+    .nav-card-info { flex:1; min-width:0; }
+    .nav-card-name { font-family:'DM Sans',sans-serif; font-size:16px; font-weight:500; color:#fff; margin-bottom:3px; }
+    .nav-card-meta { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:0.12em; color:var(--theme-color,#3b82f6); opacity:.85; }
+    .nav-card-badge { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:rgba(255,255,255,.7); flex-shrink:0; }
+    .bottom-actions { position:fixed; bottom:0; left:0; z-index:40; padding:0 16px 24px; display:flex; flex-direction:row; gap:10px; flex-wrap:wrap; }
+    .bottom-btn { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18); border-radius:14px; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); padding:14px 20px; cursor:pointer; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:rgba(255,255,255,.82); transition:all .2s; white-space:nowrap; }
+    .bottom-btn:hover { background:rgba(255,255,255,.18); color:#fff; }
+    .bottom-btn:active { transform:scale(.96); }
+    #theme-dock { position:fixed; bottom:28px; right:28px; z-index:9000; }
+    .login-btn { position:fixed; top:20px; right:16px; z-index:50; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.08em; color:rgba(255,255,255,.5); background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:8px; padding:7px 14px; cursor:pointer; transition:all .2s; }
+    .login-btn:hover { color:#fff; background:rgba(255,255,255,.15); }
+    body.dm .hero-title { color:#111; text-shadow:none; }
+    body.dm .hero-sub   { color:rgba(0,0,0,.38); }
+    body.dm .nav-card   { background:rgba(0,0,0,.06); border-color:rgba(0,0,0,.12); }
+    body.dm .nav-card:hover { background:rgba(0,0,0,.1); }
+    body.dm .nav-card-name  { color:#111; }
+    body.dm .nav-card-badge { color:rgba(0,0,0,.55); }
+    body.dm .bottom-btn { background:rgba(0,0,0,.06); border-color:rgba(0,0,0,.12); color:rgba(0,0,0,.65); }
+    body.dm .bottom-btn:hover { background:rgba(0,0,0,.1); color:#111; }
+    body.dm .login-btn  { color:rgba(0,0,0,.45); background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.1); }
+    body.theme-rain #bg { background-position:30% center; }
+    @keyframes heroIn { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
+    @media (min-width:768px) {
+      #hero { padding-top:0; padding-bottom:0; justify-content:center; }
+      .nav-cards { display:flex; flex-direction:row; padding:20px 24px; gap:12px; background:none; }
+      .nav-card:first-child { grid-column:auto; }
+      .nav-card { padding:14px 20px; border-radius:14px; }
+      .bottom-actions { padding:0 24px 24px; flex-wrap:nowrap; }
+      #theme-dock { bottom:28px; right:28px; }
+      .login-btn { top:24px; right:24px; }
     }
   </style>
 </head>
@@ -134,5 +142,7 @@
     if (meta) meta.textContent = TOTAL + ' WORDS';
   </script>
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/keyboard.js"></script>
+
 </body>
 </html>
