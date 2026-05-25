@@ -53,7 +53,23 @@
       flex: 1;
       text-align: center;
     }
-    .top-right { width: 70px; flex-shrink: 0; }
+    /* [CHANGE 1] 原来是 .top-right width:70px，改为历史记录按钮 */
+    .btn-history {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .06em;
+      color: rgba(255,255,255,.45);
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .btn-history:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.13); }
 
     /* ── 场景选择页 ── */
     .scene-page {
@@ -531,6 +547,8 @@
     body.dm .word-modal-close:hover { background: rgba(0,0,0,.08); color: #1e293b; }
     body.dm .word-chip { background: rgba(0,0,0,.06); border-color: rgba(0,0,0,.12); color: rgba(0,0,0,.6); }
     body.dm .word-chip:hover { background: rgba(0,0,0,.1); color: #1e293b; }
+    /* [CHANGE 1 dm] */
+    body.dm .btn-history { color: rgba(0,0,0,.45); background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); }
   </style>
 </head>
 <body>
@@ -545,7 +563,8 @@
     <div class="top-bar">
       <a href="index.html" class="back-btn-ai">← 返回</a>
       <div class="top-title">AI 对话</div>
-      <div class="top-right"></div>
+      <!-- [CHANGE 2] 原来是 <div class="top-right"></div>，改为历史按钮 -->
+      <a href="chat-history.html" class="btn-history">历史记录</a>
     </div>
 
     <!-- ── 场景选择页 ── -->
@@ -644,10 +663,13 @@
     import { startAnim } from './js/animations.js';
     import { WORDS } from './js/wordbank.js';
     import { getTodayPlan } from './js/fsrs.js';
+    // [CHANGE 3] 新增 import
+    import { pushToCloud, getCurrentUser } from './js/auth.js';
 
     // ── 主题初始化 ────────────────────────────────────────
     const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
-    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'aurora',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
+    // [CHANGE 4] aurora:'aurora' → aurora:'none'
+    const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
     const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#94a3b8'};
     const theme = localStorage.getItem('fg_theme') || 'ocean';
     document.body.className = `theme-${theme}`;
@@ -660,7 +682,7 @@
     window.addEventListener('resize',()=>{cvEl.width=window.innerWidth;cvEl.height=window.innerHeight;});
     if(THEME_IMGS[theme]){bgEl.style.backgroundImage=`url(${THEME_IMGS[theme]})`;bgEl.style.opacity='1';}
     else{bgEl.style.opacity='0';}
-    if(THEME_ANIMS[theme]) startAnim(THEME_ANIMS[theme], cvEl);
+    if(THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cvEl);
 
     // ── Worker 地址 ──────────────────────────────────────
     const WORKER = 'https://foreign.kevin68654926.workers.dev';
@@ -687,6 +709,10 @@
     let customScene    = '';
     let chatHistory    = [];
     let userMessages   = [];
+    // [CHANGE 5] 新增三个变量用于历史记录
+    let corrections        = [];
+    let currentSessionId   = '';
+    let currentSceneLabel  = '';
     let activeSystemPrompt = '';
 
     const btnStart  = document.getElementById('btn-start-chat');
@@ -727,6 +753,10 @@
         ? { icon:'✨', label: customScene }
         : SCENES[sceneKey];
 
+      // [CHANGE 5a] 记录场景信息供历史保存用
+      currentSceneLabel = sceneInfo.label;
+      currentSessionId  = Date.now().toString();
+
       document.getElementById('page-scene').classList.add('hidden');
       document.getElementById('page-chat').classList.remove('hidden');
       document.getElementById('chat-scene-tag').textContent =
@@ -734,6 +764,7 @@
 
       chatHistory  = [];
       userMessages = [];
+      corrections  = [];   // 重置纠错列表
 
       const wordList  = todayWords.map(w => `${w.word}(${w.zh})`).join('、');
       const sceneDesc = sceneKey === 'custom' ? customScene : sceneInfo.desc;
@@ -761,7 +792,6 @@ Start the conversation by setting the scene in 1-2 sentences.`;
       const reply = await callDeepSeek(activeSystemPrompt, chatHistory);
       hideTyping();
 
-      // 把 AI 的开场白也加入历史，保持 user/assistant 交替正确
       chatHistory.push({ role: 'assistant', content: reply });
       renderAIMessage(reply);
     }
@@ -805,7 +835,9 @@ Start the conversation by setting the scene in 1-2 sentences.`;
     function renderAIMessage(raw) {
       const corrMatch = raw.match(/\[CORRECTION\]:\s*([\s\S]*?)\[REPLY\]:\s*([\s\S]*)/);
       if (corrMatch) {
-        addBubble('ai-correction', corrMatch[1].trim());
+        const corrText = corrMatch[1].trim();
+        corrections.push(corrText);  // [CHANGE 5b] 收集纠错
+        addBubble('ai-correction', corrText);
         addBubble('ai-chat', highlightWords(corrMatch[2].trim()));
       } else {
         const replyMatch = raw.match(/\[REPLY\]:\s*([\s\S]*)/);
@@ -872,6 +904,12 @@ Start the conversation by setting the scene in 1-2 sentences.`;
         wordsContainer.appendChild(chip);
       });
 
+      // [CHANGE 6] 统计用到的词
+      const userText = userMessages.join(' ').toLowerCase();
+      const wordsUsedIds = todayWords
+        .filter(w => userText.includes(w.word.toLowerCase()))
+        .map(w => w.id);
+
       // 请求 AI 评分
       const scorePrompt = `Based on this English conversation, evaluate the user's performance.
 User's messages: ${userMessages.join(' | ')}
@@ -885,18 +923,47 @@ Format exactly:
 SCORE: [number]
 FEEDBACK: [Chinese feedback]`;
 
+      let scoreNum = null;
+      let feedbackText = '评分生成失败，请重试。';
+
       try {
         const resp = await callDeepSeek(scorePrompt, []);
-        const scoreMatch = resp.match(/SCORE:\s*(\d+)/);
+        const scoreMatch    = resp.match(/SCORE:\s*(\d+)/);
         const feedbackMatch = resp.match(/FEEDBACK:\s*([\s\S]*)/);
-        document.getElementById('result-score').textContent =
-          scoreMatch ? scoreMatch[1] : '—';
-        document.getElementById('result-feedback').textContent =
-          feedbackMatch ? feedbackMatch[1].trim() : resp;
+        scoreNum     = scoreMatch    ? parseInt(scoreMatch[1])  : null;
+        feedbackText = feedbackMatch ? feedbackMatch[1].trim()  : resp;
+        document.getElementById('result-score').textContent    = scoreNum ?? '—';
+        document.getElementById('result-feedback').textContent = feedbackText;
       } catch(e) {
-        document.getElementById('result-score').textContent = '—';
-        document.getElementById('result-feedback').textContent = '评分生成失败，请重试。';
+        document.getElementById('result-score').textContent    = '—';
+        document.getElementById('result-feedback').textContent = feedbackText;
       }
+
+      // [CHANGE 6] 保存对话历史
+      saveSession({
+        id:           currentSessionId,
+        scene:        selectedScene,
+        sceneLabel:   currentSceneLabel,
+        date:         new Date().toISOString(),
+        messages:     chatHistory.filter(m => m.content !== 'Start the conversation.'),
+        score:        scoreNum,
+        feedback:     feedbackText,
+        corrections:  corrections,
+        wordIds:      todayWords.map(w => w.id),
+        wordsUsedIds: wordsUsedIds,
+      });
+    }
+
+    // [CHANGE 6] 保存到 localStorage + 云端
+    function saveSession(session) {
+      try {
+        const MAX = 20;
+        let history = JSON.parse(localStorage.getItem('fg_chat_history') || '[]');
+        history.unshift(session);
+        if (history.length > MAX) history = history.slice(0, MAX);
+        localStorage.setItem('fg_chat_history', JSON.stringify(history));
+        getCurrentUser().then(u => { if (u) pushToCloud(); }).catch(() => {});
+      } catch(e) {}
     }
 
     // ── 词汇弹窗 ─────────────────────────────────────────
