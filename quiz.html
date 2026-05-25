@@ -27,13 +27,12 @@
     cursor: pointer;
     transition: all .2s;
   }
-  .feedback-add-btn:hover {
-    background: rgba(255,255,255,.16);
-    color: #fff;
-    border-color: rgba(255,255,255,.3);
-  }
+  .feedback-add-btn:hover { background: rgba(255,255,255,.16); color: #fff; border-color: rgba(255,255,255,.3); }
+  body.dm .feedback-add-btn { border-color: rgba(0,0,0,.14); background: rgba(0,0,0,.05); color: rgba(0,0,0,.55); }
+  body.dm .feedback-add-btn:hover { background: rgba(0,0,0,.1); color: #111; }
+
   /* 薄弱场景推荐 */
-  .weak-reco { margin:24px 0; padding:0 4px; }
+  .weak-reco { margin: 24px 0; padding: 0 4px; }
   .weak-reco .eyebrow { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.12em; color:rgba(255,255,255,.38); text-transform:uppercase; margin-bottom:12px; text-align:center; }
   .weak-reco-list { display:flex; flex-direction:column; gap:8px; }
   .weak-reco-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:12px 16px; text-decoration:none; transition:all .2s; }
@@ -44,6 +43,12 @@
   .weak-reco-score { font-family:'Space Mono',monospace; font-size:10px; color:rgba(255,255,255,.38); }
   .weak-reco-bar-wrap { width:80px; height:4px; background:rgba(255,255,255,.1); border-radius:99px; overflow:hidden; flex-shrink:0; }
   .weak-reco-bar { height:100%; border-radius:99px; background:#f87171; transition:width 1s cubic-bezier(.4,0,.2,1); }
+  body.dm .weak-reco .eyebrow { color:rgba(0,0,0,.38); }
+  body.dm .weak-reco-item { background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.1); }
+  body.dm .weak-reco-item:hover { background:rgba(0,0,0,.08); border-color:rgba(0,0,0,.18); }
+  body.dm .weak-reco-name  { color:#111; }
+  body.dm .weak-reco-score { color:rgba(0,0,0,.38); }
+  body.dm .weak-reco-bar-wrap { background:rgba(0,0,0,.08); }
   </style>
 </head>
 <body>
@@ -105,7 +110,6 @@
           <div class="feedback-icon" id="feedbackIcon"></div>
           <div class="feedback-word" id="feedbackWord"></div>
           <div class="feedback-explain" id="feedbackExplain"></div>
-          <!-- 答对时显示，可手动加入回炉本 -->
           <button class="feedback-add-btn">＋ 加入回炉本</button>
           <button class="btn-nav-ghost btn-next" id="btnNext" style="margin-top:12px">继续 →</button>
         </div>
@@ -144,18 +148,29 @@
   <script type="module" src="js/quiz.js"></script>
   <script type="module">
     import { initDock } from './js/dock.js';
-    initDock('bg','cv');
+    import './js/transitions.js';
+
+    // black 主题加 dm（quiz.html 用的是 index.html 的 bg 元素，主题由 dock.js 管理）
+    // dock.js 里 applyTheme 已经处理了 dm，这里只需要初始化时同步
+    const theme = localStorage.getItem('fg_theme') || 'ocean';
+    if (theme === 'white' || theme === 'black') {
+      document.body.classList.add('dm');
+    }
+
+    initDock('bg', 'cv');
+
     window.renderWeakReco = function(scenePcts, SCENES) {
-      const sorted=Object.entries(scenePcts).sort((a,b)=>a[1]-b[1]).slice(0,3);
-      const wrap=document.getElementById('weakReco');
-      const list=document.getElementById('weakRecoList');
-      if(!wrap||!list)return;
-      list.innerHTML='';
-      sorted.forEach(([key,pct])=>{
-        const info=SCENES.find(s=>s.key===key)||{label:key,icon:'✦'};
-        const item=document.createElement('a');
-        item.className='weak-reco-item'; item.href='learn.html';
-        item.innerHTML=`
+      const sorted = Object.entries(scenePcts).sort((a, b) => a[1] - b[1]).slice(0, 3);
+      const wrap   = document.getElementById('weakReco');
+      const list   = document.getElementById('weakRecoList');
+      if (!wrap || !list) return;
+      list.innerHTML = '';
+      sorted.forEach(([key, pct]) => {
+        const info = SCENES.find(s => s.key === key) || { label: key, icon: '✦' };
+        const item = document.createElement('a');
+        item.className = 'weak-reco-item';
+        item.href = 'learn.html';
+        item.innerHTML = `
           <span class="weak-reco-icon">${info.icon}</span>
           <div class="weak-reco-info">
             <div class="weak-reco-name">${info.label}</div>
@@ -165,9 +180,9 @@
             <div class="weak-reco-bar" style="width:0%" data-pct="${pct}"></div>
           </div>`;
         list.appendChild(item);
-        setTimeout(()=>{ item.querySelector('.weak-reco-bar').style.width=pct+'%'; },300);
+        setTimeout(() => { item.querySelector('.weak-reco-bar').style.width = pct + '%'; }, 300);
       });
-      wrap.style.display='block';
+      wrap.style.display = 'block';
     };
   </script>
 </body>
