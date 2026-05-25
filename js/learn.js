@@ -1,10 +1,12 @@
-// learn.js — 每日学习页逻辑（简化版：直接显示翻译，两档评分）
+// learn.js — 每日学习页逻辑
 
 import { WORDS, DIMENSIONS } from './wordbank.js';
 import { getTodayPlan, getOrCreateCard, reviewCard, updateCard, RATING } from './fsrs.js';
 import { getStreak, markTodayDone, playStreakAnim } from './streak.js';
 import { recordStudyLog } from './study-log.js';
 import { pushToCloud, getCurrentUser } from './auth.js';
+import { speak, createSpeakBtn, applyDmStyle } from './tts.js';
+import './transitions.js';
 
 // ── 状态 ─────────────────────────────────────────────────────
 let plan           = [];
@@ -26,12 +28,14 @@ function initTheme() {
   const theme = localStorage.getItem('fg_theme') || 'ocean';
   document.body.className = `theme-${theme}`;
   const THEME_COLORS = {
-    ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',
-    aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',
-    forest_green:'#86efac',white:'#64748b',black:'#94a3b8',
+    ocean:'#3b82f6', fog_forest:'#6ee7b7', galaxy:'#818cf8', rain:'#93c5fd',
+    aurora:'#34d399', sakura:'#f9a8d4', sunset:'#fb923c', snow:'#bae6fd',
+    forest_green:'#86efac', white:'#64748b', black:'#475569',
   };
-  const color = THEME_COLORS[theme] || '#3b82f6';
-  document.documentElement.style.setProperty('--theme-color', color);
+  document.documentElement.style.setProperty('--theme-color', THEME_COLORS[theme] || '#3b82f6');
+  // white 和 black 都加 dm
+  if (theme === 'white')      { document.body.style.background = '#f6f5f0'; document.body.classList.add('dm'); }
+  else if (theme === 'black') { document.body.style.background = '#080808'; document.body.classList.add('dm'); }
   return theme;
 }
 
@@ -91,16 +95,32 @@ function renderCard(word) {
 
   $('card-dim-label').textContent   = dim.icon + ' ' + dim.label;
   $('card-level-label').textContent = word.level || '';
-  $('card-word').textContent        = word.word;
-  $('card-phonetic').textContent    = word.phonetic || '';
-  $('card-meaning').textContent     = word.zh || word.meaning || '';
+
+  // 单词大字 + 发音按钮
+  const wordEl = $('card-word');
+  wordEl.textContent = word.word;
+  // 移除上一张卡残留的发音按钮
+  const oldBtn = wordEl.parentNode.querySelector('.speak-btn-card');
+  if (oldBtn) oldBtn.remove();
+  // 创建发音按钮，插在单词下方
+  const speakBtn = createSpeakBtn(word.word, { size: 32 });
+  speakBtn.classList.add('speak-btn-card');
+  speakBtn.style.cssText += 'display:block;margin:8px auto 0;';
+  if (document.body.classList.contains('dm')) applyDmStyle(speakBtn);
+  wordEl.insertAdjacentElement('afterend', speakBtn);
+  // 自动朗读（新词才自动，复习词不自动，避免打扰）
+  if (card.state === 'new') {
+    setTimeout(() => speak(word.word), 400);
+  }
+
+  $('card-phonetic').textContent = word.phonetic || '';
+  $('card-meaning').textContent  = word.zh || word.meaning || '';
 
   const sentence = word.example || word.sentence || '';
   $('card-sentence').innerHTML = sentence.replace(
     word.word,
     `<span class="blank-word">${word.word}</span>`
   );
-
   $('card-translation').textContent = word.exZh || word.translation || '';
 }
 
@@ -112,13 +132,11 @@ document.querySelectorAll('[data-rating]').forEach(btn => {
     updateCard(updated);
 
     const correct = rating >= RATING.GOOD;
-
     const existIdx = sessionResults.findIndex(r => r.wordId === currentWord.id);
     if (existIdx >= 0) sessionResults.splice(existIdx, 1);
     sessionResults.push({ wordId: currentWord.id, correct, rating });
 
     if (!correct) markWrong(currentWord.id);
-
     showFill(currentWord);
   });
 });
@@ -154,11 +172,8 @@ function showFill(word) {
   input.spellcheck   = false;
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
-      if (!$('fill-confirm-btn').classList.contains('hidden')) {
-        checkFill(word);
-      } else {
-        advanceFill();
-      }
+      if (!$('fill-confirm-btn').classList.contains('hidden')) checkFill(word);
+      else advanceFill();
     }
   });
   sentEl.appendChild(input);
@@ -196,6 +211,7 @@ function checkFill(word) {
     fb.textContent = `✓ ${word.word} — ${word.zh || word.meaning || ''}`;
     fb.classList.add('correct');
     input.classList.add('input-correct');
+    speak(word.word);
   } else {
     fb.textContent = `✗ 答案是：${word.word}`;
     fb.classList.add('wrong');
@@ -203,6 +219,8 @@ function checkFill(word) {
     markWrong(word.id);
     const r = sessionResults.find(r => r.wordId === word.id);
     if (r) r.fillWrong = true;
+    // 答错时也朗读正确答案，加深印象
+    setTimeout(() => speak(word.word, 0.75), 600);
   }
 
   $('fill-confirm-btn').classList.add('hidden');
@@ -230,7 +248,6 @@ async function finishSession() {
   const pct       = total ? Math.round((correct / total) * 100) : 100;
   const newStreak = await markTodayDone();
 
-  // 统计本次新词 vs 复习数
   const allIds    = WORDS.map(w => w.id);
   const todayPlan = getTodayPlan(allIds);
   const newIds    = new Set(todayPlan.newWords);
@@ -239,9 +256,8 @@ async function finishSession() {
 
   try { recordStudyLog(total); } catch(e) {}
 
-  // 今日累计（recordStudyLog 已写入，直接读）
-  const todayKey   = new Date().toISOString().slice(0,10);
-  const log        = JSON.parse(localStorage.getItem('fg_study_log')||'{}');
+  const todayKey   = new Date().toISOString().slice(0, 10);
+  const log        = JSON.parse(localStorage.getItem('fg_study_log') || '{}');
   const todayTotal = log[todayKey] || total;
 
   $('result-correct').textContent = correct;
@@ -253,13 +269,12 @@ async function finishSession() {
     pct >= 70 ? '掌握得不错 👍' :
     pct >= 50 ? '继续加油 💪'  : '明天继续努力 🌱';
 
-  // 填写详情格子（新词/复习/今日累计）
   const newEl = $('result-new-count');
   const revEl = $('result-review-count');
   const todEl = $('result-today-total');
-  if(newEl) newEl.textContent = newCount;
-  if(revEl) revEl.textContent = revCount;
-  if(todEl) todEl.textContent = todayTotal;
+  if (newEl) newEl.textContent = newCount;
+  if (revEl) revEl.textContent = revCount;
+  if (todEl) todEl.textContent = todayTotal;
 
   showScreen('result');
   setTimeout(() => { $('result-bar').style.width = pct + '%'; }, 200);
@@ -270,7 +285,6 @@ async function finishSession() {
     if (canvas) setTimeout(() => playStreakAnim(canvas, theme, newStreak), 600);
   }
 
-  // 学完同步云端
   try {
     const user = await getCurrentUser();
     if (user) await pushToCloud();
