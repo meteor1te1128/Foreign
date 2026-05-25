@@ -221,8 +221,137 @@
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dot-bounce { 0%,80%,100% { transform: scale(0.7); opacity:0.4; } 40% { transform: scale(1.1); opacity:1; } }
 
-.back-btn { position: fixed; top: 20px; left: 20px; z-index: 100; font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 7px 12px; cursor: pointer; text-decoration: none; transition: all 0.2s; letter-spacing: 0.06em; }
+.back-btn {
+  position: fixed; top: 20px; left: 20px; z-index: 100;
+  font-family: 'Space Mono', monospace; font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px; padding: 7px 12px; cursor: pointer;
+  text-decoration: none; transition: all 0.2s; letter-spacing: 0.06em;
+}
 .back-btn:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.12); }
+
+/* ════════════════════════════════════════════════
+   body.dm — 亮色背景统一适配（white + black 共用）
+   white = #f6f5f0 浅米色背景
+   black = #080808 极深背景，文字颜色同样需要深色
+   ════════════════════════════════════════════════ */
+
+/* 卡片：改为深色半透明 */
+body.dm .learn-card {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+/* 进度条区域 */
+body.dm .progress-meta { color: rgba(0,0,0,0.4); }
+body.dm .progress-track { background: rgba(0,0,0,0.1); }
+body.dm .progress-fill  { background: rgba(0,0,0,0.5); }
+
+/* tag 标签 */
+body.dm .tag {
+  border-color: rgba(0,0,0,0.12);
+  color: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.04);
+}
+body.dm .tag[data-type="new"]    { color: #0369a1; border-color: rgba(3,105,161,0.25); }
+body.dm .tag[data-type="review"] { color: #c2410c; border-color: rgba(194,65,12,0.25); }
+
+/* 单词卡核心文字 */
+body.dm .card-word      { color: #111; }
+body.dm .card-phonetic  { color: rgba(0,0,0,0.38); }
+body.dm .card-meaning   { color: rgba(0,0,0,0.78); }
+body.dm .card-sentence  {
+  color: rgba(0,0,0,0.55);
+  border-left-color: rgba(0,0,0,0.15);
+}
+body.dm .blank-word {
+  color: #111;
+  border-bottom-color: rgba(0,0,0,0.3);
+}
+body.dm .card-translation { color: rgba(0,0,0,0.38); }
+
+/* 评分按钮 */
+body.dm .btn-rating {
+  border-color: rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.04);
+}
+body.dm .btn-rating .rating-label { color: rgba(0,0,0,0.5); }
+
+/* 填空题 */
+body.dm .fill-context      { color: rgba(0,0,0,0.35); }
+body.dm .fill-meaning-hint { color: rgba(0,0,0,0.65); }
+body.dm .fill-sentence-wrap { color: rgba(0,0,0,0.72); }
+body.dm .fill-input {
+  border-bottom-color: rgba(0,0,0,0.3);
+  color: #111;
+}
+body.dm .fill-input:focus  { border-bottom-color: rgba(0,0,0,0.6); }
+body.dm .fill-hint-text    { color: rgba(0,0,0,0.3); }
+
+/* Intro 页 */
+body.dm .intro-title { color: #111; }
+body.dm .intro-date  { color: rgba(0,0,0,0.35); }
+body.dm .stat-box {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.08);
+}
+body.dm .stat-num   { color: #111; }
+body.dm .stat-label { color: rgba(0,0,0,0.45); }
+/* 连击数字保持金色，深背景下依然可读 */
+body.dm .streak-box .stat-num { color: #b45309; }
+
+/* 结算页 */
+body.dm .result-title  { color: #111; }
+body.dm .result-msg    { color: rgba(0,0,0,0.5); }
+body.dm .result-pct    { color: #111; }
+body.dm .result-detail { color: rgba(0,0,0,0.38); }
+body.dm .result-bar-wrap { background: rgba(0,0,0,0.1); }
+body.dm .result-bar    { background: rgba(0,0,0,0.55); }
+body.dm .result-streak-row { color: rgba(0,0,0,0.5); }
+body.dm .result-streak-num { color: #b45309; }
+
+/* 结算详情格子（inline style 里定义的，这里覆盖） */
+body.dm .result-stat-box {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.08);
+}
+body.dm .result-stat-label { color: rgba(0,0,0,0.38); }
+
+/* 通用按钮 */
+body.dm .btn-primary {
+  background: rgba(0,0,0,0.07);
+  border-color: rgba(0,0,0,0.15);
+  color: #111;
+}
+body.dm .btn-primary:hover {
+  background: rgba(0,0,0,0.13);
+  border-color: rgba(0,0,0,0.28);
+}
+body.dm .btn-secondary {
+  color: rgba(0,0,0,0.45);
+  border-color: rgba(0,0,0,0.1);
+}
+body.dm .btn-secondary:hover {
+  color: rgba(0,0,0,0.75);
+  border-color: rgba(0,0,0,0.22);
+}
+
+/* 返回按钮 */
+body.dm .back-btn {
+  color: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.1);
+}
+body.dm .back-btn:hover {
+  color: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.1);
+}
+
+/* loading dots */
+body.dm .loading-dots span { background: rgba(0,0,0,0.35); }
 
 @media (max-width: 480px) {
   .learn-card { padding: 28px 24px; border-radius: 18px; }
