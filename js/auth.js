@@ -7,6 +7,15 @@ function toEmail(username) {
   return `${username.toLowerCase().trim()}@foreign.app`;
 }
 
+// ── 本地学习数据 key 列表（账号隔离用）────────────────────
+const DATA_KEYS = ['fg_cards', 'fg_wrong', 'fg_study_log', 'fg_streak', 'fg_last_study_day', 'fg_user', 'fg_user_id'];
+
+// 清除本地学习数据，保留主题
+function clearLocalData() {
+  DATA_KEYS.forEach(k => localStorage.removeItem(k));
+  invalidateCache();
+}
+
 // ── 注册 ──────────────────────────────────────────────────
 export async function register(username, password) {
   if (!username || !password) return { ok: false, msg: '请填写用户名和密码' };
@@ -46,7 +55,10 @@ export async function register(username, password) {
   });
   if (dbErr) return { ok: false, msg: '数据初始化失败: ' + dbErr.message };
 
+  // 注册成功：记录当前账号 id，清空旧数据，写入新账号信息
+  clearLocalData();
   localStorage.setItem('fg_user', username);
+  localStorage.setItem('fg_user_id', uid);
   return { ok: true };
 }
 
@@ -62,8 +74,19 @@ export async function login(username, password) {
     return { ok: false, msg: error.message };
   }
 
+  const uid = data.user?.id;
+
+  // 多账号隔离：登录前先检查本地是否有其他账号的数据，有则清除
+  const localUid = localStorage.getItem('fg_user_id');
+  if (localUid && localUid !== uid) {
+    // 不同账号登录，清掉上一个账号的本地数据
+    clearLocalData();
+  }
+
+  // 从云端拉取该账号数据（覆盖写入本地）
   await pullFromCloud();
   localStorage.setItem('fg_user', username);
+  localStorage.setItem('fg_user_id', uid);
   return { ok: true };
 }
 
@@ -72,8 +95,9 @@ export async function logout() {
   await supabase.auth.signOut();
   const theme = localStorage.getItem('fg_theme');
   localStorage.clear();
+  // 保留主题，清除所有账号数据
   if (theme) localStorage.setItem('fg_theme', theme);
-  invalidateCache(); // 清除 fsrs 内存缓存
+  invalidateCache();
 }
 
 // ── 获取当前登录用户 ──────────────────────────────────────
@@ -94,6 +118,13 @@ export async function pullFromCloud() {
     .single();
   if (error || !data) return;
 
+  // 安全校验：确保拉取的是当前登录账号的数据
+  const localUid = localStorage.getItem('fg_user_id');
+  if (localUid && localUid !== user.id) {
+    // 本地残留了其他账号数据，先清除
+    clearLocalData();
+  }
+
   if (data.cards_json)     localStorage.setItem('fg_cards',          JSON.stringify(data.cards_json));
   if (data.wrong_json)     localStorage.setItem('fg_wrong',          JSON.stringify(data.wrong_json));
   if (data.study_log_json) localStorage.setItem('fg_study_log',      JSON.stringify(data.study_log_json));
@@ -101,8 +132,9 @@ export async function pullFromCloud() {
   if (data.last_study_day) localStorage.setItem('fg_last_study_day', data.last_study_day);
   if (data.theme)          localStorage.setItem('fg_theme',          data.theme);
   if (data.username)       localStorage.setItem('fg_user',           data.username);
+  // 记录账号 id，用于多账号隔离校验
+  localStorage.setItem('fg_user_id', user.id);
 
-  // 云端数据已写入 localStorage，清除 fsrs 内存缓存确保下次读取最新数据
   invalidateCache();
 }
 
@@ -110,6 +142,10 @@ export async function pullFromCloud() {
 export async function pushToCloud() {
   const user = await getCurrentUser();
   if (!user) return;
+
+  // 推送前校验：确保本地数据属于当前账号
+  const localUid = localStorage.getItem('fg_user_id');
+  if (localUid && localUid !== user.id) return; // 账号不匹配，拒绝推送
 
   const cards    = JSON.parse(localStorage.getItem('fg_cards')     || '{}');
   const wrong    = JSON.parse(localStorage.getItem('fg_wrong')     || '{}');
