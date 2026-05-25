@@ -188,7 +188,7 @@
   <script type="module">
     import { startAnim }  from './js/animations.js';
     import { speak, createSpeakBtn, applyDmStyle } from './js/tts.js';
-    import './js/transitions.js';
+    import { navigate } from './js/transitions.js';
     import { WORDS, DIMENSIONS } from './js/wordbank.js';
     import { initDock } from './js/dock.js';
     import { pushToCloud, getCurrentUser } from './js/auth.js';
@@ -507,10 +507,11 @@
     $('btn-next-nav').addEventListener('click', () => {
       if (reviewIdx < reviewHistory.length) { reviewIdx++; answered = false; showNextReview(); }
     });
-    $('btn-rv-home').addEventListener('click', () => location.href = 'index.html');
+    $('btn-rv-home').addEventListener('click', () => navigate('index.html'));
     $('btn-rv-again').addEventListener('click', () => { reviewIdx = 0; reviewHistory = []; startReview(); });
 
     renderList();
   </script>
+  <script type="module" src="js/keyboard.js"></script>
 </body>
 </html>
