@@ -668,7 +668,7 @@
 
     // ── 主题初始化 ────────────────────────────────────────
     const THEME_IMGS  = {ocean:'assets/images/ocean.jpg',fog_forest:'assets/images/fog_forest.jpg',galaxy:'assets/images/galaxy.jpg',rain:'assets/images/rain.jpg',aurora:'assets/images/aurora.jpg',sakura:'assets/images/sakura.jpg',sunset:'assets/images/sunset.jpg',snow:'assets/images/snow.jpg',forest_green:'assets/images/forest_green.jpg'};
-    // [CHANGE 4] aurora:'aurora' → aurora:'none'
+    // fix: aurora 动画已废弃，使用 none
     const THEME_ANIMS = {ocean:'ocean',fog_forest:'mist',galaxy:'stars',rain:'rain',aurora:'none',sakura:'sakura',sunset:'clouds',snow:'snow',forest_green:'forest'};
     const THEME_COLORS= {ocean:'#3b82f6',fog_forest:'#6ee7b7',galaxy:'#818cf8',rain:'#93c5fd',aurora:'#34d399',sakura:'#f9a8d4',sunset:'#fb923c',snow:'#bae6fd',forest_green:'#86efac',white:'#64748b',black:'#94a3b8'};
     const theme = localStorage.getItem('fg_theme') || 'ocean';
