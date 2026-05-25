@@ -230,7 +230,19 @@ async function finishSession() {
   const pct       = total ? Math.round((correct / total) * 100) : 100;
   const newStreak = await markTodayDone();
 
+  // 统计本次新词 vs 复习数
+  const allIds    = WORDS.map(w => w.id);
+  const todayPlan = getTodayPlan(allIds);
+  const newIds    = new Set(todayPlan.newWords);
+  const newCount  = sessionResults.filter(r => newIds.has(r.wordId)).length;
+  const revCount  = total - newCount;
+
   try { recordStudyLog(total); } catch(e) {}
+
+  // 今日累计（recordStudyLog 已写入，直接读）
+  const todayKey   = new Date().toISOString().slice(0,10);
+  const log        = JSON.parse(localStorage.getItem('fg_study_log')||'{}');
+  const todayTotal = log[todayKey] || total;
 
   $('result-correct').textContent = correct;
   $('result-total').textContent   = total;
@@ -240,6 +252,14 @@ async function finishSession() {
     pct >= 90 ? '太厉害了！🎉' :
     pct >= 70 ? '掌握得不错 👍' :
     pct >= 50 ? '继续加油 💪'  : '明天继续努力 🌱';
+
+  // 填写详情格子（新词/复习/今日累计）
+  const newEl = $('result-new-count');
+  const revEl = $('result-review-count');
+  const todEl = $('result-today-total');
+  if(newEl) newEl.textContent = newCount;
+  if(revEl) revEl.textContent = revCount;
+  if(todEl) todEl.textContent = todayTotal;
 
   showScreen('result');
   setTimeout(() => { $('result-bar').style.width = pct + '%'; }, 200);
