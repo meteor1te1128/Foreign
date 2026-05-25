@@ -1,13 +1,14 @@
 // qbank/daily.js — 日常生活场景 · Oxford 3000 核心词
 // 约500题，难度A1-C1
+// fix: qdy001-qdy005 重命名（原 dy001-dy005 与 quiz.js 内置题ID冲突）
 
 export const QBANK_DAILY = [
 // ── A1 基础 ──────────────────────────────────────────────
-{id:'dy001',scene:'daily',level:1,word:'wake',sentence:'I ___ up at seven every morning.',zh:'我每天早上七点醒来。',hint:'醒来（动词原形）'},
-{id:'dy002',scene:'daily',level:1,word:'breakfast',sentence:'She always eats ___ before school.',zh:'她总是在上学前吃早饭。',hint:'早餐'},
-{id:'dy003',scene:'daily',level:1,word:'brush',sentence:'Remember to ___ your teeth before bed.',zh:'睡前记得刷牙。',hint:'刷（动词）'},
-{id:'dy004',scene:'daily',level:1,word:'shower',sentence:'He takes a ___ every morning.',zh:'他每天早上淋浴。',hint:'淋浴'},
-{id:'dy005',scene:'daily',level:1,word:'dress',sentence:'She helped the child ___ for school.',zh:'她帮孩子穿衣服准备上学。',hint:'穿衣（动词）'},
+{id:'qdy001',scene:'daily',level:1,word:'wake',sentence:'I ___ up at seven every morning.',zh:'我每天早上七点醒来。',hint:'醒来（动词原形）'},
+{id:'qdy002',scene:'daily',level:1,word:'breakfast',sentence:'She always eats ___ before school.',zh:'她总是在上学前吃早饭。',hint:'早餐'},
+{id:'qdy003',scene:'daily',level:1,word:'brush',sentence:'Remember to ___ your teeth before bed.',zh:'睡前记得刷牙。',hint:'刷（动词）'},
+{id:'qdy004',scene:'daily',level:1,word:'shower',sentence:'He takes a ___ every morning.',zh:'他每天早上淋浴。',hint:'淋浴'},
+{id:'qdy005',scene:'daily',level:1,word:'dress',sentence:'She helped the child ___ for school.',zh:'她帮孩子穿衣服准备上学。',hint:'穿衣（动词）'},
 {id:'dy006',scene:'daily',level:1,word:'walk',sentence:'They ___ to the park every afternoon.',zh:'他们每天下午步行去公园。',hint:'步行（动词）'},
 {id:'dy007',scene:'daily',level:1,word:'home',sentence:'She arrived ___ late last night.',zh:'她昨晚很晚才到家。',hint:'家'},
 {id:'dy008',scene:'daily',level:1,word:'sleep',sentence:'Children need at least nine hours of ___ a night.',zh:'孩子每晚至少需要九小时的睡眠。',hint:'睡眠（名词）'},
@@ -16,15 +17,13 @@ export const QBANK_DAILY = [
 {id:'dy011',scene:'daily',level:1,word:'wash',sentence:'Please ___ your hands before eating.',zh:'吃饭前请洗手。',hint:'洗（动词）'},
 {id:'dy012',scene:'daily',level:1,word:'bed',sentence:'He made his ___ before leaving.',zh:'他出门前整理了床铺。',hint:'床'},
 {id:'dy013',scene:'daily',level:1,word:'door',sentence:'Please close the ___ quietly.',zh:'请轻轻关门。',hint:'门'},
-{id:'dy014',scene:'daily',level:1,word:'window',sentence:'Open the ___ — it\'s too hot in here.',zh:'把窗户打开，这里太热了。',hint:'窗户'},
+{id:'dy014',scene:'daily',level:1,word:'window',sentence:"Open the ___ — it's too hot in here.",zh:'把窗户打开，这里太热了。',hint:'窗户'},
 {id:'dy015',scene:'daily',level:1,word:'light',sentence:'Turn off the ___ when you leave.',zh:'离开时请关灯。',hint:'灯/灯光'},
-{id:'dy016',scene:'daily',level:1,word:'key',sentence:'She lost her ___ and couldn\'t get in.',zh:'她丢了钥匙进不了门。',hint:'钥匙'},
-{id:'dy017',scene:'daily',level:1,word:'bag',sentence:'Don\'t forget your ___ on the bus.',zh:'不要把包忘在公交车上。',hint:'包'},
-{id:'dy018',scene:'daily',level:1,word:'clock',sentence:'The ___ on the wall shows nine o\'clock.',zh:'墙上的钟显示九点。',hint:'钟'},
+{id:'dy016',scene:'daily',level:1,word:'key',sentence:"She lost her ___ and couldn't get in.",zh:'她丢了钥匙进不了门。',hint:'钥匙'},
+{id:'dy017',scene:'daily',level:1,word:'bag',sentence:"Don't forget your ___ on the bus.",zh:'不要把包忘在公交车上。',hint:'包'},
+{id:'dy018',scene:'daily',level:1,word:'clock',sentence:"The ___ on the wall shows nine o'clock.",zh:'墙上的钟显示九点。',hint:'钟'},
 {id:'dy019',scene:'daily',level:1,word:'phone',sentence:'She checked her ___ first thing in the morning.',zh:'她早上第一件事就是看手机。',hint:'手机/电话'},
-{id:'dy020',scene:'daily',level:1,word:'money',sentence:'He didn\'t have enough ___ to buy lunch.',zh:'他没有足够的钱买午饭。',hint:'钱'},
-
-// ── A2 初级 ──────────────────────────────────────────────
+{id:'dy020',scene:'daily',level:1,word:'money',sentence:"He didn't have enough ___ to buy lunch.",zh:'他没有足够的钱买午饭。',hint:'钱'},
 {id:'dy021',scene:'daily',level:2,word:'alarm',sentence:'Set your ___ for six tomorrow morning.',zh:'明天早上把闹钟定在六点。',hint:'闹钟'},
 {id:'dy022',scene:'daily',level:2,word:'routine',sentence:'Exercise is part of his daily ___.',zh:'锻炼是他日常惯例的一部分。',hint:'惯例/日常'},
 {id:'dy023',scene:'daily',level:2,word:'chore',sentence:'Doing the dishes is my least favourite ___.',zh:'洗碗是我最不喜欢的家务。',hint:'家务杂事'},
@@ -45,8 +44,6 @@ export const QBANK_DAILY = [
 {id:'dy038',scene:'daily',level:2,word:'spend',sentence:'She ___ two hours cleaning the house.',zh:'她花了两个小时打扫房子。',hint:'花费（动词过去式）'},
 {id:'dy039',scene:'daily',level:2,word:'weekly',sentence:'She does a ___ shop every Saturday.',zh:'她每周六采购一次。',hint:'每周的（形容词）'},
 {id:'dy040',scene:'daily',level:2,word:'schedule',sentence:'Check your ___ before booking anything.',zh:'预订任何东西前先查看你的日程。',hint:'日程表'},
-
-// ── B1 中级 ──────────────────────────────────────────────
 {id:'dy041',scene:'daily',level:3,word:'commute',sentence:'His daily ___ takes over an hour each way.',zh:'他每天的通勤单程超过一小时。',hint:'通勤（名词）'},
 {id:'dy042',scene:'daily',level:3,word:'mortgage',sentence:'They took out a ___ to buy the house.',zh:'他们贷款买了这栋房子。',hint:'房贷'},
 {id:'dy043',scene:'daily',level:3,word:'utilities',sentence:'___ like gas and electricity are expensive here.',zh:'这里的水电煤气等费用很贵。',hint:'公共事业费（复数）'},
@@ -67,8 +64,6 @@ export const QBANK_DAILY = [
 {id:'dy058',scene:'daily',level:3,word:'accumulate',sentence:'Dust tends to ___ under the furniture.',zh:'灰尘往往会在家具下面积累。',hint:'积累（动词）'},
 {id:'dy059',scene:'daily',level:3,word:'premises',sentence:'Smoking is not allowed on the ___.',zh:'场所内禁止吸烟。',hint:'场所/建筑（复数）'},
 {id:'dy060',scene:'daily',level:3,word:'inventory',sentence:'She did an ___ of everything in the flat.',zh:'她对公寓里的所有东西做了清单。',hint:'清单/库存'},
-
-// ── B2 中高级 ────────────────────────────────────────────
 {id:'dy061',scene:'daily',level:4,word:'declutter',sentence:'She spent the weekend ___ her wardrobe.',zh:'她花了整个周末整理衣橱。',hint:'清理杂物（动词ing）'},
 {id:'dy062',scene:'daily',level:4,word:'insomnia',sentence:'Stress at work triggered his ___.',zh:'工作压力引发了他的失眠。',hint:'失眠'},
 {id:'dy063',scene:'daily',level:4,word:'sedentary',sentence:'A ___ lifestyle increases health risks significantly.',zh:'久坐不动的生活方式会大幅增加健康风险。',hint:'久坐不动的'},
@@ -84,8 +79,6 @@ export const QBANK_DAILY = [
 {id:'dy073',scene:'daily',level:4,word:'procrastinate',sentence:'Stop ___ and just start the task.',zh:'别再拖延了，直接开始吧。',hint:'拖延（动词ing）'},
 {id:'dy074',scene:'daily',level:4,word:'meticulous',sentence:'She is ___ about keeping financial records.',zh:'她在保存财务记录方面一丝不苟。',hint:'一丝不苟的'},
 {id:'dy075',scene:'daily',level:4,word:'austerity',sentence:'Years of ___ left little room for luxuries.',zh:'多年的紧缩让奢侈品无处可容。',hint:'紧缩/节俭'},
-
-// ── C1 高级 ──────────────────────────────────────────────
 {id:'dy076',scene:'daily',level:5,word:'quotidian',sentence:'She found beauty in the ___ details of life.',zh:'她在生活的日常细节中发现了美。',hint:'日常平凡的（书面词）'},
 {id:'dy077',scene:'daily',level:5,word:'circadian',sentence:'Shift work disrupts your ___ rhythm.',zh:'轮班工作会扰乱你的昼夜节律。',hint:'昼夜节律的'},
 {id:'dy078',scene:'daily',level:5,word:'mundane',sentence:'Even ___ tasks can be done mindfully.',zh:'就算是平凡无趣的任务也可以用心去做。',hint:'平凡无趣的'},
