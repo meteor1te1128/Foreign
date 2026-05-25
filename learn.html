@@ -11,6 +11,34 @@
   <link rel="stylesheet" href="css/theme-buttons.css" />
   <link rel="stylesheet" href="css/learn.css" />
   <link rel="stylesheet" href="css/mobile.css" />
+  <style>
+    /* 结算页详情格子 */
+    .result-stat-box {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 12px 8px;
+    }
+    .result-stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--theme-color, #3b82f6);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .result-stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.38);
+    }
+    body.dm .result-stat-box {
+      background: rgba(0,0,0,.05);
+      border-color: rgba(0,0,0,.1);
+    }
+    body.dm .result-stat-label { color: rgba(0,0,0,.38); }
+  </style>
 </head>
 <body>
 
@@ -105,14 +133,35 @@
     <div class="learn-card" style="text-align:center">
       <p class="result-title">完成！</p>
       <p class="result-msg" id="result-msg">太厉害了！🎉</p>
+
+      <!-- 主分数 -->
       <div class="result-score">
         <div class="result-pct" id="result-pct">—%</div>
         <div class="result-detail">答对 <span id="result-correct">0</span> / <span id="result-total">0</span> 题</div>
       </div>
       <div class="result-bar-wrap"><div class="result-bar" id="result-bar"></div></div>
+
+      <!-- 本次详情：新词 / 复习 / 今日累计 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 8px">
+        <div class="result-stat-box">
+          <div class="result-stat-num" id="result-new-count">0</div>
+          <div class="result-stat-label">新词</div>
+        </div>
+        <div class="result-stat-box">
+          <div class="result-stat-num" id="result-review-count">0</div>
+          <div class="result-stat-label">复习</div>
+        </div>
+        <div class="result-stat-box">
+          <div class="result-stat-num" id="result-today-total">0</div>
+          <div class="result-stat-label">今日累计</div>
+        </div>
+      </div>
+
+      <!-- 连击 -->
       <div class="result-streak-row">
         <span>连击</span><span class="result-streak-num" id="result-streak">0</span><span>天 🌟</span>
       </div>
+
       <button class="btn-primary" id="btn-result-home">回到首页</button>
       <button class="btn-secondary" id="btn-result-again">再练一遍错题</button>
     </div>
@@ -127,7 +176,7 @@
       sunset:'assets/images/sunset.jpg', snow:'assets/images/snow.jpg',
       forest_green:'assets/images/forest_green.jpg',
     };
-    // fix #4: aurora 动画已废弃，改为 none
+    // fix #4: aurora 动画已废弃
     const THEME_ANIMS = {
       ocean:'ocean', fog_forest:'mist', galaxy:'stars', rain:'rain',
       aurora:'none', sakura:'sakura', sunset:'clouds', snow:'snow', forest_green:'forest',
@@ -139,11 +188,9 @@
     const bg = document.getElementById('bg-image');
     const cv = document.getElementById('bg-canvas');
     cv.width = window.innerWidth; cv.height = window.innerHeight;
-    // fix #6: resize 只更新 canvas 尺寸，不重启动画
     window.addEventListener('resize', () => { cv.width=window.innerWidth; cv.height=window.innerHeight; });
     if (THEME_IMGS[theme]) { bg.style.backgroundImage=`url(${THEME_IMGS[theme]})`; bg.style.opacity='1'; }
     else { bg.style.opacity='0'; }
-    // fix #4: 排除 'none' 再调用 startAnim
     if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cv);
   </script>
   <script type="module" src="js/learn.js"></script>
