@@ -108,7 +108,7 @@
 
   <script type="module">
     import { startAnim } from './js/animations.js';
-    import { WORDS, DIMENSIONS } from './js/wordbank.js';
+    import { WORDS, DIMENSIONS, searchWords } from './js/wordbank.js';
     import { initDock } from './js/dock.js';
     import { pushToCloud, getCurrentUser } from './js/auth.js';
 
@@ -124,7 +124,7 @@
     if (THEME_IMGS[theme]) { bgEl.style.backgroundImage = `url(${THEME_IMGS[theme]})`; bgEl.style.opacity = '1'; }
     else { bgEl.style.opacity = '0'; }
     if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cvEl);
-    import('./js/transitions.js');
+    import { navigate } from './js/transitions.js';
     initDock();
 
     const LEVEL_MAP    = {1:'A1',2:'A2',3:'B1',4:'B2',5:'C1',6:'C2'};
@@ -160,7 +160,7 @@
       const favs = loadFavs();
       const list = document.getElementById('word-list');
       let favWords = WORDS.filter(w => !!favs[w.id]);
-      if (searchQ) favWords = favWords.filter(w => w.word.toLowerCase().includes(searchQ) || (w.zh || '').includes(searchQ));
+      if (searchQ) favWords = searchWords(searchQ, favWords);
       if (sortMode === 'time')  favWords.sort((a, b) => (favs[b.id] || 0) - (favs[a.id] || 0));
       if (sortMode === 'alpha') favWords.sort((a, b) => a.word.localeCompare(b.word));
       if (sortMode === 'level') favWords.sort((a, b) => a.level - b.level);
@@ -205,6 +205,7 @@
           </div>
           <div class="word-meta">
             <span class="word-level">${levelLabel} · ${dim.icon}</span>
+            ${searchQ && word.related && word.related.some(r => r.toLowerCase().includes(searchQ)) && !word.word.toLowerCase().includes(searchQ) && !(word.zh||'').includes(searchQ) ? `<span style="font-size:10px;color:var(--theme-color);opacity:.8;margin-left:6px">← ${word.related.find(r=>r.toLowerCase().includes(searchQ))}</span>` : ''}
             <span class="word-status"><span class="status-dot ${status}"></span>${STATUS_LABEL[status]}</span>
           </div>`;
         // 发音按钮
