@@ -203,14 +203,13 @@ window.addEventListener('resize', () => { cv.width = window.innerWidth; cv.heigh
 if (THEME_IMGS[theme]) { bg.style.backgroundImage = `url(${THEME_IMGS[theme]})`; bg.style.opacity = '1'; }
 else bg.style.opacity = '0';
 if (THEME_ANIMS[theme] && THEME_ANIMS[theme] !== 'none') startAnim(THEME_ANIMS[theme], cv);
-    import('./js/transitions.js');
+    import { navigate } from './js/transitions.js';
 
 initDock('bg-image', 'bg-canvas');
 
 // ── 数据 ──
 const rawCards = JSON.parse(localStorage.getItem('fg_cards') || '{}');
 const studyLog = JSON.parse(localStorage.getItem('fg_study_log') || '{}');
-const dimStats = getDimStats(rawCards);
 const total    = WORDS.length;
 const learned  = Object.values(dimStats).reduce((s, d) => s + d.learned, 0);
 const pct      = total ? learned / total : 0;
@@ -225,7 +224,7 @@ document.getElementById('pctLabel').textContent     = `${Math.round(pct * 100)}%
 setTimeout(() => { document.getElementById('progressFill').style.width = `${Math.round(pct * 100)}%`; }, 100);
 
 // ── 维度进度条 ──
-const dimColors = {daily:'#3b82f6',emotion:'#f9a8d4',nature:'#86efac',abstract:'#818cf8',social:'#fb923c',academic:'#6ee7b7'};
+const dimColors = {daily:'#3b82f6',emotion:'#f9a8d4',nature:'#86efac',abstract:'#818cf8',social:'#fb923c',academic:'#6ee7b7',work:'#fbbf24',health:'#f87171',tech:'#34d399'};
 const dimBarsEl = document.getElementById('dimBars');
 for (const [dim, info] of Object.entries(DIMENSIONS)) {
   const st = dimStats[dim];
@@ -244,9 +243,39 @@ const isMobile = window.innerWidth < 768;
 const rSize = isMobile ? Math.min(window.innerWidth - 64, 280) : 320;
 radarCv.width = rSize; radarCv.height = Math.round(rSize * 0.94);
 const cx = rSize / 2, cy = radarCv.height / 2, R = rSize * .34;
-const dims = Object.keys(DIMENSIONS);
-const labels = dims.map(d => DIMENSIONS[d].label);
-const values = dims.map(d => dimStats[d].pct);
+// 雷达图只显示6个核心维度，新维度合并到相近的核心维度
+const RADAR_DIMS = ['daily','emotion','nature','abstract','social','academic'];
+const dims = RADAR_DIMS;
+const labels = dims.map(d => DIMENSIONS[d]?.label || d);
+
+// 合并统计：health → emotion，tech → academic，work 单独在维度条里显示
+function getMergedDimStats() {
+  const raw = getDimStats(rawCards);
+  const merged = {...raw};
+  // health 合并进 emotion
+  if (raw.health) {
+    merged.emotion = {
+      total:    (raw.emotion?.total    || 0) + raw.health.total,
+      learned:  (raw.emotion?.learned  || 0) + raw.health.learned,
+      mastered: (raw.emotion?.mastered || 0) + raw.health.mastered,
+      pct: ((raw.emotion?.learned || 0) + raw.health.learned) /
+           ((raw.emotion?.total   || 1) + raw.health.total),
+    };
+  }
+  // tech 合并进 academic
+  if (raw.tech) {
+    merged.academic = {
+      total:    (raw.academic?.total    || 0) + raw.tech.total,
+      learned:  (raw.academic?.learned  || 0) + raw.tech.learned,
+      mastered: (raw.academic?.mastered || 0) + raw.tech.mastered,
+      pct: ((raw.academic?.learned || 0) + raw.tech.learned) /
+           ((raw.academic?.total   || 1) + raw.tech.total),
+    };
+  }
+  return merged;
+}
+const dimStats = getMergedDimStats();
+const values = dims.map(d => dimStats[d]?.pct ?? 0);
 const N = dims.length, PI2 = Math.PI * 2;
 const gridCol  = isDark ? 'rgba(241,245,249,.1)'  : 'rgba(30,41,59,.1)';
 const labelCol = isDark ? 'rgba(241,245,249,.58)' : 'rgba(30,41,59,.58)';
