@@ -1,6 +1,7 @@
 // learn.js — 每日学习页逻辑
 
 import { WORDS, DIMENSIONS } from './wordbank.js';
+import { SUPPLEMENT_IDS } from './wordbank-supplement.js';
 import { getTodayPlan, getOrCreateCard, reviewCard, updateCard, RATING } from './fsrs.js';
 import { getStreak, markTodayDone, playStreakAnim } from './streak.js';
 import { recordStudyLog } from './study-log.js';
@@ -45,7 +46,8 @@ async function init() {
   showScreen('loading');
   await new Promise(r => setTimeout(r, 500));
 
-  const allIds    = WORDS.map(w => w.id);
+  // 过滤掉补充词库（太专业，不参与每日推送）
+  const allIds    = WORDS.map(w => w.id).filter(id => !SUPPLEMENT_IDS.has(id));
   const todayPlan = getTodayPlan(allIds);
   plan = todayPlan.all;
 
@@ -248,7 +250,8 @@ async function finishSession() {
   const pct       = total ? Math.round((correct / total) * 100) : 100;
   const newStreak = await markTodayDone();
 
-  const allIds    = WORDS.map(w => w.id);
+  // 过滤掉补充词库（太专业，不参与每日推送）
+  const allIds    = WORDS.map(w => w.id).filter(id => !SUPPLEMENT_IDS.has(id));
   const todayPlan = getTodayPlan(allIds);
   const newIds    = new Set(todayPlan.newWords);
   const newCount  = sessionResults.filter(r => newIds.has(r.wordId)).length;
