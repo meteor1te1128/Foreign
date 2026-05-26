@@ -112,3 +112,6 @@ export const SUPPLEMENT_WORDS = [
 { id:'c015', dim:'daily', level:3, word:'preservative',    phonetic:'/prɪˈzɜːvətɪv/',  zh:'防腐剂',      example:'This product contains no artificial preservatives.',exZh:'该产品不含人工防腐剂。',            related:['additive','chemical','food','shelf life','natural'] },
 
 ];
+
+// 这些词不参与每日 FSRS 学习推送，只在单词库浏览
+export const SUPPLEMENT_IDS = new Set(['h001', 'h002', 'h003', 'h004', 'h005', 'h006', 'h007', 'h008', 'h009', 'h010', 'h011', 'h012', 'h013', 'h014', 'h015', 'h016', 'h017', 'h018', 'h019', 'h020', 't001', 't002', 't003', 't004', 't005', 't006', 't007', 't008', 't009', 't010', 't011', 't012', 't013', 't014', 't015', 'f001', 'f002', 'f003', 'f004', 'f005', 'f006', 'f007', 'f008', 'f009', 'f010', 'f011', 'f012', 'f013', 'f014', 'm001', 'm002', 'm003', 'm004', 'm005', 'm006', 'm007', 'm008', 'm009', 'm010', 'm011', 'm012', 'm013', 'm014', 'm015', 'tr001', 'tr002', 'tr003', 'tr004', 'tr005', 'tr006', 'tr007', 'tr008', 'tr009', 'tr010', 'tr011', 'tr012', 'tr013', 'tr014', 'tr015', 'tr016', 'c001', 'c002', 'c003', 'c004', 'c005', 'c006', 'c007', 'c008', 'c009', 'c010', 'c011', 'c012', 'c013', 'c014', 'c015']);
