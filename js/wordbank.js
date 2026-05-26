@@ -1,16 +1,19 @@
-// wordbank.js — Foreign词库 v6 · 1290词
-// 原始600词（daily/emotion/nature/abstract/social/academic）
-// + 牛津3000扩充690词（A1-B2，含 work 新维度，去重后）
+// wordbank.js — Foreign词库 v6 · 1385词
+// 原始600词 + 牛津3000扩充690词 + 补充95词（医疗/科技/金融/媒体/旅行/饮食）
+// 新增维度：work / health / tech
 // related 字段：搜 "explanation" 可找到 "explain"，搜 "解释" 可找到 "explain"
 //
 // ⚠️ 注意：此文件需要 wordbank-core.js 在同目录
 // wordbank-core.js = 原始 wordbank.js（重命名即可）
 
 import { WORDS as CORE_WORDS, DIMENSIONS as CORE_DIMS } from './wordbank-core.js';
+import { SUPPLEMENT_WORDS } from './wordbank-supplement.js';
 
 export const DIMENSIONS = {
   ...CORE_DIMS,
-  work: { label:'职场商务', color:'#fbbf24', icon:'💼' },
+  work:     { label:'职场商务', color:'#fbbf24', icon:'💼' },
+  health:   { label:'医疗健康', color:'#f87171', icon:'🏥' },
+  tech:     { label:'科技数字', color:'#34d399', icon:'💻' },
 };
 
 // ── 搜索函数（支持 related 词族匹配）────────────────────────────
@@ -723,7 +726,7 @@ const OXFORD_WORDS = [
 {id:'oe4022',dim:'emotion',level:4,word:'solace',phonetic:'/ˈsɒləs/',zh:'安慰；慰藉',example:'She found solace in music during hard times.',exZh:'在艰难时期，她在音乐中找到了慰藉。',related:['comfort','consolation','relief','peace','support']}
 ];
 
-export const WORDS = [...CORE_WORDS, ...OXFORD_WORDS];
+export const WORDS = [...CORE_WORDS, ...OXFORD_WORDS, ...SUPPLEMENT_WORDS];
 
 export function getByDimension(dim){ return WORDS.filter(w=>w.dim===dim); }
 export function getByLevel(level){ return WORDS.filter(w=>w.level===level); }
